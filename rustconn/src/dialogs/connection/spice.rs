@@ -35,6 +35,7 @@ pub type SpiceOptionsWidgets = (
     CheckButton,                    // usb_check
     CheckButton,                    // clipboard_check
     DropDown,                       // compression_dropdown
+    Entry,                          // proxy_entry
     Rc<RefCell<Vec<SharedFolder>>>, // shared_folders
     gtk4::ListBox,                  // folders_list
 );
@@ -50,7 +51,7 @@ pub fn create_spice_options() -> SpiceOptionsWidgets {
     content.append(&security_group);
 
     // === Features Group ===
-    let (features_group, usb_check, clipboard_check, compression_dropdown) =
+    let (features_group, usb_check, clipboard_check, compression_dropdown, proxy_entry) =
         create_features_group();
     content.append(&features_group);
 
@@ -68,6 +69,7 @@ pub fn create_spice_options() -> SpiceOptionsWidgets {
         usb_check,
         clipboard_check,
         compression_dropdown,
+        proxy_entry,
         shared_folders,
         folders_list,
     )
@@ -116,7 +118,21 @@ fn create_security_group() -> (
     let (skip_verify_row, skip_verify_check) = CheckboxRowBuilder::new("Skip Verification")
         .subtitle("Disable certificate verification (insecure)")
         .build();
+    skip_verify_check.set_sensitive(false);
     security_group.add(&skip_verify_row);
+
+    // Wire TLS toggle to CA cert and skip verify sensitivity
+    let ca_cert_row_clone = ca_cert_row.clone();
+    let skip_verify_check_clone = skip_verify_check.clone();
+    tls_check.connect_toggled(move |check| {
+        let on = check.is_active();
+        ca_cert_row_clone.set_sensitive(on);
+        skip_verify_check_clone.set_sensitive(on);
+        if !on {
+            skip_verify_check_clone.set_active(false);
+        }
+    });
+    ca_cert_row.set_sensitive(false);
 
     (
         security_group,
@@ -128,7 +144,13 @@ fn create_security_group() -> (
 }
 
 /// Creates the Features preferences group
-fn create_features_group() -> (adw::PreferencesGroup, CheckButton, CheckButton, DropDown) {
+fn create_features_group() -> (
+    adw::PreferencesGroup,
+    CheckButton,
+    CheckButton,
+    DropDown,
+    Entry,
+) {
     let features_group = adw::PreferencesGroup::builder()
         .title(i18n("Features"))
         .build();
@@ -159,10 +181,26 @@ fn create_features_group() -> (adw::PreferencesGroup, CheckButton, CheckButton, 
     compression_row.add_suffix(&compression_dropdown);
     features_group.add(&compression_row);
 
+    // Proxy
+    let proxy_entry = Entry::builder()
+        .hexpand(true)
+        .valign(gtk4::Align::Center)
+        .placeholder_text(i18n("http://proxy:3128"))
+        .build();
+    let proxy_row = adw::ActionRow::builder()
+        .title(i18n("SPICE Proxy"))
+        .subtitle(i18n(
+            "Proxy URL for tunnelled connections (e.g. Proxmox VE)",
+        ))
+        .build();
+    proxy_row.add_suffix(&proxy_entry);
+    features_group.add(&proxy_row);
+
     (
         features_group,
         usb_check,
         clipboard_check,
         compression_dropdown,
+        proxy_entry,
     )
 }

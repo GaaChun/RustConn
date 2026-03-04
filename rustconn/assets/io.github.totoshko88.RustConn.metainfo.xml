@@ -90,6 +90,18 @@
     <control>touch</control>
   </supports>
   <releases>
+    <release version="0.9.8" date="2026-03-05">
+      <description>
+        <p>Security fix, SSH status detection, protocol dialog improvements, and code decomposition.</p>
+        <ul>
+          <li>RDP password no longer exposed on command line — FreeRDP fallback uses /from-stdin</li>
+          <li>SSH connection status now correctly turns green; monitoring starts reliably</li>
+          <li>Protocol dialog improvements for SSH, RDP, VNC, SPICE, Serial, Kubernetes, Telnet, Zero Trust</li>
+          <li>SFTP mc sessions now support split view</li>
+          <li>Connection dialog and embedded RDP decomposed into focused submodules</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.9.7" date="2026-03-04">
       <description>
         <p>Bug fixes: connection group selection, secret variable persistence, reconnect crash, and Bitwarden performance.</p>

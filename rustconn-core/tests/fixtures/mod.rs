@@ -136,6 +136,8 @@ pub fn sample_rdp_connection_with_domain() -> Connection {
         performance_mode: Default::default(),
         keyboard_layout: None,
         scale_override: Default::default(),
+        disable_nla: false,
+        clipboard_enabled: true,
     };
 
     let mut conn = Connection::new(

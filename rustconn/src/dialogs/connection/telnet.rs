@@ -34,7 +34,9 @@ pub fn create_telnet_options() -> TelnetOptionsWidgets {
     // === Connection Group ===
     let connection_group = adw::PreferencesGroup::builder()
         .title(i18n("Connection"))
-        .description(i18n("Telnet uses an external telnet client"))
+        .description(i18n(
+            "⚠ Telnet transmits data in plain text. Use SSH for secure connections.",
+        ))
         .build();
 
     let (custom_args_row, custom_args_entry) = EntryRowBuilder::new("Custom Arguments")

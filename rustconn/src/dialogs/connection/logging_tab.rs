@@ -31,6 +31,10 @@ pub struct LoggingTab {
     pub timestamp_dropdown: DropDown,
     pub max_size_spin: SpinButton,
     pub retention_spin: SpinButton,
+    pub log_activity_check: CheckButton,
+    pub log_input_check: CheckButton,
+    pub log_output_check: CheckButton,
+    pub log_timestamps_check: CheckButton,
 }
 
 impl LoggingTab {
@@ -143,12 +147,75 @@ impl LoggingTab {
 
         content.append(&settings_group);
 
+        // === Content Options Group ===
+        let content_group = adw::PreferencesGroup::builder()
+            .title(i18n("Content Options"))
+            .description(i18n("What to include in log files"))
+            .sensitive(false)
+            .build();
+
+        let log_activity_check = CheckButton::builder()
+            .valign(gtk4::Align::Center)
+            .active(true)
+            .sensitive(false)
+            .build();
+        let log_activity_row = adw::ActionRow::builder()
+            .title(i18n("Log Activity"))
+            .subtitle(i18n("Record connection and disconnection events"))
+            .activatable_widget(&log_activity_check)
+            .build();
+        log_activity_row.add_suffix(&log_activity_check);
+        content_group.add(&log_activity_row);
+
+        let log_input_check = CheckButton::builder()
+            .valign(gtk4::Align::Center)
+            .sensitive(false)
+            .build();
+        let log_input_row = adw::ActionRow::builder()
+            .title(i18n("Log Input"))
+            .subtitle(i18n("Record keyboard input sent to remote"))
+            .activatable_widget(&log_input_check)
+            .build();
+        log_input_row.add_suffix(&log_input_check);
+        content_group.add(&log_input_row);
+
+        let log_output_check = CheckButton::builder()
+            .valign(gtk4::Align::Center)
+            .sensitive(false)
+            .build();
+        let log_output_row = adw::ActionRow::builder()
+            .title(i18n("Log Output"))
+            .subtitle(i18n("Record terminal output from remote"))
+            .activatable_widget(&log_output_check)
+            .build();
+        log_output_row.add_suffix(&log_output_check);
+        content_group.add(&log_output_row);
+
+        let log_timestamps_check = CheckButton::builder()
+            .valign(gtk4::Align::Center)
+            .sensitive(false)
+            .build();
+        let log_timestamps_row = adw::ActionRow::builder()
+            .title(i18n("Add Timestamps"))
+            .subtitle(i18n("Prepend timestamp to each log line"))
+            .activatable_widget(&log_timestamps_check)
+            .build();
+        log_timestamps_row.add_suffix(&log_timestamps_check);
+        content_group.add(&log_timestamps_row);
+
+        content.append(&content_group);
+
         // Wire enabled toggle
         let path_clone = path_entry.clone();
         let ts_clone = timestamp_dropdown.clone();
         let size_clone = max_size_spin.clone();
         let ret_clone = retention_spin.clone();
         let sg_clone = settings_group.clone();
+        let cg_clone = content_group.clone();
+        let activity_clone = log_activity_check.clone();
+        let input_clone = log_input_check.clone();
+        let output_clone = log_output_check.clone();
+        let timestamps_clone = log_timestamps_check.clone();
         enabled_check.connect_toggled(move |check| {
             let on = check.is_active();
             path_clone.set_sensitive(on);
@@ -156,6 +223,11 @@ impl LoggingTab {
             size_clone.set_sensitive(on);
             ret_clone.set_sensitive(on);
             sg_clone.set_sensitive(on);
+            cg_clone.set_sensitive(on);
+            activity_clone.set_sensitive(on);
+            input_clone.set_sensitive(on);
+            output_clone.set_sensitive(on);
+            timestamps_clone.set_sensitive(on);
         });
         settings_group.set_sensitive(false);
 
@@ -171,6 +243,10 @@ impl LoggingTab {
             timestamp_dropdown,
             max_size_spin,
             retention_spin,
+            log_activity_check,
+            log_input_check,
+            log_output_check,
+            log_timestamps_check,
         };
         (vbox, tab)
     }
@@ -188,23 +264,39 @@ impl LoggingTab {
             self.timestamp_dropdown.set_selected(idx as u32);
             self.max_size_spin.set_value(f64::from(c.max_size_mb));
             self.retention_spin.set_value(f64::from(c.retention_days));
+            self.log_activity_check.set_active(c.log_activity);
+            self.log_input_check.set_active(c.log_input);
+            self.log_output_check.set_active(c.log_output);
+            self.log_timestamps_check.set_active(c.log_timestamps);
 
             let on = c.enabled;
             self.path_entry.set_sensitive(on);
             self.timestamp_dropdown.set_sensitive(on);
             self.max_size_spin.set_sensitive(on);
             self.retention_spin.set_sensitive(on);
+            self.log_activity_check.set_sensitive(on);
+            self.log_input_check.set_sensitive(on);
+            self.log_output_check.set_sensitive(on);
+            self.log_timestamps_check.set_sensitive(on);
         } else {
             self.enabled_check.set_active(false);
             self.path_entry.set_text("");
             self.timestamp_dropdown.set_selected(0);
             self.max_size_spin.set_value(10.0);
             self.retention_spin.set_value(30.0);
+            self.log_activity_check.set_active(true);
+            self.log_input_check.set_active(false);
+            self.log_output_check.set_active(false);
+            self.log_timestamps_check.set_active(false);
 
             self.path_entry.set_sensitive(false);
             self.timestamp_dropdown.set_sensitive(false);
             self.max_size_spin.set_sensitive(false);
             self.retention_spin.set_sensitive(false);
+            self.log_activity_check.set_sensitive(false);
+            self.log_input_check.set_sensitive(false);
+            self.log_output_check.set_sensitive(false);
+            self.log_timestamps_check.set_sensitive(false);
         }
     }
 
@@ -241,10 +333,10 @@ impl LoggingTab {
             timestamp_format,
             max_size_mb,
             retention_days,
-            log_activity: true,
-            log_input: false,
-            log_output: false,
-            log_timestamps: false,
+            log_activity: self.log_activity_check.is_active(),
+            log_input: self.log_input_check.is_active(),
+            log_output: self.log_output_check.is_active(),
+            log_timestamps: self.log_timestamps_check.is_active(),
         })
     }
 }

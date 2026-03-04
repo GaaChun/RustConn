@@ -182,7 +182,8 @@ impl AutomationSession {
         }
 
         // Get terminal dimensions and cursor position
-        let (cursor_row, cursor_col) = terminal.cursor_position();
+        // VTE's cursor_position() returns (column, row)
+        let (cursor_col, cursor_row) = terminal.cursor_position();
         let row_count = terminal.row_count();
 
         // Read content using text_range_format for the entire visible area

@@ -15,7 +15,7 @@ use gtk4::prelude::*;
 use gtk4::{
     Box as GtkBox, Button, CheckButton, DropDown, Entry, FileDialog, Grid, Label, ListBox,
     ListBoxRow, Orientation, PasswordEntry, ScrolledWindow, SpinButton, Stack, StringList,
-    TextView, WrapMode,
+    TextView,
 };
 use libadwaita as adw;
 use rustconn_core::automation::{ConnectionTask, ExpectRule, TaskCondition, builtin_templates};
@@ -155,6 +155,10 @@ pub struct ConnectionDialog {
     rdp_scale_override_dropdown: DropDown,
     rdp_audio_check: CheckButton,
     rdp_gateway_entry: Entry,
+    rdp_gateway_port_spin: SpinButton,
+    rdp_gateway_username_entry: Entry,
+    rdp_disable_nla_check: CheckButton,
+    rdp_clipboard_check: CheckButton,
     rdp_shared_folders: Rc<RefCell<Vec<SharedFolder>>>,
     rdp_shared_folders_list: gtk4::ListBox,
     rdp_custom_args_entry: Entry,
@@ -162,7 +166,7 @@ pub struct ConnectionDialog {
     // VNC fields
     vnc_client_mode_dropdown: DropDown,
     vnc_performance_mode_dropdown: DropDown,
-    vnc_encoding_entry: Entry,
+    vnc_encoding_dropdown: DropDown,
     vnc_compression_spin: SpinButton,
     vnc_quality_spin: SpinButton,
     vnc_view_only_check: CheckButton,
@@ -178,6 +182,7 @@ pub struct ConnectionDialog {
     spice_usb_check: CheckButton,
     spice_clipboard_check: CheckButton,
     spice_compression_dropdown: DropDown,
+    spice_proxy_entry: Entry,
     spice_shared_folders: Rc<RefCell<Vec<SharedFolder>>>,
     spice_shared_folders_list: gtk4::ListBox,
     // Zero Trust fields
@@ -202,6 +207,8 @@ pub struct ConnectionDialog {
     zt_oci_bastion_id_entry: adw::EntryRow,
     zt_oci_target_id_entry: adw::EntryRow,
     zt_oci_target_ip_entry: adw::EntryRow,
+    zt_oci_ssh_key_entry: adw::EntryRow,
+    zt_oci_session_ttl_spin: adw::SpinRow,
     // Cloudflare Access fields
     zt_cf_hostname_entry: adw::EntryRow,
     // Teleport fields
@@ -371,7 +378,7 @@ impl ConnectionDialog {
             username_entry,
             username_label,
             domain_entry,
-            _domain_label,
+            domain_label,
             tags_entry,
             tags_label,
             protocol_dropdown,
@@ -387,7 +394,7 @@ impl ConnectionDialog {
             group_dropdown,
             username_load_button,
             domain_load_button,
-        ) = Self::create_basic_tab();
+        ) = super::general_tab::create_basic_tab();
         // Wrap basic grid in ScrolledWindow for consistent styling
         let basic_scrolled = ScrolledWindow::builder()
             .hscrollbar_policy(gtk4::PolicyType::Never)
@@ -461,6 +468,10 @@ impl ConnectionDialog {
             rdp_scale_override_dropdown,
             rdp_audio_check,
             rdp_gateway_entry,
+            rdp_gateway_port_spin,
+            rdp_gateway_username_entry,
+            rdp_disable_nla_check,
+            rdp_clipboard_check,
             rdp_shared_folders,
             rdp_shared_folders_list,
             rdp_custom_args_entry,
@@ -473,7 +484,7 @@ impl ConnectionDialog {
             vnc_box,
             vnc_client_mode_dropdown,
             vnc_performance_mode_dropdown,
-            vnc_encoding_entry,
+            vnc_encoding_dropdown,
             vnc_compression_spin,
             vnc_quality_spin,
             vnc_view_only_check,
@@ -494,6 +505,7 @@ impl ConnectionDialog {
             spice_usb_check,
             spice_clipboard_check,
             spice_compression_dropdown,
+            spice_proxy_entry,
             spice_shared_folders,
             spice_shared_folders_list,
         ) = Self::create_spice_options();
@@ -518,6 +530,8 @@ impl ConnectionDialog {
             zt_oci_bastion_id_entry,
             zt_oci_target_id_entry,
             zt_oci_target_ip_entry,
+            zt_oci_ssh_key_entry,
+            zt_oci_session_ttl_spin,
             zt_cf_hostname_entry,
             zt_teleport_host_entry,
             zt_teleport_cluster_entry,
@@ -584,6 +598,8 @@ impl ConnectionDialog {
             &password_source_dropdown,
             &password_source_label,
             &password_row,
+            &domain_entry,
+            &domain_label,
         );
 
         // === Data Tab (Variables + Custom Properties) ===
@@ -593,7 +609,7 @@ impl ConnectionDialog {
             add_variable_button,
             custom_properties_list,
             add_custom_property_button,
-        ) = Self::create_data_tab();
+        ) = super::data_tab::create_data_tab();
         view_stack
             .add_titled(&data_tab, Some("data"), &i18n("Data"))
             .set_icon_name(Some("accessories-text-editor-symbolic"));
@@ -625,7 +641,7 @@ impl ConnectionDialog {
             post_disconnect_command_entry,
             post_disconnect_timeout_spin,
             post_disconnect_last_only_check,
-        ) = Self::create_automation_combined_tab();
+        ) = super::automation_tab::create_automation_combined_tab();
         view_stack
             .add_titled(&automation_tab, Some("automation"), &i18n("Automation"))
             .set_icon_name(Some("system-run-symbolic"));
@@ -642,7 +658,7 @@ impl ConnectionDialog {
             wol_broadcast_entry,
             wol_port_spin,
             wol_wait_spin,
-        ) = Self::create_advanced_tab();
+        ) = super::advanced_tab::create_advanced_tab();
         view_stack
             .add_titled(&advanced_tab, Some("advanced"), &i18n("Advanced"))
             .set_icon_name(Some("preferences-system-symbolic"));
@@ -726,12 +742,16 @@ impl ConnectionDialog {
             &rdp_scale_override_dropdown,
             &rdp_audio_check,
             &rdp_gateway_entry,
+            &rdp_gateway_port_spin,
+            &rdp_gateway_username_entry,
+            &rdp_disable_nla_check,
+            &rdp_clipboard_check,
             &rdp_shared_folders,
             &rdp_custom_args_entry,
             &rdp_keyboard_layout_dropdown,
             &vnc_client_mode_dropdown,
             &vnc_performance_mode_dropdown,
-            &vnc_encoding_entry,
+            &vnc_encoding_dropdown,
             &vnc_compression_spin,
             &vnc_quality_spin,
             &vnc_view_only_check,
@@ -745,6 +765,7 @@ impl ConnectionDialog {
             &spice_usb_check,
             &spice_clipboard_check,
             &spice_compression_dropdown,
+            &spice_proxy_entry,
             &spice_shared_folders,
             &zt_provider_dropdown,
             &zt_aws_target_entry,
@@ -761,6 +782,8 @@ impl ConnectionDialog {
             &zt_oci_bastion_id_entry,
             &zt_oci_target_id_entry,
             &zt_oci_target_ip_entry,
+            &zt_oci_ssh_key_entry,
+            &zt_oci_session_ttl_spin,
             &zt_cf_hostname_entry,
             &zt_teleport_host_entry,
             &zt_teleport_cluster_entry,
@@ -862,13 +885,17 @@ impl ConnectionDialog {
             rdp_scale_override_dropdown,
             rdp_audio_check,
             rdp_gateway_entry,
+            rdp_gateway_port_spin,
+            rdp_gateway_username_entry,
+            rdp_disable_nla_check,
+            rdp_clipboard_check,
             rdp_shared_folders,
             rdp_shared_folders_list,
             rdp_custom_args_entry,
             rdp_keyboard_layout_dropdown,
             vnc_client_mode_dropdown,
             vnc_performance_mode_dropdown,
-            vnc_encoding_entry,
+            vnc_encoding_dropdown,
             vnc_compression_spin,
             vnc_quality_spin,
             vnc_view_only_check,
@@ -888,6 +915,7 @@ impl ConnectionDialog {
             spice_usb_check,
             spice_clipboard_check,
             spice_compression_dropdown,
+            spice_proxy_entry,
             spice_shared_folders,
             spice_shared_folders_list,
             zt_provider_dropdown,
@@ -906,6 +934,8 @@ impl ConnectionDialog {
             zt_oci_bastion_id_entry,
             zt_oci_target_id_entry,
             zt_oci_target_ip_entry,
+            zt_oci_ssh_key_entry,
+            zt_oci_session_ttl_spin,
             zt_cf_hostname_entry,
             zt_teleport_host_entry,
             zt_teleport_cluster_entry,
@@ -1277,6 +1307,28 @@ impl ConnectionDialog {
             );
         });
 
+        // Reverse sync: when SSH auth switches to Password(0) but password_source is None(4),
+        // auto-switch password_source to Prompt(0)
+        {
+            let password_source_dropdown = result.password_source_dropdown.clone();
+            let protocol_dropdown = result.protocol_dropdown.clone();
+            let password_row = result.password_row.clone();
+            let variable_row = result.variable_row.clone();
+            result
+                .ssh_auth_dropdown
+                .connect_selected_notify(move |dropdown| {
+                    if dropdown.selected() == 0
+                        && protocol_dropdown.selected() == 0
+                        && password_source_dropdown.selected() == 4
+                    {
+                        password_source_dropdown.set_selected(0);
+                        // Update visibility to match Prompt(0)
+                        password_row.set_visible(false);
+                        variable_row.set_visible(false);
+                    }
+                });
+        }
+
         result
     }
 
@@ -1421,6 +1473,8 @@ impl ConnectionDialog {
         password_source_dropdown: &DropDown,
         password_source_label: &Label,
         password_row: &GtkBox,
+        domain_entry: &Entry,
+        domain_label: &Label,
     ) {
         let stack_clone = stack.clone();
         let port_clone = port_spin.clone();
@@ -1434,6 +1488,8 @@ impl ConnectionDialog {
         let password_source_dropdown = password_source_dropdown.clone();
         let password_source_label = password_source_label.clone();
         let password_row = password_row.clone();
+        let domain_entry = domain_entry.clone();
+        let domain_label = domain_label.clone();
 
         dropdown.connect_selected_notify(move |dropdown| {
             let protocols = [
@@ -1482,6 +1538,11 @@ impl ConnectionDialog {
                 if hide_network {
                     password_row.set_visible(false);
                 }
+
+                // Domain only relevant for RDP (GEN-2)
+                let is_rdp = protocol_id == "rdp";
+                domain_entry.set_visible(is_rdp);
+                domain_label.set_visible(is_rdp);
             }
         });
     }
@@ -1553,12 +1614,16 @@ impl ConnectionDialog {
         rdp_scale_override_dropdown: &DropDown,
         rdp_audio_check: &CheckButton,
         rdp_gateway_entry: &Entry,
+        rdp_gateway_port_spin: &SpinButton,
+        rdp_gateway_username_entry: &Entry,
+        rdp_disable_nla_check: &CheckButton,
+        rdp_clipboard_check: &CheckButton,
         rdp_shared_folders: &Rc<RefCell<Vec<SharedFolder>>>,
         rdp_custom_args_entry: &Entry,
         rdp_keyboard_layout_dropdown: &DropDown,
         vnc_client_mode_dropdown: &DropDown,
         vnc_performance_mode_dropdown: &DropDown,
-        vnc_encoding_entry: &Entry,
+        vnc_encoding_dropdown: &DropDown,
         vnc_compression_spin: &SpinButton,
         vnc_quality_spin: &SpinButton,
         vnc_view_only_check: &CheckButton,
@@ -1572,6 +1637,7 @@ impl ConnectionDialog {
         spice_usb_check: &CheckButton,
         spice_clipboard_check: &CheckButton,
         spice_compression_dropdown: &DropDown,
+        spice_proxy_entry: &Entry,
         spice_shared_folders: &Rc<RefCell<Vec<SharedFolder>>>,
         zt_provider_dropdown: &DropDown,
         zt_aws_target_entry: &adw::EntryRow,
@@ -1588,6 +1654,8 @@ impl ConnectionDialog {
         zt_oci_bastion_id_entry: &adw::EntryRow,
         zt_oci_target_id_entry: &adw::EntryRow,
         zt_oci_target_ip_entry: &adw::EntryRow,
+        zt_oci_ssh_key_entry: &adw::EntryRow,
+        zt_oci_session_ttl_spin: &adw::SpinRow,
         zt_cf_hostname_entry: &adw::EntryRow,
         zt_teleport_host_entry: &adw::EntryRow,
         zt_teleport_cluster_entry: &adw::EntryRow,
@@ -1677,12 +1745,16 @@ impl ConnectionDialog {
         let rdp_scale_override_dropdown = rdp_scale_override_dropdown.clone();
         let rdp_audio_check = rdp_audio_check.clone();
         let rdp_gateway_entry = rdp_gateway_entry.clone();
+        let rdp_gateway_port_spin = rdp_gateway_port_spin.clone();
+        let rdp_gateway_username_entry = rdp_gateway_username_entry.clone();
+        let rdp_disable_nla_check = rdp_disable_nla_check.clone();
+        let rdp_clipboard_check = rdp_clipboard_check.clone();
         let rdp_shared_folders = rdp_shared_folders.clone();
         let rdp_custom_args_entry = rdp_custom_args_entry.clone();
         let rdp_keyboard_layout_dropdown = rdp_keyboard_layout_dropdown.clone();
         let rdp_performance_mode_dropdown = rdp_performance_mode_dropdown.clone();
         let vnc_client_mode_dropdown = vnc_client_mode_dropdown.clone();
-        let vnc_encoding_entry = vnc_encoding_entry.clone();
+        let vnc_encoding_dropdown = vnc_encoding_dropdown.clone();
         let vnc_compression_spin = vnc_compression_spin.clone();
         let vnc_quality_spin = vnc_quality_spin.clone();
         let vnc_view_only_check = vnc_view_only_check.clone();
@@ -1697,6 +1769,7 @@ impl ConnectionDialog {
         let spice_usb_check = spice_usb_check.clone();
         let spice_clipboard_check = spice_clipboard_check.clone();
         let spice_compression_dropdown = spice_compression_dropdown.clone();
+        let spice_proxy_entry = spice_proxy_entry.clone();
         let spice_shared_folders = spice_shared_folders.clone();
         let zt_provider_dropdown = zt_provider_dropdown.clone();
         let zt_aws_target_entry = zt_aws_target_entry.clone();
@@ -1713,6 +1786,8 @@ impl ConnectionDialog {
         let zt_oci_bastion_id_entry = zt_oci_bastion_id_entry.clone();
         let zt_oci_target_id_entry = zt_oci_target_id_entry.clone();
         let zt_oci_target_ip_entry = zt_oci_target_ip_entry.clone();
+        let zt_oci_ssh_key_entry = zt_oci_ssh_key_entry.clone();
+        let zt_oci_session_ttl_spin = zt_oci_session_ttl_spin.clone();
         let zt_cf_hostname_entry = zt_cf_hostname_entry.clone();
         let zt_teleport_host_entry = zt_teleport_host_entry.clone();
         let zt_teleport_cluster_entry = zt_teleport_cluster_entry.clone();
@@ -1746,6 +1821,10 @@ impl ConnectionDialog {
         let logging_timestamp_dropdown = logging_tab.timestamp_dropdown.clone();
         let logging_max_size_spin = logging_tab.max_size_spin.clone();
         let logging_retention_spin = logging_tab.retention_spin.clone();
+        let logging_activity_check = logging_tab.log_activity_check.clone();
+        let logging_input_check = logging_tab.log_input_check.clone();
+        let logging_output_check = logging_tab.log_output_check.clone();
+        let logging_timestamps_check = logging_tab.log_timestamps_check.clone();
         let expect_rules = expect_rules.clone();
         let pre_connect_enabled_check = pre_connect_enabled_check.clone();
         let pre_connect_command_entry = pre_connect_command_entry.clone();
@@ -1810,11 +1889,15 @@ impl ConnectionDialog {
                 rdp_scale_override_dropdown: &rdp_scale_override_dropdown,
                 rdp_audio_check: &rdp_audio_check,
                 rdp_gateway_entry: &rdp_gateway_entry,
+                rdp_gateway_port_spin: &rdp_gateway_port_spin,
+                rdp_gateway_username_entry: &rdp_gateway_username_entry,
+                rdp_disable_nla_check: &rdp_disable_nla_check,
+                rdp_clipboard_check: &rdp_clipboard_check,
                 rdp_shared_folders: &rdp_shared_folders,
                 rdp_custom_args_entry: &rdp_custom_args_entry,
                 rdp_keyboard_layout_dropdown: &rdp_keyboard_layout_dropdown,
                 vnc_client_mode_dropdown: &vnc_client_mode_dropdown,
-                vnc_encoding_entry: &vnc_encoding_entry,
+                vnc_encoding_dropdown: &vnc_encoding_dropdown,
                 vnc_compression_spin: &vnc_compression_spin,
                 vnc_quality_spin: &vnc_quality_spin,
                 vnc_view_only_check: &vnc_view_only_check,
@@ -1828,6 +1911,7 @@ impl ConnectionDialog {
                 spice_usb_check: &spice_usb_check,
                 spice_clipboard_check: &spice_clipboard_check,
                 spice_compression_dropdown: &spice_compression_dropdown,
+                spice_proxy_entry: &spice_proxy_entry,
                 spice_shared_folders: &spice_shared_folders,
                 zt_provider_dropdown: &zt_provider_dropdown,
                 zt_aws_target_entry: &zt_aws_target_entry,
@@ -1844,6 +1928,8 @@ impl ConnectionDialog {
                 zt_oci_bastion_id_entry: &zt_oci_bastion_id_entry,
                 zt_oci_target_id_entry: &zt_oci_target_id_entry,
                 zt_oci_target_ip_entry: &zt_oci_target_ip_entry,
+                zt_oci_ssh_key_entry: &zt_oci_ssh_key_entry,
+                zt_oci_session_ttl_spin: &zt_oci_session_ttl_spin,
                 zt_cf_hostname_entry: &zt_cf_hostname_entry,
                 zt_teleport_host_entry: &zt_teleport_host_entry,
                 zt_teleport_cluster_entry: &zt_teleport_cluster_entry,
@@ -1878,6 +1964,10 @@ impl ConnectionDialog {
                     timestamp_dropdown: logging_timestamp_dropdown.clone(),
                     max_size_spin: logging_max_size_spin.clone(),
                     retention_spin: logging_retention_spin.clone(),
+                    log_activity_check: logging_activity_check.clone(),
+                    log_input_check: logging_input_check.clone(),
+                    log_output_check: logging_output_check.clone(),
+                    log_timestamps_check: logging_timestamps_check.clone(),
                 },
                 expect_rules: &collected_expect_rules,
                 pre_connect_enabled_check: &pre_connect_enabled_check,
@@ -1920,443 +2010,6 @@ impl ConnectionDialog {
         });
     }
 
-    #[allow(clippy::type_complexity)]
-    fn create_basic_tab() -> (
-        GtkBox,
-        Entry,
-        Entry,
-        TextView,
-        Entry,
-        Label,
-        SpinButton,
-        Label,
-        Entry,
-        Label,
-        Entry,
-        Label,
-        Entry,
-        Label,
-        DropDown,
-        DropDown,
-        Label,
-        Entry,
-        Label,
-        Button,
-        Button,
-        GtkBox,
-        DropDown,
-        GtkBox,
-        DropDown,
-        Button,
-        Button,
-    ) {
-        let vbox = GtkBox::new(Orientation::Vertical, 8);
-        vbox.set_margin_top(12);
-        vbox.set_margin_bottom(12);
-        vbox.set_margin_start(12);
-        vbox.set_margin_end(12);
-
-        let grid = Grid::builder().row_spacing(8).column_spacing(12).build();
-        vbox.append(&grid);
-
-        let mut row = 0;
-
-        // Name
-        let name_label = Label::builder()
-            .label(i18n("Name:"))
-            .halign(gtk4::Align::End)
-            .build();
-        let name_entry = Entry::builder()
-            .placeholder_text(i18n("Connection name"))
-            .hexpand(true)
-            .build();
-        grid.attach(&name_label, 0, row, 1, 1);
-        grid.attach(&name_entry, 1, row, 2, 1);
-        row += 1;
-
-        // Icon (emoji or GTK icon name)
-        let icon_label = Label::builder()
-            .label(i18n("Icon:"))
-            .halign(gtk4::Align::End)
-            .build();
-        let icon_entry = Entry::builder()
-            .placeholder_text(i18n("Emoji or icon name (optional)"))
-            .hexpand(true)
-            .max_width_chars(30)
-            .build();
-        icon_entry.set_tooltip_text(Some(&i18n(
-            "Enter an emoji (e.g. 🇺🇦) or GTK icon name (e.g. starred-symbolic)",
-        )));
-        grid.attach(&icon_label, 0, row, 1, 1);
-        grid.attach(&icon_entry, 1, row, 2, 1);
-        row += 1;
-
-        // Protocol
-        let protocol_label_grid = Label::builder()
-            .label(i18n("Protocol:"))
-            .halign(gtk4::Align::End)
-            .build();
-        let protocol_items: Vec<String> = vec![
-            "SSH".to_string(),
-            "RDP".to_string(),
-            "VNC".to_string(),
-            "SPICE".to_string(),
-            i18n("Zero Trust"),
-            "Telnet".to_string(),
-            "Serial".to_string(),
-            "SFTP".to_string(),
-            "Kubernetes".to_string(),
-        ];
-        let protocol_strs: Vec<&str> = protocol_items.iter().map(String::as_str).collect();
-        let protocol_list = StringList::new(&protocol_strs);
-        let protocol_dropdown = DropDown::builder().model(&protocol_list).build();
-        protocol_dropdown.set_selected(0);
-        grid.attach(&protocol_label_grid, 0, row, 1, 1);
-        grid.attach(&protocol_dropdown, 1, row, 2, 1);
-        row += 1;
-
-        // Host
-        let host_label = Label::builder()
-            .label(i18n("Host:"))
-            .halign(gtk4::Align::End)
-            .build();
-        let host_entry = Entry::builder()
-            .placeholder_text(i18n("hostname or IP"))
-            .hexpand(true)
-            .build();
-        grid.attach(&host_label, 0, row, 1, 1);
-        grid.attach(&host_entry, 1, row, 2, 1);
-        row += 1;
-
-        // Port with description
-        let port_label = Label::builder()
-            .label(i18n("Port:"))
-            .halign(gtk4::Align::End)
-            .build();
-        let port_adj = gtk4::Adjustment::new(22.0, 1.0, 65535.0, 1.0, 10.0, 0.0);
-        let port_spin = SpinButton::builder()
-            .adjustment(&port_adj)
-            .climb_rate(1.0)
-            .digits(0)
-            .build();
-        let port_desc = Label::builder()
-            .label(i18n("SSH, Well-Known"))
-            .css_classes(["dim-label"])
-            .build();
-        let port_box = GtkBox::new(Orientation::Horizontal, 8);
-        port_box.append(&port_spin);
-        port_box.append(&port_desc);
-        grid.attach(&port_label, 0, row, 1, 1);
-        grid.attach(&port_box, 1, row, 2, 1);
-        row += 1;
-
-        // Update port description when port changes
-        let port_desc_clone = port_desc.clone();
-        port_spin.connect_value_changed(move |spin| {
-            #[allow(clippy::cast_sign_loss)]
-            let port = spin.value() as u16;
-            let desc = Self::get_port_description(port);
-            port_desc_clone.set_label(&desc);
-        });
-
-        // Username
-        let username_label = Label::builder()
-            .label(i18n("Username:"))
-            .halign(gtk4::Align::End)
-            .build();
-        let current_user = std::env::var("USER").unwrap_or_default();
-        let username_entry = Entry::builder()
-            .placeholder_text(&format!("(default: {current_user})"))
-            .hexpand(true)
-            .build();
-        grid.attach(&username_label, 0, row, 1, 1);
-
-        let username_load_button = Button::builder()
-            .icon_name("folder-download-symbolic")
-            .tooltip_text(i18n("Load from selected group"))
-            .sensitive(false)
-            .build();
-        let username_box = GtkBox::new(Orientation::Horizontal, 4);
-        username_box.append(&username_entry);
-        username_box.append(&username_load_button);
-
-        grid.attach(&username_box, 1, row, 2, 1);
-        row += 1;
-
-        // Domain (for RDP/Windows authentication)
-        let domain_label = Label::builder()
-            .label(i18n("Domain:"))
-            .halign(gtk4::Align::End)
-            .build();
-        let domain_entry = Entry::builder()
-            .placeholder_text(i18n("Optional (e.g., WORKGROUP)"))
-            .hexpand(true)
-            .build();
-        grid.attach(&domain_label, 0, row, 1, 1);
-
-        let domain_load_button = Button::builder()
-            .icon_name("folder-download-symbolic")
-            .tooltip_text(i18n("Load from selected group"))
-            .sensitive(false)
-            .build();
-        let domain_box = GtkBox::new(Orientation::Horizontal, 4);
-        domain_box.append(&domain_entry);
-        domain_box.append(&domain_load_button);
-
-        grid.attach(&domain_box, 1, row, 2, 1);
-        row += 1;
-
-        // Password Source
-        let password_source_label = Label::builder()
-            .label(i18n("Password:"))
-            .halign(gtk4::Align::End)
-            .build();
-        let pw_src_items: Vec<String> = vec![
-            i18n("Prompt"),
-            i18n("Vault"),
-            i18n("Variable"),
-            i18n("Inherit"),
-            i18n("None"),
-        ];
-        let pw_src_strs: Vec<&str> = pw_src_items.iter().map(String::as_str).collect();
-        let password_source_list = StringList::new(&pw_src_strs);
-        let password_source_dropdown = DropDown::builder().model(&password_source_list).build();
-        password_source_dropdown.set_selected(0);
-        grid.attach(&password_source_label, 0, row, 1, 1);
-        grid.attach(&password_source_dropdown, 1, row, 2, 1);
-        row += 1;
-
-        // Password with visibility toggle - use grid row for proper alignment
-        let password_entry_label = Label::builder()
-            .label(i18n("Value:"))
-            .halign(gtk4::Align::End)
-            .build();
-        let password_entry = Entry::builder()
-            .placeholder_text(i18n("Password value"))
-            .hexpand(true)
-            .visibility(false)
-            .build();
-        let password_visibility_button = Button::builder()
-            .icon_name("view-reveal-symbolic")
-            .tooltip_text(i18n("Show/hide password"))
-            .build();
-        let password_load_button = Button::builder()
-            .icon_name("document-open-symbolic")
-            .tooltip_text(i18n("Load password from vault"))
-            .build();
-        let password_box = GtkBox::new(Orientation::Horizontal, 4);
-        password_box.append(&password_entry);
-        password_box.append(&password_visibility_button);
-        password_box.append(&password_load_button);
-        password_box.set_hexpand(true);
-
-        // Password row container - wraps label and entry box for show/hide
-        let password_row = GtkBox::new(Orientation::Horizontal, 0);
-        password_row.set_visible(false);
-        // Attach label and password box to grid for proper alignment
-        grid.attach(&password_entry_label, 0, row, 1, 1);
-        grid.attach(&password_box, 1, row, 2, 1);
-        // Bind visibility of label and box to password_row visibility
-        password_row
-            .bind_property("visible", &password_entry_label, "visible")
-            .sync_create()
-            .build();
-        password_row
-            .bind_property("visible", &password_box, "visible")
-            .sync_create()
-            .build();
-        row += 1;
-
-        // Variable name dropdown — shown when password source is Variable
-        let variable_label = Label::builder()
-            .label(i18n("Variable:"))
-            .halign(gtk4::Align::End)
-            .build();
-        let variable_name_list = StringList::new(&[]);
-        let variable_dropdown = DropDown::builder().model(&variable_name_list).build();
-        let variable_row = GtkBox::new(Orientation::Horizontal, 0);
-        variable_row.set_visible(false);
-        grid.attach(&variable_label, 0, row, 1, 1);
-        grid.attach(&variable_dropdown, 1, row, 2, 1);
-        variable_row
-            .bind_property("visible", &variable_label, "visible")
-            .sync_create()
-            .build();
-        variable_row
-            .bind_property("visible", &variable_dropdown, "visible")
-            .sync_create()
-            .build();
-        row += 1;
-
-        // Tags
-        let tags_label = Label::builder()
-            .label(i18n("Tags:"))
-            .halign(gtk4::Align::End)
-            .build();
-        let tags_entry = Entry::builder()
-            .placeholder_text(i18n("tag1, tag2, ..."))
-            .hexpand(true)
-            .build();
-        grid.attach(&tags_label, 0, row, 1, 1);
-        grid.attach(&tags_entry, 1, row, 2, 1);
-        row += 1;
-
-        // Group
-        let group_label = Label::builder()
-            .label(i18n("Group:"))
-            .halign(gtk4::Align::End)
-            .build();
-        let group_items: Vec<String> = vec![i18n("(Root)")];
-        let group_strs: Vec<&str> = group_items.iter().map(String::as_str).collect();
-        let group_list = StringList::new(&group_strs);
-        let group_dropdown = DropDown::builder().model(&group_list).build();
-        grid.attach(&group_label, 0, row, 1, 1);
-        grid.attach(&group_dropdown, 1, row, 2, 1);
-        row += 1;
-
-        // Description
-        let desc_label = Label::builder()
-            .label(i18n("Description:"))
-            .halign(gtk4::Align::End)
-            .valign(gtk4::Align::Start)
-            .build();
-        let description_view = TextView::builder()
-            .hexpand(true)
-            .vexpand(false)
-            .wrap_mode(WrapMode::Word)
-            .accepts_tab(false)
-            .top_margin(8)
-            .bottom_margin(8)
-            .left_margin(8)
-            .right_margin(8)
-            .build();
-        let desc_scrolled = ScrolledWindow::builder()
-            .hscrollbar_policy(gtk4::PolicyType::Never)
-            .vscrollbar_policy(gtk4::PolicyType::Automatic)
-            .min_content_height(144)
-            .hexpand(true)
-            .child(&description_view)
-            .build();
-        grid.attach(&desc_label, 0, row, 1, 1);
-        grid.attach(&desc_scrolled, 1, row, 2, 1);
-
-        // Accessible label relations for screen readers (A11Y-01)
-        icon_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-            icon_label.upcast_ref()
-        ])]);
-        name_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-            name_label.upcast_ref()
-        ])]);
-        protocol_dropdown.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-            protocol_label_grid.upcast_ref(),
-        ])]);
-        host_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-            host_label.upcast_ref()
-        ])]);
-        port_spin.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-            port_label.upcast_ref()
-        ])]);
-        username_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-            username_label.upcast_ref(),
-        ])]);
-        domain_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-            domain_label.upcast_ref()
-        ])]);
-        password_source_dropdown.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-            password_source_label.upcast_ref(),
-        ])]);
-        password_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-            password_entry_label.upcast_ref(),
-        ])]);
-        variable_dropdown.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-            variable_label.upcast_ref(),
-        ])]);
-        tags_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-            tags_label.upcast_ref()
-        ])]);
-        group_dropdown.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-            group_label.upcast_ref()
-        ])]);
-        description_view.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-            desc_label.upcast_ref()
-        ])]);
-
-        (
-            vbox,
-            name_entry,
-            icon_entry,
-            description_view,
-            host_entry,
-            host_label,
-            port_spin,
-            port_label,
-            username_entry,
-            username_label,
-            domain_entry,
-            domain_label,
-            tags_entry,
-            tags_label,
-            protocol_dropdown,
-            password_source_dropdown,
-            password_source_label,
-            password_entry,
-            password_entry_label,
-            password_visibility_button,
-            password_load_button,
-            password_row,
-            variable_dropdown,
-            variable_row,
-            group_dropdown,
-            username_load_button,
-            domain_load_button,
-        )
-    }
-
-    /// Returns a description for the given port number
-    fn get_port_description(port: u16) -> String {
-        // Well-known service ports
-        let service = match port {
-            22 => "SSH",
-            23 => "Telnet",
-            25 => "SMTP",
-            53 => "DNS",
-            80 => "HTTP",
-            110 => "POP3",
-            143 => "IMAP",
-            443 => "HTTPS",
-            445 => "SMB",
-            993 => "IMAPS",
-            995 => "POP3S",
-            3306 => "MySQL",
-            3389 => "RDP",
-            5432 => "PostgreSQL",
-            5900 => "VNC",
-            5901..=5909 => "VNC",
-            5985 => "WinRM HTTP",
-            5986 => "WinRM HTTPS",
-            6379 => "Redis",
-            8080 => "HTTP Alt",
-            8443 => "HTTPS Alt",
-            27017 => "MongoDB",
-            _ => "",
-        };
-
-        // Port range category
-        let range = if port <= 1023 {
-            "Well-Known"
-        } else if port <= 49151 {
-            "Registered"
-        } else {
-            "Dynamic"
-        };
-
-        if service.is_empty() {
-            range.to_string()
-        } else {
-            format!("{service}, {range}")
-        }
-    }
-
     fn create_rdp_options() -> (
         GtkBox,
         DropDown,
@@ -2367,6 +2020,10 @@ impl ConnectionDialog {
         DropDown,
         CheckButton,
         Entry,
+        SpinButton,
+        Entry,
+        CheckButton,
+        CheckButton,
         Rc<RefCell<Vec<SharedFolder>>>,
         gtk4::ListBox,
         Entry,
@@ -2507,17 +2164,29 @@ impl ConnectionDialog {
         let resolution_row_clone = resolution_row.clone();
         let color_row_clone = color_row.clone();
         let scale_row_clone = scale_row.clone();
+        // RDP-1: Info row about embedded dynamic resolution
+        let embedded_info_row = adw::ActionRow::builder()
+            .title(i18n("Dynamic Resolution"))
+            .subtitle(i18n("Embedded mode automatically matches window size"))
+            .activatable(false)
+            .build();
+        embedded_info_row.add_prefix(&gtk4::Image::from_icon_name("dialog-information-symbolic"));
+        display_group.add(&embedded_info_row);
+
+        let embedded_info_clone = embedded_info_row.clone();
         client_mode_dropdown.connect_selected_notify(move |dropdown| {
             let is_embedded = dropdown.selected() == 0;
             resolution_row_clone.set_visible(!is_embedded);
             color_row_clone.set_visible(!is_embedded);
             scale_row_clone.set_visible(is_embedded);
+            embedded_info_clone.set_visible(is_embedded);
         });
 
         // Set initial state (Embedded - hide resolution/color, show scale)
         resolution_row.set_visible(false);
         color_row.set_visible(false);
         scale_row.set_visible(true);
+        embedded_info_row.set_visible(true);
 
         content.append(&display_group);
 
@@ -2536,6 +2205,26 @@ impl ConnectionDialog {
         audio_row.add_suffix(&audio_check);
         features_group.add(&audio_row);
 
+        // Clipboard sharing
+        let clipboard_check = CheckButton::builder().active(true).build();
+        let clipboard_row = adw::ActionRow::builder()
+            .title(i18n("Clipboard Sharing"))
+            .subtitle(i18n("Synchronize clipboard with remote"))
+            .activatable_widget(&clipboard_check)
+            .build();
+        clipboard_row.add_suffix(&clipboard_check);
+        features_group.add(&clipboard_row);
+
+        // Disable NLA
+        let disable_nla_check = CheckButton::new();
+        let nla_row = adw::ActionRow::builder()
+            .title(i18n("Disable NLA"))
+            .subtitle(i18n("Skip Network Level Authentication (less secure)"))
+            .activatable_widget(&disable_nla_check)
+            .build();
+        nla_row.add_suffix(&disable_nla_check);
+        features_group.add(&nla_row);
+
         // Gateway
         let gateway_entry = Entry::builder()
             .hexpand(true)
@@ -2549,6 +2238,45 @@ impl ConnectionDialog {
             .build();
         gateway_row.add_suffix(&gateway_entry);
         features_group.add(&gateway_row);
+
+        // Gateway port
+        let gw_port_adj = gtk4::Adjustment::new(443.0, 1.0, 65535.0, 1.0, 10.0, 0.0);
+        let gateway_port_spin = SpinButton::builder()
+            .adjustment(&gw_port_adj)
+            .climb_rate(1.0)
+            .digits(0)
+            .valign(gtk4::Align::Center)
+            .build();
+        let gw_port_row = adw::ActionRow::builder()
+            .title(i18n("Gateway Port"))
+            .subtitle(i18n("Default: 443"))
+            .build();
+        gw_port_row.add_suffix(&gateway_port_spin);
+        features_group.add(&gw_port_row);
+
+        // Gateway username
+        let gateway_username_entry = Entry::builder()
+            .hexpand(true)
+            .placeholder_text(i18n("Same as connection username"))
+            .valign(gtk4::Align::Center)
+            .build();
+        let gw_user_row = adw::ActionRow::builder()
+            .title(i18n("Gateway Username"))
+            .subtitle(i18n("If different from connection username"))
+            .build();
+        gw_user_row.add_suffix(&gateway_username_entry);
+        features_group.add(&gw_user_row);
+
+        // Show/hide gateway details based on gateway hostname
+        let gw_port_row_clone = gw_port_row.clone();
+        let gw_user_row_clone = gw_user_row.clone();
+        gw_port_row.set_visible(false);
+        gw_user_row.set_visible(false);
+        gateway_entry.connect_changed(move |entry| {
+            let visible = !entry.text().is_empty();
+            gw_port_row_clone.set_visible(visible);
+            gw_user_row_clone.set_visible(visible);
+        });
 
         content.append(&features_group);
 
@@ -2688,6 +2416,10 @@ impl ConnectionDialog {
             scale_override_dropdown,
             audio_check,
             gateway_entry,
+            gateway_port_spin,
+            gateway_username_entry,
+            disable_nla_check,
+            clipboard_check,
             shared_folders,
             folders_list,
             args_entry,
@@ -2791,7 +2523,7 @@ impl ConnectionDialog {
         GtkBox,
         DropDown,
         DropDown,
-        Entry,
+        DropDown,
         SpinButton,
         SpinButton,
         CheckButton,
@@ -2864,18 +2596,29 @@ impl ConnectionDialog {
         performance_mode_row.add_suffix(&performance_mode_dropdown);
         display_group.add(&performance_mode_row);
 
-        // Encoding
-        let encoding_entry = Entry::builder()
-            .hexpand(true)
-            .placeholder_text("tight, zrle, hextile")
+        // VNC-1: Encoding dropdown instead of free text entry
+        let encoding_items: Vec<String> = vec![
+            i18n("Auto"),
+            "Tight".to_string(),
+            "ZRLE".to_string(),
+            "Hextile".to_string(),
+            "Raw".to_string(),
+            "CopyRect".to_string(),
+        ];
+        let encoding_strs: Vec<&str> = encoding_items.iter().map(String::as_str).collect();
+        let encoding_list = StringList::new(&encoding_strs);
+        let encoding_dropdown = DropDown::builder()
+            .model(&encoding_list)
             .valign(gtk4::Align::Center)
             .build();
 
         let encoding_row = adw::ActionRow::builder()
             .title(i18n("Encoding"))
-            .subtitle(i18n("Preferred encoding methods (comma-separated)"))
+            .subtitle(i18n(
+                "Preferred encoding method (overrides Performance Mode)",
+            ))
             .build();
-        encoding_row.add_suffix(&encoding_entry);
+        encoding_row.add_suffix(&encoding_dropdown);
         display_group.add(&encoding_row);
 
         // Scale override dropdown (for embedded mode)
@@ -2942,6 +2685,19 @@ impl ConnectionDialog {
         quality_row.add_suffix(&quality_spin);
         quality_group.add(&quality_row);
 
+        // VNC-2: Sync compression/quality with Performance Mode changes
+        let compression_spin_sync = compression_spin.clone();
+        let quality_spin_sync = quality_spin.clone();
+        performance_mode_dropdown.connect_selected_notify(move |dropdown| {
+            let (comp, qual) = match dropdown.selected() {
+                0 => (0.0, 9.0), // Quality
+                2 => (9.0, 0.0), // Speed
+                _ => (5.0, 5.0), // Balanced
+            };
+            compression_spin_sync.set_value(comp);
+            quality_spin_sync.set_value(qual);
+        });
+
         content.append(&quality_group);
 
         // === Features Group ===
@@ -2981,6 +2737,15 @@ impl ConnectionDialog {
         clipboard_row.add_suffix(&clipboard_check);
         features_group.add(&clipboard_row);
 
+        // VNC-3: Password info row
+        let password_info_row = adw::ActionRow::builder()
+            .title(i18n("Authentication"))
+            .subtitle(i18n("VNC uses the connection password for authentication"))
+            .activatable(false)
+            .build();
+        password_info_row.add_prefix(&gtk4::Image::from_icon_name("dialog-information-symbolic"));
+        features_group.add(&password_info_row);
+
         content.append(&features_group);
 
         // === Advanced Group ===
@@ -3013,7 +2778,7 @@ impl ConnectionDialog {
             vbox,
             client_mode_dropdown,
             performance_mode_dropdown,
-            encoding_entry,
+            encoding_dropdown,
             compression_spin,
             quality_spin,
             view_only_check,
@@ -3035,6 +2800,7 @@ impl ConnectionDialog {
         CheckButton,
         CheckButton,
         DropDown,
+        Entry,
         Rc<RefCell<Vec<SharedFolder>>>,
         gtk4::ListBox,
     ) {
@@ -3090,6 +2856,25 @@ impl ConnectionDialog {
             .build();
         ca_cert_row.add_suffix(&ca_cert_box);
         security_group.add(&ca_cert_row);
+
+        // SPICE-2: Inline file validation for CA certificate path
+        ca_cert_entry.connect_changed(move |entry| {
+            let path_text = entry.text();
+            let path_str = path_text.trim();
+            if path_str.is_empty() {
+                entry.remove_css_class("error");
+                entry.set_tooltip_text(None);
+            } else {
+                let path = std::path::Path::new(path_str);
+                if path.exists() {
+                    entry.remove_css_class("error");
+                    entry.set_tooltip_text(None);
+                } else {
+                    entry.add_css_class("error");
+                    entry.set_tooltip_text(Some(&i18n("File not found")));
+                }
+            }
+        });
 
         // Skip certificate verification
         let skip_verify_check = CheckButton::new();
@@ -3150,7 +2935,36 @@ impl ConnectionDialog {
         compression_row.add_suffix(&compression_dropdown);
         features_group.add(&compression_row);
 
+        // Proxy
+        let proxy_entry = Entry::builder()
+            .hexpand(true)
+            .valign(gtk4::Align::Center)
+            .placeholder_text(i18n("http://proxy:3128"))
+            .build();
+        let proxy_row = adw::ActionRow::builder()
+            .title(i18n("SPICE Proxy"))
+            .subtitle(i18n(
+                "Proxy URL for tunnelled connections (e.g. Proxmox VE)",
+            ))
+            .build();
+        proxy_row.add_suffix(&proxy_entry);
+        features_group.add(&proxy_row);
+
         content.append(&features_group);
+
+        // Wire TLS toggle to CA cert and skip verify sensitivity
+        let ca_cert_row_clone = ca_cert_row.clone();
+        let skip_verify_check_clone = skip_verify_check.clone();
+        tls_check.connect_toggled(move |check| {
+            let on = check.is_active();
+            ca_cert_row_clone.set_sensitive(on);
+            skip_verify_check_clone.set_sensitive(on);
+            if !on {
+                skip_verify_check_clone.set_active(false);
+            }
+        });
+        ca_cert_row.set_sensitive(false);
+        skip_verify_check.set_sensitive(false);
 
         // === Shared Folders Group ===
         let folders_group = adw::PreferencesGroup::builder()
@@ -3219,6 +3033,7 @@ impl ConnectionDialog {
             usb_check,
             clipboard_check,
             compression_dropdown,
+            proxy_entry,
             shared_folders,
             folders_list,
         )
@@ -3244,6 +3059,8 @@ impl ConnectionDialog {
         adw::EntryRow,
         adw::EntryRow,
         adw::EntryRow,
+        adw::EntryRow, // oci_ssh_key
+        adw::SpinRow,  // oci_session_ttl
         adw::EntryRow,
         adw::EntryRow,
         adw::EntryRow,
@@ -3324,7 +3141,7 @@ impl ConnectionDialog {
         provider_stack.add_named(&azure_ssh_box, Some("azure_ssh"));
 
         // OCI Bastion options
-        let (oci_box, oci_bastion_id, oci_target_id, oci_target_ip) =
+        let (oci_box, oci_bastion_id, oci_target_id, oci_target_ip, oci_ssh_key, oci_session_ttl) =
             Self::create_oci_bastion_fields_adw();
         provider_stack.add_named(&oci_box, Some("oci_bastion"));
 
@@ -3418,6 +3235,8 @@ impl ConnectionDialog {
             oci_bastion_id,
             oci_target_id,
             oci_target_ip,
+            oci_ssh_key,
+            oci_session_ttl,
             cf_hostname,
             teleport_host,
             teleport_cluster,
@@ -3524,7 +3343,14 @@ impl ConnectionDialog {
     }
 
     /// Creates OCI Bastion provider fields using libadwaita
-    fn create_oci_bastion_fields_adw() -> (GtkBox, adw::EntryRow, adw::EntryRow, adw::EntryRow) {
+    fn create_oci_bastion_fields_adw() -> (
+        GtkBox,
+        adw::EntryRow,
+        adw::EntryRow,
+        adw::EntryRow,
+        adw::EntryRow,
+        adw::SpinRow,
+    ) {
         let group = adw::PreferencesGroup::builder()
             .title(i18n("OCI Bastion"))
             .description(i18n("Connect via Oracle Cloud Bastion"))
@@ -3539,10 +3365,33 @@ impl ConnectionDialog {
         let target_ip_row = adw::EntryRow::builder().title(i18n("Target IP")).build();
         group.add(&target_ip_row);
 
+        // ZT-2: SSH Public Key file path
+        let ssh_key_row = adw::EntryRow::builder()
+            .title(i18n("SSH Public Key"))
+            .build();
+        ssh_key_row.set_text("~/.ssh/id_rsa.pub");
+        group.add(&ssh_key_row);
+
+        // ZT-2: Session TTL
+        let ttl_adj = gtk4::Adjustment::new(1800.0, 300.0, 10800.0, 300.0, 600.0, 0.0);
+        let ttl_row = adw::SpinRow::builder()
+            .title(i18n("Session TTL"))
+            .subtitle(i18n("Session duration in seconds (default: 1800)"))
+            .adjustment(&ttl_adj)
+            .build();
+        group.add(&ttl_row);
+
         let vbox = GtkBox::new(Orientation::Vertical, 0);
         vbox.append(&group);
 
-        (vbox, bastion_id_row, target_id_row, target_ip_row)
+        (
+            vbox,
+            bastion_id_row,
+            target_id_row,
+            target_ip_row,
+            ssh_key_row,
+            ttl_row,
+        )
     }
 
     /// Creates Cloudflare Access provider fields using libadwaita
@@ -3635,604 +3484,6 @@ impl ConnectionDialog {
         vbox.append(&group);
 
         (vbox, command_row)
-    }
-
-    /// Creates the Data tab combining Variables and Custom Properties
-    ///
-    /// Uses libadwaita components following GNOME HIG.
-    #[allow(clippy::type_complexity)]
-    fn create_data_tab() -> (GtkBox, ListBox, Button, ListBox, Button) {
-        let scrolled = ScrolledWindow::builder()
-            .hscrollbar_policy(gtk4::PolicyType::Never)
-            .vscrollbar_policy(gtk4::PolicyType::Automatic)
-            .vexpand(true)
-            .build();
-
-        let clamp = adw::Clamp::builder()
-            .maximum_size(600)
-            .tightening_threshold(400)
-            .build();
-
-        let content = GtkBox::new(Orientation::Vertical, 12);
-        content.set_margin_top(12);
-        content.set_margin_bottom(12);
-        content.set_margin_start(12);
-        content.set_margin_end(12);
-
-        // === Variables Section ===
-        let variables_group = adw::PreferencesGroup::builder()
-            .title(i18n("Local Variables"))
-            .description(i18n("Use ${variable_name} syntax in connection fields"))
-            .build();
-
-        let variables_scrolled = ScrolledWindow::builder()
-            .hscrollbar_policy(gtk4::PolicyType::Never)
-            .vscrollbar_policy(gtk4::PolicyType::Automatic)
-            .min_content_height(150)
-            .build();
-
-        let variables_list = ListBox::builder()
-            .selection_mode(gtk4::SelectionMode::None)
-            .css_classes(["boxed-list"])
-            .build();
-        variables_list.set_placeholder(Some(&Label::new(Some(&i18n("No variables defined")))));
-        variables_scrolled.set_child(Some(&variables_list));
-
-        variables_group.add(&variables_scrolled);
-
-        let var_button_box = GtkBox::new(Orientation::Horizontal, 8);
-        var_button_box.set_halign(gtk4::Align::End);
-        var_button_box.set_margin_top(8);
-
-        let add_variable_button = Button::builder()
-            .label(&i18n("Add Variable"))
-            .css_classes(["suggested-action"])
-            .build();
-        var_button_box.append(&add_variable_button);
-
-        variables_group.add(&var_button_box);
-        content.append(&variables_group);
-
-        // === Custom Properties Section ===
-        let properties_group = adw::PreferencesGroup::builder()
-            .title(i18n("Custom Properties"))
-            .description(i18n(
-                "Text, URL (clickable), or Protected (masked) metadata",
-            ))
-            .build();
-
-        let properties_scrolled = ScrolledWindow::builder()
-            .hscrollbar_policy(gtk4::PolicyType::Never)
-            .vscrollbar_policy(gtk4::PolicyType::Automatic)
-            .min_content_height(150)
-            .build();
-
-        let properties_list = ListBox::builder()
-            .selection_mode(gtk4::SelectionMode::None)
-            .css_classes(["boxed-list"])
-            .build();
-        properties_list.set_placeholder(Some(&Label::new(Some(&i18n("No custom properties")))));
-        properties_scrolled.set_child(Some(&properties_list));
-
-        properties_group.add(&properties_scrolled);
-
-        let prop_button_box = GtkBox::new(Orientation::Horizontal, 8);
-        prop_button_box.set_halign(gtk4::Align::End);
-        prop_button_box.set_margin_top(8);
-
-        let add_property_button = Button::builder()
-            .label(&i18n("Add Property"))
-            .css_classes(["suggested-action"])
-            .build();
-        prop_button_box.append(&add_property_button);
-
-        properties_group.add(&prop_button_box);
-        content.append(&properties_group);
-
-        clamp.set_child(Some(&content));
-        scrolled.set_child(Some(&clamp));
-
-        let vbox = GtkBox::new(Orientation::Vertical, 0);
-        vbox.append(&scrolled);
-
-        (
-            vbox,
-            variables_list,
-            add_variable_button,
-            properties_list,
-            add_property_button,
-        )
-    }
-
-    /// Creates the combined Automation tab (Expect Rules + Tasks)
-    #[allow(clippy::type_complexity, clippy::too_many_lines)]
-    fn create_automation_combined_tab() -> (
-        GtkBox,
-        ListBox,
-        Button,
-        GtkBox,
-        Entry,
-        Label,
-        CheckButton,
-        Entry,
-        SpinButton,
-        CheckButton,
-        CheckButton,
-        CheckButton,
-        Entry,
-        SpinButton,
-        CheckButton,
-    ) {
-        let scrolled = ScrolledWindow::builder()
-            .hscrollbar_policy(gtk4::PolicyType::Never)
-            .vscrollbar_policy(gtk4::PolicyType::Automatic)
-            .vexpand(true)
-            .build();
-
-        let clamp = adw::Clamp::builder()
-            .maximum_size(600)
-            .tightening_threshold(400)
-            .build();
-
-        let content = GtkBox::new(Orientation::Vertical, 12);
-        content.set_margin_top(12);
-        content.set_margin_bottom(12);
-        content.set_margin_start(12);
-        content.set_margin_end(12);
-
-        // === Expect Rules Section ===
-        let rules_group = adw::PreferencesGroup::builder()
-            .title(i18n("Expect Rules"))
-            .description(i18n("Auto-respond to terminal patterns (priority order)"))
-            .build();
-
-        let rules_scrolled = ScrolledWindow::builder()
-            .hscrollbar_policy(gtk4::PolicyType::Never)
-            .vscrollbar_policy(gtk4::PolicyType::Automatic)
-            .min_content_height(120)
-            .build();
-
-        let expect_rules_list = ListBox::builder()
-            .selection_mode(gtk4::SelectionMode::None)
-            .css_classes(["boxed-list"])
-            .build();
-        expect_rules_list.set_placeholder(Some(&Label::new(Some(&i18n("No expect rules")))));
-        rules_scrolled.set_child(Some(&expect_rules_list));
-
-        rules_group.add(&rules_scrolled);
-
-        let rules_button_box = GtkBox::new(Orientation::Horizontal, 8);
-        rules_button_box.set_halign(gtk4::Align::End);
-        rules_button_box.set_margin_top(8);
-
-        let template_menu_button = gtk4::MenuButton::builder()
-            .label(&i18n("From Template"))
-            .tooltip_text(i18n("Add rules from a built-in template"))
-            .build();
-
-        let template_popover = gtk4::Popover::new();
-        let template_list_box = GtkBox::new(Orientation::Vertical, 4);
-        template_list_box.set_margin_top(8);
-        template_list_box.set_margin_bottom(8);
-        template_list_box.set_margin_start(8);
-        template_list_box.set_margin_end(8);
-
-        for template in builtin_templates() {
-            let btn = Button::builder()
-                .label(template.name)
-                .css_classes(["flat"])
-                .tooltip_text(template.description)
-                .build();
-            template_list_box.append(&btn);
-        }
-        template_popover.set_child(Some(&template_list_box));
-        template_menu_button.set_popover(Some(&template_popover));
-
-        let add_rule_button = Button::builder()
-            .label(&i18n("Add Rule"))
-            .css_classes(["suggested-action"])
-            .build();
-        rules_button_box.append(&template_menu_button);
-        rules_button_box.append(&add_rule_button);
-
-        rules_group.add(&rules_button_box);
-        content.append(&rules_group);
-
-        // Pattern tester
-        let tester_group = adw::PreferencesGroup::builder()
-            .title(i18n("Pattern Tester"))
-            .build();
-
-        let test_entry = Entry::builder()
-            .hexpand(true)
-            .valign(gtk4::Align::Center)
-            .placeholder_text(&i18n("Test text against patterns"))
-            .build();
-
-        let test_row = adw::ActionRow::builder().title(i18n("Test Input")).build();
-        test_row.add_suffix(&test_entry);
-        tester_group.add(&test_row);
-
-        let result_label = Label::builder()
-            .label(&i18n("Enter text to test"))
-            .halign(gtk4::Align::Start)
-            .wrap(true)
-            .css_classes(["dim-label"])
-            .build();
-
-        let result_row = adw::ActionRow::builder().title(i18n("Result")).build();
-        result_row.add_suffix(&result_label);
-        tester_group.add(&result_row);
-
-        content.append(&tester_group);
-
-        // === Pre-Connect Task Section ===
-        let (
-            pre_connect_group,
-            pre_connect_enabled_check,
-            pre_connect_command_entry,
-            pre_connect_timeout_spin,
-            pre_connect_abort_check,
-            pre_connect_first_only_check,
-        ) = Self::create_task_section(&i18n("Pre-Connect Task"), true);
-        content.append(&pre_connect_group);
-
-        // === Post-Disconnect Task Section ===
-        let (
-            post_disconnect_group,
-            post_disconnect_enabled_check,
-            post_disconnect_command_entry,
-            post_disconnect_timeout_spin,
-            _post_disconnect_abort_check,
-            post_disconnect_last_only_check,
-        ) = Self::create_task_section(&i18n("Post-Disconnect Task"), false);
-        content.append(&post_disconnect_group);
-
-        clamp.set_child(Some(&content));
-        scrolled.set_child(Some(&clamp));
-
-        let vbox = GtkBox::new(Orientation::Vertical, 0);
-        vbox.append(&scrolled);
-
-        (
-            vbox,
-            expect_rules_list,
-            add_rule_button,
-            template_list_box,
-            test_entry,
-            result_label,
-            pre_connect_enabled_check,
-            pre_connect_command_entry,
-            pre_connect_timeout_spin,
-            pre_connect_abort_check,
-            pre_connect_first_only_check,
-            post_disconnect_enabled_check,
-            post_disconnect_command_entry,
-            post_disconnect_timeout_spin,
-            post_disconnect_last_only_check,
-        )
-    }
-
-    /// Creates a task section (pre-connect or post-disconnect)
-    ///
-    /// Uses libadwaita components following GNOME HIG.
-    fn create_task_section(
-        title: &str,
-        is_pre_connect: bool,
-    ) -> (
-        adw::PreferencesGroup,
-        CheckButton,
-        Entry,
-        SpinButton,
-        CheckButton,
-        CheckButton,
-    ) {
-        let description = if is_pre_connect {
-            i18n("Run command before connecting. Supports ${variable} substitution.")
-        } else {
-            i18n("Run command after disconnecting. Supports ${variable} substitution.")
-        };
-
-        let group = adw::PreferencesGroup::builder()
-            .title(title)
-            .description(description)
-            .build();
-
-        // Enable checkbox
-        let enabled_check = CheckButton::builder().valign(gtk4::Align::Center).build();
-
-        let enable_row = adw::ActionRow::builder()
-            .title(i18n("Enable Task"))
-            .activatable_widget(&enabled_check)
-            .build();
-        enable_row.add_suffix(&enabled_check);
-        group.add(&enable_row);
-
-        // Command entry
-        let command_entry = Entry::builder()
-            .hexpand(true)
-            .valign(gtk4::Align::Center)
-            .placeholder_text(i18n("e.g., /path/to/script.sh or vpn-connect ${host}"))
-            .sensitive(false)
-            .build();
-
-        let command_row = adw::ActionRow::builder()
-            .title(i18n("Command"))
-            .subtitle(i18n(
-                "Shell command to execute (supports ${variable} syntax)",
-            ))
-            .build();
-        command_row.add_suffix(&command_entry);
-        group.add(&command_row);
-
-        // Timeout
-        let timeout_adj = gtk4::Adjustment::new(0.0, 0.0, 300_000.0, 1000.0, 5000.0, 0.0);
-        let timeout_spin = SpinButton::builder()
-            .adjustment(&timeout_adj)
-            .climb_rate(1.0)
-            .digits(0)
-            .valign(gtk4::Align::Center)
-            .sensitive(false)
-            .build();
-
-        let timeout_row = adw::ActionRow::builder()
-            .title(i18n("Timeout (ms)"))
-            .subtitle(i18n("0 = no timeout"))
-            .build();
-        timeout_row.add_suffix(&timeout_spin);
-        group.add(&timeout_row);
-
-        // Abort on failure (pre-connect only)
-        let abort_check = CheckButton::builder()
-            .valign(gtk4::Align::Center)
-            .active(true)
-            .sensitive(false)
-            .build();
-
-        if is_pre_connect {
-            let abort_row = adw::ActionRow::builder()
-                .title(i18n("Abort on Failure"))
-                .subtitle(i18n("Cancel connection if this task fails"))
-                .activatable_widget(&abort_check)
-                .build();
-            abort_row.add_suffix(&abort_check);
-            group.add(&abort_row);
-        }
-
-        // Condition checkbox
-        let condition_check = CheckButton::builder()
-            .valign(gtk4::Align::Center)
-            .sensitive(false)
-            .build();
-
-        let (condition_title, condition_subtitle) = if is_pre_connect {
-            (
-                i18n("First Connection Only"),
-                i18n(
-                    "Only run when opening the first connection in a folder (useful for VPN setup)",
-                ),
-            )
-        } else {
-            (
-                i18n("Last Connection Only"),
-                i18n("Only run when closing the last connection in a folder (useful for cleanup)"),
-            )
-        };
-
-        let condition_row = adw::ActionRow::builder()
-            .title(condition_title)
-            .subtitle(condition_subtitle)
-            .activatable_widget(&condition_check)
-            .build();
-        condition_row.add_suffix(&condition_check);
-        group.add(&condition_row);
-
-        // Connect enabled checkbox to enable/disable other fields
-        let command_entry_clone = command_entry.clone();
-        let timeout_spin_clone = timeout_spin.clone();
-        let abort_check_clone = abort_check.clone();
-        let condition_check_clone = condition_check.clone();
-        enabled_check.connect_toggled(move |check| {
-            let enabled = check.is_active();
-            command_entry_clone.set_sensitive(enabled);
-            timeout_spin_clone.set_sensitive(enabled);
-            abort_check_clone.set_sensitive(enabled);
-            condition_check_clone.set_sensitive(enabled);
-        });
-
-        (
-            group,
-            enabled_check,
-            command_entry,
-            timeout_spin,
-            abort_check,
-            condition_check,
-        )
-    }
-
-    /// Creates the Advanced tab combining Display and WOL settings
-    ///
-    /// Uses libadwaita components following GNOME HIG.
-    #[allow(clippy::type_complexity)]
-    fn create_advanced_tab() -> (
-        GtkBox,
-        DropDown,
-        CheckButton,
-        CheckButton,
-        Entry,
-        Entry,
-        SpinButton,
-        SpinButton,
-    ) {
-        let scrolled = ScrolledWindow::builder()
-            .hscrollbar_policy(gtk4::PolicyType::Never)
-            .vscrollbar_policy(gtk4::PolicyType::Automatic)
-            .vexpand(true)
-            .build();
-
-        let clamp = adw::Clamp::builder()
-            .maximum_size(600)
-            .tightening_threshold(400)
-            .build();
-
-        let content = GtkBox::new(Orientation::Vertical, 12);
-        content.set_margin_top(12);
-        content.set_margin_bottom(12);
-        content.set_margin_start(12);
-        content.set_margin_end(12);
-
-        // === Window Mode Section ===
-        let mode_group = adw::PreferencesGroup::builder()
-            .title(i18n("Window Mode"))
-            .build();
-
-        let mode_list = StringList::new(&[
-            &i18n("Embedded"),
-            &i18n("External Window"),
-            &i18n("Fullscreen"),
-        ]);
-        let mode_dropdown = DropDown::new(Some(mode_list), gtk4::Expression::NONE);
-        mode_dropdown.set_selected(0);
-        mode_dropdown.set_valign(gtk4::Align::Center);
-
-        let mode_row = adw::ActionRow::builder()
-            .title(i18n("Display Mode"))
-            .subtitle(i18n("Embedded • External • Fullscreen"))
-            .build();
-        mode_row.add_suffix(&mode_dropdown);
-        mode_group.add(&mode_row);
-
-        let remember_check = CheckButton::builder()
-            .valign(gtk4::Align::Center)
-            .sensitive(false)
-            .build();
-
-        let remember_row = adw::ActionRow::builder()
-            .title(i18n("Remember Position"))
-            .subtitle(i18n("Save window geometry (External mode only)"))
-            .activatable_widget(&remember_check)
-            .build();
-        remember_row.add_suffix(&remember_check);
-        mode_group.add(&remember_row);
-
-        let remember_check_clone = remember_check.clone();
-        let remember_row_clone = remember_row.clone();
-        mode_dropdown.connect_selected_notify(move |dropdown| {
-            let is_external = dropdown.selected() == 1;
-            remember_check_clone.set_sensitive(is_external);
-            remember_row_clone.set_sensitive(is_external);
-            if !is_external {
-                remember_check_clone.set_active(false);
-            }
-        });
-
-        content.append(&mode_group);
-
-        // === Wake On LAN Section ===
-        let wol_group = adw::PreferencesGroup::builder()
-            .title(i18n("Wake On LAN"))
-            .build();
-
-        let wol_enabled_check = CheckButton::builder().valign(gtk4::Align::Center).build();
-
-        let wol_enable_row = adw::ActionRow::builder()
-            .title(i18n("Enable WOL"))
-            .subtitle(i18n("Send magic packet before connecting"))
-            .activatable_widget(&wol_enabled_check)
-            .build();
-        wol_enable_row.add_suffix(&wol_enabled_check);
-        wol_group.add(&wol_enable_row);
-
-        content.append(&wol_group);
-
-        // WOL Settings group
-        let wol_settings_group = adw::PreferencesGroup::builder()
-            .title(i18n("WOL Settings"))
-            .sensitive(false)
-            .build();
-
-        let mac_entry = Entry::builder()
-            .hexpand(true)
-            .valign(gtk4::Align::Center)
-            .placeholder_text(i18n("AA:BB:CC:DD:EE:FF"))
-            .build();
-
-        let mac_row = adw::ActionRow::builder().title(i18n("MAC Address")).build();
-        mac_row.add_suffix(&mac_entry);
-        wol_settings_group.add(&mac_row);
-
-        let broadcast_entry = Entry::builder()
-            .hexpand(true)
-            .valign(gtk4::Align::Center)
-            .text(DEFAULT_BROADCAST_ADDRESS)
-            .build();
-
-        let broadcast_row = adw::ActionRow::builder()
-            .title(i18n("Broadcast Address"))
-            .build();
-        broadcast_row.add_suffix(&broadcast_entry);
-        wol_settings_group.add(&broadcast_row);
-
-        let port_adjustment =
-            gtk4::Adjustment::new(f64::from(DEFAULT_WOL_PORT), 1.0, 65535.0, 1.0, 10.0, 0.0);
-        let port_spin = SpinButton::builder()
-            .adjustment(&port_adjustment)
-            .digits(0)
-            .valign(gtk4::Align::Center)
-            .build();
-
-        let port_row = adw::ActionRow::builder()
-            .title(i18n("UDP Port"))
-            .subtitle(i18n("Default: 9"))
-            .build();
-        port_row.add_suffix(&port_spin);
-        wol_settings_group.add(&port_row);
-
-        let wait_adjustment = gtk4::Adjustment::new(
-            f64::from(DEFAULT_WOL_WAIT_SECONDS),
-            0.0,
-            300.0,
-            1.0,
-            10.0,
-            0.0,
-        );
-        let wait_spin = SpinButton::builder()
-            .adjustment(&wait_adjustment)
-            .digits(0)
-            .valign(gtk4::Align::Center)
-            .build();
-
-        let wait_row = adw::ActionRow::builder()
-            .title(i18n("Wait Time (sec)"))
-            .subtitle(i18n("Time to wait for boot"))
-            .build();
-        wait_row.add_suffix(&wait_spin);
-        wol_settings_group.add(&wait_row);
-
-        content.append(&wol_settings_group);
-
-        // Connect WOL enabled checkbox
-        let wol_settings_group_clone = wol_settings_group.clone();
-        wol_enabled_check.connect_toggled(move |check| {
-            wol_settings_group_clone.set_sensitive(check.is_active());
-        });
-
-        clamp.set_child(Some(&content));
-        scrolled.set_child(Some(&clamp));
-
-        let vbox = GtkBox::new(Orientation::Vertical, 0);
-        vbox.append(&scrolled);
-
-        (
-            vbox,
-            mode_dropdown,
-            remember_check,
-            wol_enabled_check,
-            mac_entry,
-            broadcast_entry,
-            port_spin,
-            wait_spin,
-        )
     }
 
     /// Creates a custom property row widget
@@ -5921,8 +5172,14 @@ impl ConnectionDialog {
         self.rdp_scale_override_dropdown
             .set_selected(rdp.scale_override.index());
         self.rdp_audio_check.set_active(rdp.audio_redirect);
+        self.rdp_clipboard_check.set_active(rdp.clipboard_enabled);
+        self.rdp_disable_nla_check.set_active(rdp.disable_nla);
         if let Some(ref gw) = rdp.gateway {
             self.rdp_gateway_entry.set_text(&gw.hostname);
+            self.rdp_gateway_port_spin.set_value(f64::from(gw.port));
+            if let Some(ref username) = gw.username {
+                self.rdp_gateway_username_entry.set_text(username);
+            }
         }
 
         // Populate shared folders
@@ -5980,8 +5237,17 @@ impl ConnectionDialog {
         self.vnc_performance_mode_dropdown
             .set_selected(vnc.performance_mode.index());
 
-        let encoding_text = vnc.encoding.as_deref().unwrap_or("");
-        self.vnc_encoding_entry.set_text(encoding_text);
+        // VNC-1: Map encoding string to dropdown index
+        // Items: ["Auto", "Tight", "ZRLE", "Hextile", "Raw", "CopyRect"]
+        let encoding_idx = match vnc.encoding.as_deref() {
+            Some("tight") => 1,
+            Some("zrle") => 2,
+            Some("hextile") => 3,
+            Some("raw") => 4,
+            Some("copyrect") => 5,
+            _ => 0, // Auto
+        };
+        self.vnc_encoding_dropdown.set_selected(encoding_idx);
 
         if let Some(comp) = vnc.compression {
             self.vnc_compression_spin.set_value(f64::from(comp));
@@ -6023,6 +5289,11 @@ impl ConnectionDialog {
         };
         self.spice_compression_dropdown
             .set_selected(compression_idx);
+
+        // Set proxy
+        if let Some(ref proxy) = spice.proxy {
+            self.spice_proxy_entry.set_text(proxy);
+        }
 
         // Populate shared folders
         self.spice_shared_folders.borrow_mut().clear();
@@ -6101,6 +5372,10 @@ impl ConnectionDialog {
                 self.zt_oci_target_id_entry
                     .set_text(&cfg.target_resource_id);
                 self.zt_oci_target_ip_entry.set_text(&cfg.target_private_ip);
+                self.zt_oci_ssh_key_entry
+                    .set_text(&cfg.ssh_public_key_file.to_string_lossy());
+                self.zt_oci_session_ttl_spin
+                    .set_value(f64::from(cfg.session_ttl));
             }
             ZeroTrustProviderConfig::CloudflareAccess(cfg) => {
                 self.zt_cf_hostname_entry.set_text(&cfg.hostname);
@@ -6220,6 +5495,8 @@ impl ConnectionDialog {
     pub fn connect_password_source_visibility(&self) {
         let password_row = self.password_row.clone();
         let variable_row = self.variable_row.clone();
+        let ssh_auth_dropdown = self.ssh_auth_dropdown.clone();
+        let protocol_dropdown = self.protocol_dropdown.clone();
 
         self.password_source_dropdown
             .connect_selected_notify(move |dropdown| {
@@ -6228,6 +5505,27 @@ impl ConnectionDialog {
                 password_row.set_visible(selected == 1);
                 // Show variable row for Variable(2) only
                 variable_row.set_visible(selected == 2);
+
+                // Sync: when password source is None(4) and protocol is SSH(0),
+                // auto-switch SSH auth from Password(0) to Public Key(1)
+                if selected == 4
+                    && protocol_dropdown.selected() == 0
+                    && ssh_auth_dropdown.selected() == 0
+                {
+                    ssh_auth_dropdown.set_selected(1);
+                }
+            });
+
+        // Reverse sync: when SSH auth changes to Password(0) while
+        // password source is None(4), auto-switch password source to Prompt(0)
+        let password_source_dropdown = self.password_source_dropdown.clone();
+        let protocol_dropdown2 = self.protocol_dropdown.clone();
+        self.ssh_auth_dropdown
+            .connect_selected_notify(move |dropdown| {
+                let is_ssh = protocol_dropdown2.selected() == 0;
+                if is_ssh && dropdown.selected() == 0 && password_source_dropdown.selected() == 4 {
+                    password_source_dropdown.set_selected(0); // Prompt
+                }
             });
     }
 
@@ -6740,12 +6038,16 @@ struct ConnectionDialogData<'a> {
     rdp_scale_override_dropdown: &'a DropDown,
     rdp_audio_check: &'a CheckButton,
     rdp_gateway_entry: &'a Entry,
+    rdp_gateway_port_spin: &'a SpinButton,
+    rdp_gateway_username_entry: &'a Entry,
+    rdp_disable_nla_check: &'a CheckButton,
+    rdp_clipboard_check: &'a CheckButton,
     rdp_shared_folders: &'a Rc<RefCell<Vec<SharedFolder>>>,
     rdp_custom_args_entry: &'a Entry,
     rdp_keyboard_layout_dropdown: &'a DropDown,
     vnc_client_mode_dropdown: &'a DropDown,
     vnc_performance_mode_dropdown: &'a DropDown,
-    vnc_encoding_entry: &'a Entry,
+    vnc_encoding_dropdown: &'a DropDown,
     vnc_compression_spin: &'a SpinButton,
     vnc_quality_spin: &'a SpinButton,
     vnc_view_only_check: &'a CheckButton,
@@ -6759,6 +6061,7 @@ struct ConnectionDialogData<'a> {
     spice_usb_check: &'a CheckButton,
     spice_clipboard_check: &'a CheckButton,
     spice_compression_dropdown: &'a DropDown,
+    spice_proxy_entry: &'a Entry,
     spice_shared_folders: &'a Rc<RefCell<Vec<SharedFolder>>>,
     // Zero Trust fields
     zt_provider_dropdown: &'a DropDown,
@@ -6776,6 +6079,8 @@ struct ConnectionDialogData<'a> {
     zt_oci_bastion_id_entry: &'a adw::EntryRow,
     zt_oci_target_id_entry: &'a adw::EntryRow,
     zt_oci_target_ip_entry: &'a adw::EntryRow,
+    zt_oci_ssh_key_entry: &'a adw::EntryRow,
+    zt_oci_session_ttl_spin: &'a adw::SpinRow,
     zt_cf_hostname_entry: &'a adw::EntryRow,
     zt_teleport_host_entry: &'a adw::EntryRow,
     zt_teleport_cluster_entry: &'a adw::EntryRow,
@@ -6887,6 +6192,25 @@ impl ConnectionDialogData<'_> {
                         "SSH key path is required for public key authentication".to_string()
                     );
                 }
+            }
+            // SSH-1: Warn when auth=Password but password_source=None
+            if auth_idx == 0 {
+                // Password auth
+                let pw_source_idx = self.password_source_dropdown.selected();
+                if pw_source_idx == 4 {
+                    // None
+                    return Err(
+                        "Password source is 'None' but auth method is Password. Set source to Prompt or Vault.".to_string()
+                    );
+                }
+            }
+        }
+
+        // K8S-1: Kubernetes pod validation
+        if is_kubernetes && !self.k8s_busybox_check.is_active() {
+            let pod = self.k8s_pod_entry.text();
+            if pod.trim().is_empty() {
+                return Err("Pod name is required when Busybox mode is disabled".to_string());
             }
         }
         // RDP (1) and VNC (2) use native embedding, no client validation needed
@@ -7226,8 +6550,16 @@ impl ConnectionDialogData<'_> {
                     bastion_id: self.zt_oci_bastion_id_entry.text().trim().to_string(),
                     target_resource_id: self.zt_oci_target_id_entry.text().trim().to_string(),
                     target_private_ip: self.zt_oci_target_ip_entry.text().trim().to_string(),
-                    ssh_public_key_file: PathBuf::new(),
-                    session_ttl: 1800,
+                    ssh_public_key_file: {
+                        let text = self.zt_oci_ssh_key_entry.text();
+                        let trimmed = text.trim();
+                        if trimmed.is_empty() {
+                            default_ssh_pub_key_path()
+                        } else {
+                            PathBuf::from(trimmed)
+                        }
+                    },
+                    session_ttl: self.zt_oci_session_ttl_spin.value() as u32,
                 })
             }
             ZeroTrustProvider::CloudflareAccess => {
@@ -7529,10 +6861,18 @@ impl ConnectionDialogData<'_> {
             if text.trim().is_empty() {
                 None
             } else {
+                #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+                let port = self.rdp_gateway_port_spin.value() as u16;
+                let username_text = self.rdp_gateway_username_entry.text();
+                let username = if username_text.trim().is_empty() {
+                    None
+                } else {
+                    Some(username_text.trim().to_string())
+                };
                 Some(rustconn_core::models::RdpGateway {
                     hostname: text.trim().to_string(),
-                    port: 443,
-                    username: None,
+                    port,
+                    username,
                 })
             }
         };
@@ -7552,6 +6892,8 @@ impl ConnectionDialogData<'_> {
             custom_args,
             keyboard_layout: dropdown_index_to_klid(self.rdp_keyboard_layout_dropdown.selected()),
             scale_override: ScaleOverride::from_index(self.rdp_scale_override_dropdown.selected()),
+            disable_nla: self.rdp_disable_nla_check.is_active(),
+            clipboard_enabled: self.rdp_clipboard_check.is_active(),
         }
     }
 
@@ -7560,13 +6902,15 @@ impl ConnectionDialogData<'_> {
         let performance_mode =
             VncPerformanceMode::from_index(self.vnc_performance_mode_dropdown.selected());
 
-        let encoding = {
-            let text = self.vnc_encoding_entry.text();
-            if text.trim().is_empty() {
-                None
-            } else {
-                Some(text.trim().to_string())
-            }
+        // VNC-1: Map dropdown index to encoding string
+        // Items: ["Auto", "Tight", "ZRLE", "Hextile", "Raw", "CopyRect"]
+        let encoding = match self.vnc_encoding_dropdown.selected() {
+            1 => Some("tight".to_string()),
+            2 => Some("zrle".to_string()),
+            3 => Some("hextile".to_string()),
+            4 => Some("raw".to_string()),
+            5 => Some("copyrect".to_string()),
+            _ => None, // Auto = no override
         };
 
         #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
@@ -7617,7 +6961,14 @@ impl ConnectionDialogData<'_> {
             shared_folders: self.spice_shared_folders.borrow().clone(),
             clipboard_enabled: self.spice_clipboard_check.is_active(),
             image_compression,
-            proxy: None,
+            proxy: {
+                let text = self.spice_proxy_entry.text();
+                if text.trim().is_empty() {
+                    None
+                } else {
+                    Some(text.trim().to_string())
+                }
+            },
         }
     }
 
@@ -7647,4 +6998,9 @@ impl ConnectionDialogData<'_> {
             .map(std::string::ToString::to_string)
             .collect()
     }
+}
+
+/// Returns the default SSH public key path (~/.ssh/id_rsa.pub)
+fn default_ssh_pub_key_path() -> PathBuf {
+    dirs::home_dir().unwrap_or_default().join(".ssh/id_rsa.pub")
 }

@@ -147,7 +147,9 @@ fn create_authentication_group() -> (
 
     let key_source_row = adw::ActionRow::builder()
         .title(i18n("Key Source"))
-        .subtitle(i18n("Where to get the SSH key from"))
+        .subtitle(i18n(
+            "Default tries ~/.ssh/id_rsa, id_ed25519, id_ecdsa automatically",
+        ))
         .build();
     key_source_row.add_suffix(&key_source_dropdown);
     auth_group.add(&key_source_row);
@@ -450,7 +452,7 @@ fn create_session_group() -> (
     // Custom options entry
     let (options_row, options_entry) = EntryRowBuilder::new("Custom Options")
         .subtitle("Additional SSH command-line options")
-        .placeholder("-o Key=Value")
+        .placeholder("-o StrictHostKeyChecking=no -o ServerAliveInterval=60")
         .build();
     session_group.add(&options_row);
 
@@ -573,6 +575,17 @@ pub fn create_port_forwarding_group(
             Ok(p) if p > 0 => p,
             _ => return, // silently ignore invalid input
         };
+
+        // Check for duplicate local port
+        let existing = data.borrow();
+        if existing.iter().any(|pf| pf.local_port == local_port) {
+            local_port_clone.add_css_class("error");
+            local_port_clone.set_tooltip_text(Some(&i18n("Port already in use")));
+            return;
+        }
+        drop(existing);
+        local_port_clone.remove_css_class("error");
+        local_port_clone.set_tooltip_text(None);
 
         let direction = match dir_dd.selected() {
             1 => rustconn_core::models::PortForwardDirection::Remote,

@@ -1224,6 +1224,12 @@ pub struct RdpConfig {
     /// Display scale override for embedded mode
     #[serde(default)]
     pub scale_override: ScaleOverride,
+    /// Disable Network Level Authentication
+    #[serde(default)]
+    pub disable_nla: bool,
+    /// Enable clipboard sharing between local and remote
+    #[serde(default = "default_true")]
+    pub clipboard_enabled: bool,
 }
 
 impl RdpConfig {
@@ -1804,7 +1810,7 @@ impl ZeroTrustConfig {
                 ("az".to_string(), a)
             }
             ZeroTrustProviderConfig::OciBastion(cfg) => {
-                let a = vec![
+                let mut a = vec![
                     "bastion".to_string(),
                     "session".to_string(),
                     "create-managed-ssh".to_string(),
@@ -1817,6 +1823,10 @@ impl ZeroTrustConfig {
                     "--session-ttl".to_string(),
                     cfg.session_ttl.to_string(),
                 ];
+                if cfg.ssh_public_key_file.as_os_str() != "" {
+                    a.push("--ssh-public-key-file".to_string());
+                    a.push(cfg.ssh_public_key_file.display().to_string());
+                }
                 ("oci".to_string(), a)
             }
             ZeroTrustProviderConfig::CloudflareAccess(cfg) => {

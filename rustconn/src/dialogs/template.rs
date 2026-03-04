@@ -2376,6 +2376,8 @@ impl TemplateDialog {
             custom_args,
             keyboard_layout: None,
             scale_override: ScaleOverride::default(),
+            disable_nla: false,
+            clipboard_enabled: true,
         })
     }
 

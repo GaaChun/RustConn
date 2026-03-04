@@ -26,7 +26,7 @@ pub type VncOptionsWidgets = (
     GtkBox,
     DropDown,    // client_mode_dropdown
     DropDown,    // performance_mode_dropdown
-    Entry,       // encoding_entry
+    DropDown,    // encoding_dropdown
     SpinButton,  // compression_spin
     SpinButton,  // quality_spin
     CheckButton, // view_only_check
@@ -46,7 +46,7 @@ pub fn create_vnc_options() -> VncOptionsWidgets {
         display_group,
         client_mode_dropdown,
         performance_mode_dropdown,
-        encoding_entry,
+        encoding_dropdown,
         scale_override_dropdown,
     ) = create_display_group();
     content.append(&display_group);
@@ -54,6 +54,19 @@ pub fn create_vnc_options() -> VncOptionsWidgets {
     // === Quality Group ===
     let (quality_group, compression_spin, quality_spin) = create_quality_group();
     content.append(&quality_group);
+
+    // VNC-2: Sync compression/quality with Performance Mode changes
+    let compression_clone = compression_spin.clone();
+    let quality_clone = quality_spin.clone();
+    performance_mode_dropdown.connect_selected_notify(move |dropdown| {
+        let (comp, qual) = match dropdown.selected() {
+            0 => (0.0, 9.0), // Quality
+            2 => (9.0, 0.0), // Speed
+            _ => (5.0, 5.0), // Balanced
+        };
+        compression_clone.set_value(comp);
+        quality_clone.set_value(qual);
+    });
 
     // === Features Group ===
     let (features_group, view_only_check, scaling_check, clipboard_check) = create_features_group();
@@ -67,7 +80,7 @@ pub fn create_vnc_options() -> VncOptionsWidgets {
         container,
         client_mode_dropdown,
         performance_mode_dropdown,
-        encoding_entry,
+        encoding_dropdown,
         compression_spin,
         quality_spin,
         view_only_check,
@@ -79,7 +92,13 @@ pub fn create_vnc_options() -> VncOptionsWidgets {
 }
 
 /// Creates the Display preferences group
-fn create_display_group() -> (adw::PreferencesGroup, DropDown, DropDown, Entry, DropDown) {
+fn create_display_group() -> (
+    adw::PreferencesGroup,
+    DropDown,
+    DropDown,
+    DropDown,
+    DropDown,
+) {
     let display_group = adw::PreferencesGroup::builder()
         .title(i18n("Display"))
         .build();
@@ -117,10 +136,10 @@ fn create_display_group() -> (adw::PreferencesGroup, DropDown, DropDown, Entry, 
         .build();
     display_group.add(&scale_row);
 
-    // Encoding
-    let (encoding_row, encoding_entry) = EntryRowBuilder::new("Encoding")
-        .subtitle("Preferred encoding methods (comma-separated)")
-        .placeholder("tight, zrle, hextile")
+    // VNC-1: Encoding dropdown instead of free text entry
+    let (encoding_row, encoding_dropdown) = DropdownRowBuilder::new("Encoding")
+        .subtitle("Preferred encoding method (overrides Performance Mode)")
+        .items(&["Auto", "Tight", "ZRLE", "Hextile", "Raw", "CopyRect"])
         .build();
     display_group.add(&encoding_row);
 
@@ -135,7 +154,7 @@ fn create_display_group() -> (adw::PreferencesGroup, DropDown, DropDown, Entry, 
         display_group,
         client_mode_dropdown,
         performance_mode_dropdown,
-        encoding_entry,
+        encoding_dropdown,
         scale_override_dropdown,
     )
 }
@@ -190,6 +209,15 @@ fn create_features_group() -> (adw::PreferencesGroup, CheckButton, CheckButton, 
         .active(true)
         .build();
     features_group.add(&clipboard_row);
+
+    // VNC-3: Password info row
+    let password_info_row = adw::ActionRow::builder()
+        .title(i18n("Authentication"))
+        .subtitle(i18n("VNC uses the connection password for authentication"))
+        .activatable(false)
+        .build();
+    password_info_row.add_prefix(&gtk4::Image::from_icon_name("dialog-information-symbolic"));
+    features_group.add(&password_info_row);
 
     (
         features_group,

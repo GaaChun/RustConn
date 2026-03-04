@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.8] - 2026-03-05
+
+### Security
+- **RDP password no longer exposed on command line** — FreeRDP fallback now uses `/from-stdin` instead of `/p:{password}` argument
+
+### Fixed
+- **SSH connection status not turning green** — VTE cursor position axes were swapped; status detection callbacks were skipped when async port check is enabled
+- **Automation cursor tracking** — expect-script automation read wrong cursor axis from VTE
+- **RDP keyboard input duplication** — deduplicated key press/release handlers via shared `send_ironrdp_key()`
+- **Username placeholder on empty `$USER`** — falls back to `$LOGNAME`, then generic placeholder
+
+### Added
+
+**Connection dialog — protocol improvements:**
+- **SSH** — password source validation on save, key source "Default" explanation, custom options placeholder, port forwarding duplicate detection
+- **RDP** — gateway port/username fields, disable NLA checkbox, clipboard sharing toggle, dynamic resolution info
+- **VNC** — encoding dropdown (Auto/Tight/ZRLE/Hextile/Raw/CopyRect), performance mode auto-sync, auth info
+- **SPICE** — proxy field for Proxmox VE, CA certificate validation, TLS/skip-verification sensitivity logic
+- **Serial** — device auto-detection (`/dev/ttyUSB*`, `/dev/ttyACM*`, `/dev/ttyS*`), dialout group warning
+- **Kubernetes** — pod name validation, busybox mode sensitivity
+- **Telnet** — plaintext transmission security warning
+- **Zero Trust** — CLI availability check, OCI Bastion SSH key/TTL fields, generic command placeholder docs
+
+**Connection dialog — general:**
+- Domain field hidden for non-RDP protocols
+- MAC address format validation for Wake-on-LAN
+- Granular per-connection logging options (activity, input, output, timestamps)
+- Password source ↔ SSH auth method auto-sync
+
+**Other:**
+- **SFTP mc in split view** — mc-based SFTP sessions now support horizontal/vertical split like SSH
+- **Context menu "New Connection"** — opens dialog with the connection's group pre-selected
+
+### Improved
+- **Connection dialog decomposition** — extracted 4 tab modules from monolithic `dialog.rs` (~7500→~1500 lines)
+- **Embedded RDP decomposition** — extracted 5 modules from monolithic `mod.rs` (~2900→~500 lines)
+- **Code quality** — structured tracing fields, i18n coverage, deduplication of clipboard/callback/resize patterns, module-level lint allows removed
+
+### Dependencies
+- binrw 0.15.0→0.15.1, proc-macro-crate 3.4.0→3.5.0, toml 1.0.3→1.0.4, toml_edit 0.23.10→0.25.4, uds_windows 1.1.0→1.2.0
+
 ## [0.9.7] - 2026-03-04
 
 ### Fixed

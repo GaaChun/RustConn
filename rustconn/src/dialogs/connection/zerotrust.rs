@@ -16,7 +16,7 @@ use gtk4::prelude::*;
 use gtk4::{Box as GtkBox, DropDown, Entry, Orientation, Stack, StringList};
 use libadwaita as adw;
 
-use crate::i18n::i18n;
+use crate::i18n::{i18n, i18n_f};
 
 /// Return type for Zero Trust options creation
 #[allow(clippy::type_complexity)]
@@ -38,6 +38,8 @@ pub type ZeroTrustOptionsWidgets = (
     adw::EntryRow, // oci_bastion_id
     adw::EntryRow, // oci_target_id
     adw::EntryRow, // oci_target_ip
+    adw::EntryRow, // oci_ssh_key
+    adw::SpinRow,  // oci_session_ttl
     adw::EntryRow, // cf_hostname
     adw::EntryRow, // teleport_host
     adw::EntryRow, // teleport_cluster
@@ -79,7 +81,8 @@ pub fn create_zerotrust_options() -> ZeroTrustOptionsWidgets {
     provider_stack.add_named(&azure_ssh_box, Some("azure_ssh"));
 
     // OCI Bastion options
-    let (oci_box, oci_bastion_id, oci_target_id, oci_target_ip) = create_oci_bastion_fields();
+    let (oci_box, oci_bastion_id, oci_target_id, oci_target_ip, oci_ssh_key, oci_session_ttl) =
+        create_oci_bastion_fields();
     provider_stack.add_named(&oci_box, Some("oci_bastion"));
 
     // Cloudflare Access options
@@ -107,8 +110,47 @@ pub fn create_zerotrust_options() -> ZeroTrustOptionsWidgets {
 
     content.append(&provider_stack);
 
-    // Connect provider dropdown to stack
+    // ZT-1: CLI availability warning
+    let cli_warning_row = adw::ActionRow::builder()
+        .title(i18n("CLI not found"))
+        .subtitle(i18n(
+            "Install the required CLI tool or use Flatpak Components",
+        ))
+        .build();
+    cli_warning_row.add_prefix(&gtk4::Image::from_icon_name("dialog-warning-symbolic"));
+    cli_warning_row.add_css_class("warning");
+    let cli_warning_group = adw::PreferencesGroup::new();
+    cli_warning_group.add(&cli_warning_row);
+    content.append(&cli_warning_group);
+
+    // Check initial provider CLI
+    let cli_commands = [
+        "aws",
+        "gcloud",
+        "az",
+        "az",
+        "oci",
+        "cloudflared",
+        "tsh",
+        "tailscale",
+        "boundary",
+        "",
+    ];
+    let initial_cli = cli_commands[0];
+    let found = initial_cli.is_empty()
+        || std::process::Command::new("which")
+            .arg(initial_cli)
+            .output()
+            .is_ok_and(|o| o.status.success());
+    cli_warning_group.set_visible(!found);
+    if !found {
+        cli_warning_row.set_title(&i18n_f("{} CLI not found", &[initial_cli]));
+    }
+
+    // Connect provider dropdown to stack + CLI check
     let stack_clone = provider_stack.clone();
+    let cli_warning_group_clone = cli_warning_group.clone();
+    let cli_warning_row_clone = cli_warning_row.clone();
     provider_dropdown.connect_selected_notify(move |dropdown| {
         let providers = [
             "aws_ssm",
@@ -125,6 +167,21 @@ pub fn create_zerotrust_options() -> ZeroTrustOptionsWidgets {
         let selected = dropdown.selected() as usize;
         if selected < providers.len() {
             stack_clone.set_visible_child_name(providers[selected]);
+
+            // ZT-1: Check CLI availability for selected provider
+            let cli = cli_commands[selected];
+            if cli.is_empty() {
+                cli_warning_group_clone.set_visible(false);
+            } else {
+                let available = std::process::Command::new("which")
+                    .arg(cli)
+                    .output()
+                    .is_ok_and(|o| o.status.success());
+                cli_warning_group_clone.set_visible(!available);
+                if !available {
+                    cli_warning_row_clone.set_title(&i18n_f("{} CLI not found", &[cli]));
+                }
+            }
         }
     });
 
@@ -150,6 +207,8 @@ pub fn create_zerotrust_options() -> ZeroTrustOptionsWidgets {
         oci_bastion_id,
         oci_target_id,
         oci_target_ip,
+        oci_ssh_key,
+        oci_session_ttl,
         cf_hostname,
         teleport_host,
         teleport_cluster,
@@ -320,7 +379,14 @@ fn create_azure_ssh_fields() -> (GtkBox, adw::EntryRow, adw::EntryRow) {
 }
 
 /// Creates OCI Bastion provider fields
-fn create_oci_bastion_fields() -> (GtkBox, adw::EntryRow, adw::EntryRow, adw::EntryRow) {
+fn create_oci_bastion_fields() -> (
+    GtkBox,
+    adw::EntryRow,
+    adw::EntryRow,
+    adw::EntryRow,
+    adw::EntryRow,
+    adw::SpinRow,
+) {
     let group = adw::PreferencesGroup::builder()
         .title(i18n("OCI Bastion"))
         .description(i18n("Connect via Oracle Cloud Bastion"))
@@ -338,10 +404,33 @@ fn create_oci_bastion_fields() -> (GtkBox, adw::EntryRow, adw::EntryRow, adw::En
     target_ip_row.set_text("");
     group.add(&target_ip_row);
 
+    // ZT-2: SSH Public Key file path
+    let ssh_key_row = adw::EntryRow::builder()
+        .title(i18n("SSH Public Key"))
+        .build();
+    ssh_key_row.set_text("~/.ssh/id_rsa.pub");
+    group.add(&ssh_key_row);
+
+    // ZT-2: Session TTL
+    let ttl_adj = gtk4::Adjustment::new(1800.0, 300.0, 10800.0, 300.0, 600.0, 0.0);
+    let ttl_row = adw::SpinRow::builder()
+        .title(i18n("Session TTL"))
+        .subtitle(i18n("Session duration in seconds (default: 1800)"))
+        .adjustment(&ttl_adj)
+        .build();
+    group.add(&ttl_row);
+
     let vbox = GtkBox::new(Orientation::Vertical, 0);
     vbox.append(&group);
 
-    (vbox, bastion_id_row, target_id_row, target_ip_row)
+    (
+        vbox,
+        bastion_id_row,
+        target_id_row,
+        target_ip_row,
+        ssh_key_row,
+        ttl_row,
+    )
 }
 
 /// Creates Cloudflare Access provider fields
@@ -435,7 +524,15 @@ fn create_generic_fields() -> (GtkBox, adw::EntryRow) {
         .title(i18n("Command Template"))
         .build();
     command_row.set_text("");
+    // ZT-3: Document supported placeholders
+    let placeholder_row = adw::ActionRow::builder()
+        .title(i18n("Placeholders"))
+        .subtitle(i18n("Supports ${host}, ${user}, ${port} substitution"))
+        .activatable(false)
+        .build();
+    placeholder_row.add_prefix(&gtk4::Image::from_icon_name("dialog-information-symbolic"));
     group.add(&command_row);
+    group.add(&placeholder_row);
 
     let vbox = GtkBox::new(Orientation::Vertical, 0);
     vbox.append(&group);

@@ -14,7 +14,7 @@ use rustconn_core::{
     SerialBaudRate, SerialDataBits, SerialFlowControl, SerialParity, SerialStopBits,
 };
 
-use crate::i18n::i18n;
+use crate::i18n::{i18n, i18n_f};
 
 /// Return type for Serial options creation
 ///
@@ -48,7 +48,10 @@ pub fn create_serial_options() -> SerialOptionsWidgets {
     // === Device Group ===
     let device_group = adw::PreferencesGroup::builder()
         .title(i18n("Device"))
-        .description(i18n("Serial uses picocom as the terminal client"))
+        .description(i18n(
+            "Serial uses picocom as the terminal client. \
+             Ensure your user is in the 'dialout' group for device access.",
+        ))
         .build();
 
     let (device_row, device_entry) = EntryRowBuilder::new("Device Path")
@@ -56,6 +59,44 @@ pub fn create_serial_options() -> SerialOptionsWidgets {
         .placeholder("/dev/ttyUSB0")
         .build();
     device_group.add(&device_row);
+
+    // SERIAL-1: Detect available serial devices
+    let detect_button = gtk4::Button::builder()
+        .label(i18n("Detect Devices"))
+        .tooltip_text(i18n("Scan /dev for serial devices"))
+        .valign(gtk4::Align::Center)
+        .build();
+    let detect_row = adw::ActionRow::builder()
+        .title(i18n("Auto-Detect"))
+        .subtitle(i18n("Scan for ttyUSB, ttyACM, and ttyS devices"))
+        .activatable_widget(&detect_button)
+        .build();
+    detect_row.add_suffix(&detect_button);
+    device_group.add(&detect_row);
+
+    let device_entry_detect = device_entry.clone();
+    detect_button.connect_clicked(move |_btn| {
+        let mut devices = Vec::new();
+        for pattern in &["ttyUSB", "ttyACM", "ttyS"] {
+            if let Ok(entries) = std::fs::read_dir("/dev") {
+                for entry in entries.flatten() {
+                    let name = entry.file_name();
+                    let name_str = name.to_string_lossy();
+                    if name_str.starts_with(pattern) {
+                        devices.push(format!("/dev/{name_str}"));
+                    }
+                }
+            }
+        }
+        devices.sort();
+        if let Some(first) = devices.first() {
+            device_entry_detect.set_text(first);
+            device_entry_detect
+                .set_tooltip_text(Some(&i18n_f("Found: {}", &[&devices.join(", ")])));
+        } else {
+            device_entry_detect.set_tooltip_text(Some(&i18n("No serial devices found")));
+        }
+    });
 
     let (custom_args_row, custom_args_entry) = EntryRowBuilder::new("Custom Arguments")
         .subtitle("Additional picocom command-line arguments")

@@ -1,6 +1,6 @@
 # RustConn User Guide
 
-**Version 0.9.7** | GTK4/libadwaita Connection Manager for Linux
+**Version 0.9.8** | GTK4/libadwaita Connection Manager for Linux
 
 RustConn is a modern connection manager designed for Linux with Wayland-first approach. It supports SSH, RDP, VNC, SPICE, SFTP, Telnet, Serial, Kubernetes protocols and Zero Trust integrations through a native GTK4/libadwaita interface.
 
@@ -139,7 +139,14 @@ Shows integration status in sidebar toolbar:
 
 | Protocol | Options |
 |----------|---------|
-| SSH | Auth method (password, publickey, keyboard-interactive, agent, security-key/FIDO2), proxy jump (Jump Host), agent forwarding, X11 forwarding, compression, startup command, port forwarding (local/remote/dynamic) |
+| SSH | Auth method (password, publickey, keyboard-interactive, agent, security-key/FIDO2), key source (default/file/agent), proxy jump (Jump Host), ProxyJump, IdentitiesOnly, ControlMaster, agent forwarding, Waypipe (Wayland forwarding), X11 forwarding, compression, startup command, custom SSH options, port forwarding (local/remote/dynamic) |
+| RDP | Client mode (embedded/external), performance mode (quality/balanced/speed), resolution, color depth, display scale override, audio redirection, RDP gateway (host, port, username), keyboard layout, disable NLA, clipboard sharing, shared folders, custom FreeRDP arguments |
+| VNC | Client mode (embedded/external), performance mode (quality/balanced/speed), encoding (Auto/Tight/ZRLE/Hextile/Raw/CopyRect), compression level, quality level, display scale override, view-only mode, scaling, clipboard sharing, custom arguments |
+| SPICE | TLS encryption, CA certificate (with inline validation), skip certificate verification, USB redirection, clipboard sharing, image compression (Auto/Off/GLZ/LZ/QUIC), proxy URL, shared folders |
+| Telnet | Custom arguments, backspace key behavior, delete key behavior |
+| Serial | Device path, baud rate, data bits, stop bits, parity, flow control, custom picocom arguments |
+| Kubernetes | Kubeconfig path, context, namespace, pod, container, shell, busybox mode, busybox image, custom kubectl arguments |
+| ZeroTrust | Provider-specific (AWS SSM, GCP IAP, Azure Bastion, Azure SSH, OCI Bastion, Cloudflare Access, Teleport, Tailscale SSH, HashiCorp Boundary, Generic Command), custom CLI arguments |
 
 **Security Key / FIDO2 Authentication (SSH):**
 SSH connections support hardware security keys (YubiKey, SoloKey, etc.) via the `security-key` auth method. Requirements:
@@ -147,17 +154,12 @@ SSH connections support hardware security keys (YubiKey, SoloKey, etc.) via the 
 - `libfido2` installed on the client (`sudo apt install libfido2-1`)
 - An `ed25519-sk` or `ecdsa-sk` key generated with `ssh-keygen -t ed25519-sk`
 - The key file path configured in the connection's SSH key field
-| RDP | Resolution, color depth, audio, gateway, shared folders, scale override |
-| VNC | Encoding, compression, quality, view-only, scaling |
-| SPICE | TLS, USB redirection, clipboard, image compression |
-| Telnet | Host, port (default 23), extra arguments |
-| Serial | Device path, baud rate, data bits, stop bits, parity, flow control |
-| Kubernetes | Kubeconfig, context, namespace, pod, container, shell, busybox mode |
-| ZeroTrust | Provider-specific (AWS SSM, GCP IAP, Azure, etc.) |
 
 **Advanced Tabs:**
-- **Display** — Window mode settings
-- **Logging** — Session logging configuration
+- **Advanced** — Window mode (Embedded/External/Fullscreen), remember window position, Wake-on-LAN configuration (MAC address, broadcast, port, wait time)
+- **Automation** — Expect rules for auto-responding to terminal patterns, pattern tester, pre-connect task, post-disconnect task (with conditions: first/last connection only)
+- **Data** — Local variables (connection-scoped, override global variables), custom properties (Text/URL/Protected metadata)
+- **Logging** — Session logging (enable/disable, log path template with variables, timestamp format, max file size, retention days, granular content options: log activity, log input, log output, add timestamps)
 - **WOL** — Wake-on-LAN MAC address
 - **Variables** — Local variables for automation
 - **Automation** — Expect rules for auto-login (see below)
@@ -356,6 +358,8 @@ RustConn/
 
 ### Split View
 
+Split view works with terminal-based sessions: SSH, Telnet, Serial, Kubernetes, Local Shell, and SFTP (mc mode).
+
 - **Horizontal Split** — Ctrl+Shift+H
 - **Vertical Split** — Ctrl+Shift+S
 - **Close Pane** — Ctrl+Shift+W
@@ -385,6 +389,12 @@ Three logging modes (Settings → Terminal page → Logging):
 Optional timestamps (Settings → Terminal page → Logging):
 - Enable "Timestamps" to prepend `[HH:MM:SS]` to each line in log files
 
+Per-connection logging options (Connection dialog → Logging tab → Content Options):
+- **Log Activity** — Record connection and disconnection events
+- **Log Input** — Record keyboard input sent to remote
+- **Log Output** — Record terminal output from remote
+- **Add Timestamps** — Prepend timestamp to each log line
+
 ### Terminal Search
 
 Open with **Ctrl+Shift+F** in any terminal session.
@@ -404,7 +414,7 @@ Connect to serial devices (routers, switches, embedded boards) via `picocom`.
 
 **Create a Serial Connection:**
 1. Press **Ctrl+N** → select **Serial** protocol
-2. Enter device path (e.g., `/dev/ttyUSB0`)
+2. Enter device path (e.g., `/dev/ttyUSB0`) or click **Detect Devices** to auto-scan `/dev/ttyUSB*`, `/dev/ttyACM*`, `/dev/ttyS*`
 3. Configure baud rate (default: 115200), data bits, stop bits, parity, flow control
 4. Click **Create**
 5. Double-click to connect
@@ -595,6 +605,8 @@ Requirements for mc mode:
 - mc FISH VFS requires SSH key authentication — password and keyboard-interactive auth are not supported. A warning toast is shown if password auth is configured.
 - In Flatpak builds, mc 4.8.32 is bundled automatically.
 
+mc-based SFTP sessions run in a VTE terminal, so they support split view (Ctrl+Shift+H / Ctrl+Shift+S) just like SSH tabs.
+
 **CLI:**
 ```bash
 # Open file manager with sftp:// URI (uses xdg-open, falls back to nautilus)
@@ -640,6 +652,8 @@ RustConn supports connecting through identity-aware proxy services (Zero Trust).
 5. Optionally add custom CLI arguments in the **Advanced** section
 
 The Zero Trust tab is available for SSH connections. RustConn constructs the appropriate CLI command and runs it in a VTE terminal.
+
+When selecting a provider, RustConn checks if the required CLI tool is available on PATH. If not found, a warning is displayed with instructions to install the tool or use Flatpak Components.
 
 ### Providers
 
@@ -699,6 +713,8 @@ Connects via Oracle Cloud Infrastructure Bastion service.
 | Bastion OCID | OCID of the Bastion resource | `ocid1.bastion.oc1...` |
 | Target OCID | OCID of the target compute instance | `ocid1.instance.oc1...` |
 | Target IP | Private IP of the target | `10.0.1.5` |
+| SSH Public Key | Path to SSH public key for managed SSH session | `~/.ssh/id_rsa.pub` |
+| Session TTL | Session duration in seconds (default: 1800) | `3600` |
 
 **Prerequisites:** `oci` CLI, configured OCI credentials (`~/.oci/config`).
 
@@ -751,6 +767,8 @@ For providers not listed above. Enter a custom command template that RustConn wi
 | Field | Description | Example |
 |-------|-------------|---------|
 | Command Template | Full command to execute | `my-proxy connect ${host}` |
+
+The command template supports `${host}`, `${user}`, and `${port}` placeholder substitution. These are replaced with the connection's host, username, and port values at runtime.
 
 ### Custom Arguments
 

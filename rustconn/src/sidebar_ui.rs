@@ -73,6 +73,20 @@ pub fn show_context_menu_for_item(
             }
         });
         menu_box.append(&pin_btn);
+
+        // New Connection (pre-selects group of this connection)
+        let new_conn_ctx_btn = create_menu_button(&i18n("New Connection"));
+        let win = window_clone.clone();
+        let popover_c = popover_ref.clone();
+        new_conn_ctx_btn.connect_clicked(move |_| {
+            if let Some(p) = popover_c.upgrade() {
+                p.popdown();
+            }
+            if let Some(action) = win.lookup_action("new-connection-from-context") {
+                action.activate(None);
+            }
+        });
+        menu_box.append(&new_conn_ctx_btn);
     }
 
     // New Connection in Group (groups only)

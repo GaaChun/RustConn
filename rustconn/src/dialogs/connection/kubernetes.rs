@@ -111,7 +111,20 @@ pub fn create_kubernetes_options() -> KubernetesOptionsWidgets {
         .subtitle("Container image for temporary pod")
         .placeholder("busybox:latest")
         .build();
+    busybox_image_entry.set_sensitive(false);
     busybox_group.add(&busybox_image_row);
+
+    // Wire busybox toggle to image entry and pod sensitivity
+    let busybox_image_entry_clone = busybox_image_entry.clone();
+    let pod_entry_clone = pod_entry.clone();
+    let container_entry_clone = container_entry.clone();
+    busybox_check.connect_toggled(move |check| {
+        let on = check.is_active();
+        busybox_image_entry_clone.set_sensitive(on);
+        // When busybox is on, pod/container are not needed
+        pod_entry_clone.set_sensitive(!on);
+        container_entry_clone.set_sensitive(!on);
+    });
 
     content.append(&busybox_group);
 

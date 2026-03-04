@@ -1,6 +1,6 @@
 # RustConn Architecture Guide
 
-**Version 0.9.7** | Last updated: March 2026
+**Version 0.9.8** | Last updated: March 2026
 
 This document describes the internal architecture of RustConn for contributors and maintainers.
 
@@ -708,7 +708,7 @@ pub struct ProtocolCapabilities {
 - `TelnetProtocol`: Telnet via external `telnet` client (capabilities: terminal, split_view)
 - `SerialProtocol`: Serial via external `picocom` client (capabilities: terminal, split_view)
 - `KubernetesProtocol`: Kubernetes via external `kubectl exec` (capabilities: terminal, split_view)
-- `SftpProtocol`: SFTP file transfer via file manager/mc (capabilities: file_transfer, external_fallback)
+- `SftpProtocol`: SFTP file transfer via file manager/mc (capabilities: file_transfer, external_fallback, split_view when mc mode is active)
 
 ### Adding a New Protocol
 
@@ -796,8 +796,9 @@ Bidirectional clipboard sync between local desktop and remote RDP session via th
                         │
                         ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ rustconn/src/embedded_rdp/mod.rs                            │
+│ rustconn/src/embedded_rdp/                                  │
 │                                                             │
+│  clipboard.rs + connection.rs (polling handler)             │
 │  Phase 1: Paste via cliprdr                                 │
 │    Paste button → ClipboardText cmd → cliprdr announce      │
 │                                                             │
@@ -924,7 +925,11 @@ rustconn/src/
 │   ├── widgets.rs         # Shared widget builders (CheckboxRow, EntryRow, SwitchRow, etc.)
 │   ├── connection/        # Connection dialog (modular)
 │   │   ├── mod.rs         # Module exports
-│   │   ├── dialog.rs      # Main ConnectionDialog
+│   │   ├── dialog.rs      # Main ConnectionDialog (~1500 lines, coordination)
+│   │   ├── general_tab.rs # General tab: name, host, port, group, credentials
+│   │   ├── data_tab.rs    # Data tab: variables, custom properties
+│   │   ├── automation_tab.rs # Automation tab: expect rules, pre/post tasks
+│   │   ├── advanced_tab.rs   # Advanced tab: window mode, Wake-on-LAN
 │   │   ├── logging_tab.rs # LoggingTab struct (extracted from dialog)
 │   │   ├── protocol_layout.rs # ProtocolLayoutBuilder for consistent UI
 │   │   ├── shared_folders.rs  # Shared folders UI (RDP/SPICE)
@@ -944,13 +949,18 @@ rustconn/src/
 │   ├── settings/          # Settings tabs (incl. keybindings_tab.rs)
 │   └── ...
 ├── embedded_rdp/          # Embedded RDP viewer (modular structure)
-│   ├── mod.rs             # Module exports
+│   ├── mod.rs             # EmbeddedRdpWidget struct, signals, public API (~860 lines)
+│   ├── clipboard.rs       # Copy/Paste and Ctrl+Alt+Del button handlers
+│   ├── connection.rs      # connect/disconnect/reconnect, IronRDP polling, external fallback
+│   ├── drawing.rs         # DrawingArea draw function, framebuffer rendering, status overlay
+│   ├── input.rs           # Keyboard/mouse input handlers (cfg-gated for rdp-embedded)
+│   ├── resize.rs          # Debounced resize with resolution change (cfg-gated)
 │   ├── buffer.rs          # Frame buffer management
 │   ├── detect.rs          # Backend detection
 │   ├── launcher.rs        # FreeRDP launcher
 │   ├── thread.rs          # FreeRDP thread with consolidated mutex
 │   ├── types.rs           # Shared types
-│   └── ui.rs              # RDP widget
+│   └── ui.rs              # Status overlay rendering
 ├── monitoring.rs           # MonitoringBar widget, MonitoringCoordinator
 └── utils.rs               # Async helpers, utilities
 
