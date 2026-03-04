@@ -403,6 +403,58 @@ impl MainWindow {
         });
         window.add_action(&new_conn_in_group_action);
 
+        // New connection from connection context (pre-selects the group of the selected connection)
+        let new_conn_from_ctx_action = gio::SimpleAction::new("new-connection-from-context", None);
+        let window_weak = window.downgrade();
+        let state_clone = state.clone();
+        let sidebar_clone = sidebar.clone();
+        new_conn_from_ctx_action.connect_activate(move |_, _| {
+            if let Some(win) = window_weak.upgrade() {
+                // Try to get group_id from the selected connection
+                let selected = sidebar_clone.get_selected_item();
+                let group_id = selected.as_ref().and_then(|item| {
+                    let id_str = item.id();
+                    let is_group = item.is_group();
+                    tracing::debug!(
+                        id = %id_str,
+                        is_group,
+                        "new-connection-from-context: selected item"
+                    );
+                    let conn_id = uuid::Uuid::parse_str(&id_str).ok()?;
+                    if is_group {
+                        // If user right-clicked a group, use the group ID directly
+                        Some(conn_id)
+                    } else {
+                        // If user right-clicked a connection, get its group_id
+                        state_clone.try_borrow().ok().and_then(|s| {
+                            let conn = s.get_connection(conn_id);
+                            tracing::debug!(
+                                found = conn.is_some(),
+                                group_id = ?conn.and_then(|c| c.group_id),
+                                "new-connection-from-context: connection lookup"
+                            );
+                            conn.and_then(|c| c.group_id)
+                        })
+                    }
+                });
+                if let Some(gid) = group_id {
+                    connection_dialogs::show_new_connection_dialog_in_group(
+                        win.upcast_ref(),
+                        state_clone.clone(),
+                        sidebar_clone.clone(),
+                        gid,
+                    );
+                } else {
+                    connection_dialogs::show_new_connection_dialog(
+                        win.upcast_ref(),
+                        state_clone.clone(),
+                        sidebar_clone.clone(),
+                    );
+                }
+            }
+        });
+        window.add_action(&new_conn_from_ctx_action);
+
         // New group action
         let new_group_action = gio::SimpleAction::new("new-group", None);
         let window_weak = window.downgrade();
@@ -2099,11 +2151,15 @@ impl MainWindow {
                 return; // No active session to split
             };
 
-            // Check if protocol supports split view (only SSH, Local Shell, ZeroTrust)
+            // Check if protocol supports split view (only SSH, Local Shell, ZeroTrust, SFTP with mc)
             // RDP, VNC, SPICE are not supported because they use embedded widgets, not VTE terminals
             if let Some(info) = notebook_for_split_h.get_session_info(current_session) {
                 let protocol = &info.protocol;
-                if protocol != "ssh" && protocol != "local" && !protocol.starts_with("zerotrust") {
+                if protocol != "ssh"
+                    && protocol != "local"
+                    && protocol != "sftp"
+                    && !protocol.starts_with("zerotrust")
+                {
                     tracing::debug!(
                         "split-horizontal: protocol '{}' not supported for split view",
                         protocol
@@ -2111,7 +2167,7 @@ impl MainWindow {
                     if let Some(win) = window_weak_h.upgrade() {
                         crate::toast::show_toast_on_window(
                             &win,
-                            &crate::i18n::i18n("Split view is only available for SSH and Local Shell tabs"),
+                            &crate::i18n::i18n("Split view is only available for SSH, SFTP and Local Shell tabs"),
                             crate::toast::ToastType::Warning,
                         );
                     }
@@ -2365,11 +2421,15 @@ impl MainWindow {
                 return; // No active session to split
             };
 
-            // Check if protocol supports split view (only SSH, Local Shell, ZeroTrust)
+            // Check if protocol supports split view (only SSH, Local Shell, ZeroTrust, SFTP with mc)
             // RDP, VNC, SPICE are not supported because they use embedded widgets, not VTE terminals
             if let Some(info) = notebook_for_split_v.get_session_info(current_session) {
                 let protocol = &info.protocol;
-                if protocol != "ssh" && protocol != "local" && !protocol.starts_with("zerotrust") {
+                if protocol != "ssh"
+                    && protocol != "local"
+                    && protocol != "sftp"
+                    && !protocol.starts_with("zerotrust")
+                {
                     tracing::debug!(
                         "split-vertical: protocol '{}' not supported for split view",
                         protocol
@@ -2377,7 +2437,7 @@ impl MainWindow {
                     if let Some(win) = window_weak_v.upgrade() {
                         crate::toast::show_toast_on_window(
                             &win,
-                            &crate::i18n::i18n("Split view is only available for SSH and Local Shell tabs"),
+                            &crate::i18n::i18n("Split view is only available for SSH, SFTP and Local Shell tabs"),
                             crate::toast::ToastType::Warning,
                         );
                     }
@@ -4036,8 +4096,9 @@ impl MainWindow {
             notebook.widget().set_vexpand(true);
             notebook.show_tab_view_content();
 
-            // For SSH and Zero Trust, we assume connected for now
-            if info.protocol == "ssh" || info.protocol.starts_with("zerotrust") {
+            // For Zero Trust, detect connection via terminal content changes
+            // (SSH status detection is handled inside start_ssh_connection_internal)
+            if info.protocol.starts_with("zerotrust") {
                 // Set status to connecting initially (only if not already connected)
                 if sidebar
                     .get_connection_status(&connection_id.to_string())
@@ -4046,34 +4107,30 @@ impl MainWindow {
                     sidebar.update_connection_status(&connection_id.to_string(), "connecting");
                 }
 
-                // Monitor terminal content changes to detect successful connection
-                // If content changes (e.g. prompt appears), mark as connected
                 let sidebar_clone = sidebar.clone();
                 let notebook_clone = notebook.clone();
                 let connection_id_str = connection_id.to_string();
-
-                // Track whether this specific session has been marked as connected
                 let session_connected = std::rc::Rc::new(std::cell::Cell::new(false));
                 let session_connected_clone = session_connected.clone();
 
-                // Clone protocol for use in closure
-                let protocol_for_closure = info.protocol.clone();
-
                 notebook.connect_contents_changed(session_id, move || {
-                    // Only increment once per session
                     if !session_connected_clone.get() {
-                        // Check if content indicates actual output from the process
-                        // For SSH: initial header is 2 lines, wait for more output
-                        // For Zero Trust (AWS SSM etc.): any output indicates success
+                        // Zero Trust: any output indicates success (threshold 0)
                         if let Some(row) = notebook_clone.get_terminal_cursor_row(session_id) {
-                            let threshold = if protocol_for_closure.starts_with("zerotrust") {
-                                0
-                            } else {
-                                2
-                            };
-                            if row > threshold {
+                            tracing::debug!(
+                                protocol = "zerotrust",
+                                cursor_row = row,
+                                threshold = 0,
+                                "Zero Trust status detection: checking cursor row"
+                            );
+                            if row > 0 {
                                 sidebar_clone.increment_session_count(&connection_id_str);
                                 session_connected_clone.set(true);
+                                tracing::info!(
+                                    protocol = "zerotrust",
+                                    cursor_row = row,
+                                    "Terminal connection detected as established"
+                                );
                             }
                         }
                     }
@@ -4176,87 +4233,11 @@ impl MainWindow {
                     state,
                     notebook,
                     sidebar,
+                    monitoring,
                     connection_id,
                     &conn_clone,
                     logging_enabled,
                 );
-
-                // Defer monitoring start until SSH connection is actually established.
-                // The VTE terminal spawns the SSH process asynchronously; starting
-                // monitoring immediately would open a second SSH connection that
-                // races (and usually fails) before the primary one completes.
-                if let Some(sid) = session_id
-                    && let Ok(state_ref) = state.try_borrow()
-                {
-                    let settings = state_ref.settings().monitoring.clone();
-                    let mon_enabled = conn_clone
-                        .monitoring_config
-                        .as_ref()
-                        .map_or(settings.enabled, |mc| mc.is_enabled(&settings));
-                    if mon_enabled {
-                        let effective = rustconn_core::MonitoringSettings {
-                            enabled: true,
-                            interval_secs: conn_clone.monitoring_config.as_ref().map_or_else(
-                                || settings.effective_interval_secs(),
-                                |mc| mc.effective_interval(&settings),
-                            ),
-                            ..settings
-                        };
-                        let identity_file = if let rustconn_core::ProtocolConfig::Ssh(ref ssh_cfg) =
-                            conn_clone.protocol_config
-                        {
-                            ssh_cfg
-                                .key_path
-                                .as_ref()
-                                .map(|p| p.to_string_lossy().to_string())
-                        } else {
-                            None
-                        };
-                        let cached_pw =
-                            state_ref
-                                .get_cached_credentials(connection_id)
-                                .and_then(|c| {
-                                    use secrecy::ExposeSecret;
-                                    let pw = c.password.expose_secret().to_string();
-                                    if pw.is_empty() { None } else { Some(pw) }
-                                });
-
-                        // Capture values for the deferred closure
-                        let monitoring_clone = Rc::clone(monitoring);
-                        let notebook_clone = notebook.clone();
-                        let host = conn_clone.host.clone();
-                        let port = conn_clone.port;
-                        let username = conn_clone.username.clone();
-                        let monitoring_started = std::rc::Rc::new(std::cell::Cell::new(false));
-                        let monitoring_started_clone = monitoring_started.clone();
-
-                        notebook.connect_contents_changed(sid, move || {
-                            if monitoring_started_clone.get() {
-                                return;
-                            }
-                            // Wait for SSH to actually connect (cursor past header lines)
-                            let Some(row) = notebook_clone.get_terminal_cursor_row(sid) else {
-                                return;
-                            };
-                            if row <= 2 {
-                                return;
-                            }
-                            monitoring_started_clone.set(true);
-                            if let Some(container) = notebook_clone.get_session_container(sid) {
-                                monitoring_clone.start_monitoring(
-                                    sid,
-                                    &container,
-                                    &effective,
-                                    &host,
-                                    port,
-                                    username.as_deref(),
-                                    identity_file.as_deref(),
-                                    cached_pw.as_deref(),
-                                );
-                            }
-                        });
-                    }
-                }
 
                 session_id
             }

@@ -36,6 +36,10 @@ pub type RdpOptionsWidgets = (
     DropDown,                       // scale_override_dropdown
     CheckButton,                    // audio_check
     Entry,                          // gateway_entry
+    SpinButton,                     // gateway_port_spin
+    Entry,                          // gateway_username_entry
+    CheckButton,                    // disable_nla_check
+    CheckButton,                    // clipboard_check
     Rc<RefCell<Vec<SharedFolder>>>, // shared_folders
     gtk4::ListBox,                  // folders_list
     Entry,                          // custom_args_entry
@@ -59,7 +63,15 @@ pub fn create_rdp_options() -> RdpOptionsWidgets {
     content.append(&display_group);
 
     // === Features Group ===
-    let (features_group, audio_check, gateway_entry) = create_features_group();
+    let (
+        features_group,
+        audio_check,
+        gateway_entry,
+        gateway_port_spin,
+        gateway_username_entry,
+        disable_nla_check,
+        clipboard_check,
+    ) = create_features_group();
     content.append(&features_group);
 
     // === Shared Folders Group ===
@@ -81,6 +93,10 @@ pub fn create_rdp_options() -> RdpOptionsWidgets {
         scale_override_dropdown,
         audio_check,
         gateway_entry,
+        gateway_port_spin,
+        gateway_username_entry,
+        disable_nla_check,
+        clipboard_check,
         shared_folders,
         folders_list,
         args_entry,
@@ -210,7 +226,16 @@ fn create_display_group() -> (
 }
 
 /// Creates the Features preferences group
-fn create_features_group() -> (adw::PreferencesGroup, CheckButton, Entry) {
+#[allow(clippy::type_complexity)]
+fn create_features_group() -> (
+    adw::PreferencesGroup,
+    CheckButton,
+    Entry,
+    SpinButton,
+    Entry,
+    CheckButton,
+    CheckButton,
+) {
     let features_group = adw::PreferencesGroup::builder()
         .title(i18n("Features"))
         .build();
@@ -221,6 +246,19 @@ fn create_features_group() -> (adw::PreferencesGroup, CheckButton, Entry) {
         .build();
     features_group.add(&audio_row);
 
+    // Clipboard sharing
+    let (clipboard_row, clipboard_check) = CheckboxRowBuilder::new("Clipboard Sharing")
+        .subtitle("Synchronize clipboard with remote")
+        .active(true)
+        .build();
+    features_group.add(&clipboard_row);
+
+    // Disable NLA
+    let (nla_row, disable_nla_check) = CheckboxRowBuilder::new("Disable NLA")
+        .subtitle("Skip Network Level Authentication (less secure)")
+        .build();
+    features_group.add(&nla_row);
+
     // Gateway
     let (gateway_row, gateway_entry) = EntryRowBuilder::new("RDP Gateway")
         .subtitle("Remote Desktop Gateway server")
@@ -228,7 +266,56 @@ fn create_features_group() -> (adw::PreferencesGroup, CheckButton, Entry) {
         .build();
     features_group.add(&gateway_row);
 
-    (features_group, audio_check, gateway_entry)
+    // Gateway port
+    let gw_port_adj = gtk4::Adjustment::new(443.0, 1.0, 65535.0, 1.0, 10.0, 0.0);
+    let gateway_port_spin = SpinButton::builder()
+        .adjustment(&gw_port_adj)
+        .climb_rate(1.0)
+        .digits(0)
+        .valign(gtk4::Align::Center)
+        .build();
+    let gw_port_row = adw::ActionRow::builder()
+        .title(i18n("Gateway Port"))
+        .subtitle(i18n("Default: 443"))
+        .build();
+    gw_port_row.add_suffix(&gateway_port_spin);
+    features_group.add(&gw_port_row);
+
+    // Gateway username
+    let gateway_username_entry = Entry::builder()
+        .hexpand(true)
+        .valign(gtk4::Align::Center)
+        .placeholder_text(i18n("Same as connection username"))
+        .build();
+    let gw_user_row = adw::ActionRow::builder()
+        .title(i18n("Gateway Username"))
+        .subtitle(i18n("If different from connection username"))
+        .build();
+    gw_user_row.add_suffix(&gateway_username_entry);
+    features_group.add(&gw_user_row);
+
+    // Show/hide gateway details based on gateway hostname
+    let gw_port_row_clone = gw_port_row.clone();
+    let gw_user_row_clone = gw_user_row.clone();
+    let has_gateway = !gateway_entry.text().is_empty();
+    gw_port_row.set_visible(has_gateway);
+    gw_user_row.set_visible(has_gateway);
+
+    gateway_entry.connect_changed(move |entry| {
+        let visible = !entry.text().is_empty();
+        gw_port_row_clone.set_visible(visible);
+        gw_user_row_clone.set_visible(visible);
+    });
+
+    (
+        features_group,
+        audio_check,
+        gateway_entry,
+        gateway_port_spin,
+        gateway_username_entry,
+        disable_nla_check,
+        clipboard_check,
+    )
 }
 
 /// Creates the Advanced preferences group

@@ -1548,8 +1548,10 @@ impl TerminalNotebook {
     }
 
     /// Gets the cursor row of a terminal session
+    ///
+    /// VTE's `cursor_position()` returns `(column, row)`.
     pub fn get_terminal_cursor_row(&self, session_id: Uuid) -> Option<i64> {
-        self.get_terminal(session_id).map(|t| t.cursor_position().0)
+        self.get_terminal(session_id).map(|t| t.cursor_position().1)
     }
 
     /// Gets session info for a session

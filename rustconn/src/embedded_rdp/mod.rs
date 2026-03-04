@@ -29,10 +29,6 @@
 //! Both modes open FreeRDP in a separate window; the difference is in client selection
 //! and user expectations.
 
-// cast_possible_truncation, cast_precision_loss allowed at workspace level
-#![allow(clippy::cast_sign_loss)]
-#![allow(clippy::missing_panics_doc)]
-#![allow(clippy::significant_drop_in_scrutinee)]
 //!
 //! # Requirements Coverage
 //!
@@ -81,6 +77,17 @@ use crate::i18n::i18n;
 
 #[cfg(feature = "rdp-embedded")]
 use rustconn_core::rdp_client::RdpClientCommand;
+
+/// Invokes a callback stored in a `RefCell<Option<T>>` using the take-invoke-restore
+/// pattern. This prevents `BorrowMutError` panics when the callback re-enters and
+/// borrows the same cell.
+fn with_callback<T>(cell: &RefCell<Option<T>>, f: impl FnOnce(&T)) {
+    let cb = cell.borrow_mut().take();
+    if let Some(ref callback) = cb {
+        f(callback);
+        *cell.borrow_mut() = cb;
+    }
+}
 
 /// Embedded RDP widget using Wayland subsurface
 ///
@@ -459,7 +466,7 @@ impl EmbeddedRdpWidget {
                         }
 
                         // Show progress
-                        status_label_clone.set_text("Downloading files...");
+                        status_label_clone.set_text(&i18n("Downloading files..."));
                         status_label_clone.set_visible(true);
 
                         if let Some(ref callback) = *on_progress_clone.borrow() {
@@ -597,11 +604,7 @@ impl EmbeddedRdpWidget {
 
     /// Reports a fallback and notifies listeners (Requirement 6.4)
     fn report_fallback(&self, message: &str) {
-        let callback = self.on_fallback.borrow_mut().take();
-        if let Some(cb) = callback {
-            cb(message);
-            *self.on_fallback.borrow_mut() = Some(cb);
-        }
+        with_callback(&self.on_fallback, |cb| cb(message));
     }
 
     /// Sets the connection state and notifies listeners
@@ -609,25 +612,14 @@ impl EmbeddedRdpWidget {
         *self.state.borrow_mut() = new_state;
         self.drawing_area.queue_draw();
 
-        // Take callback out so the RefCell borrow is released before invocation,
-        // preventing panics if the callback re-enters and borrows the same cell.
-        let callback = self.on_state_changed.borrow_mut().take();
-        if let Some(cb) = callback {
-            cb(new_state);
-            // Restore the callback for future use
-            *self.on_state_changed.borrow_mut() = Some(cb);
-        }
+        with_callback(&self.on_state_changed, |cb| cb(new_state));
     }
 
     /// Reports an error and notifies listeners
     fn report_error(&self, message: &str) {
         self.set_state(RdpConnectionState::Error);
 
-        let callback = self.on_error.borrow_mut().take();
-        if let Some(cb) = callback {
-            cb(message);
-            *self.on_error.borrow_mut() = Some(cb);
-        }
+        with_callback(&self.on_error, |cb| cb(message));
     }
 }
 

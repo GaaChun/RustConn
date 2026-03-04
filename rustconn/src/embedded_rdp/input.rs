@@ -18,14 +18,57 @@ use super::types::{RdpCommand, RdpConnectionState};
 #[cfg(feature = "rdp-embedded")]
 use rustconn_core::rdp_client::RdpClientCommand;
 
+/// Sends a key event via IronRDP using the fallback chain: keycode → keyval → Unicode.
+///
+/// This fixes keyboard layout issues (e.g. German QWERTZ) where keyval-based
+/// mapping produces wrong characters (#15).
+#[cfg(feature = "rdp-embedded")]
+fn send_ironrdp_key(
+    keycode: u32,
+    keyval: gdk::Key,
+    pressed: bool,
+    ironrdp_tx: &Rc<RefCell<Option<std::sync::mpsc::Sender<RdpClientCommand>>>>,
+) {
+    use rustconn_core::rdp_client::{keycode_to_scancode, keyval_to_scancode, keyval_to_unicode};
+
+    let gdk_keyval = keyval.into_glib();
+
+    if let Some(scancode) = keycode_to_scancode(keycode) {
+        if let Some(ref tx) = *ironrdp_tx.borrow() {
+            let _ = tx.send(RdpClientCommand::KeyEvent {
+                scancode: scancode.code,
+                pressed,
+                extended: scancode.extended,
+            });
+        }
+    } else if let Some(scancode) = keyval_to_scancode(gdk_keyval) {
+        if let Some(ref tx) = *ironrdp_tx.borrow() {
+            let _ = tx.send(RdpClientCommand::KeyEvent {
+                scancode: scancode.code,
+                pressed,
+                extended: scancode.extended,
+            });
+        }
+    } else if let Some(ch) = keyval_to_unicode(gdk_keyval) {
+        if let Some(ref tx) = *ironrdp_tx.borrow() {
+            let _ = tx.send(RdpClientCommand::UnicodeEvent {
+                character: ch,
+                pressed,
+            });
+        }
+    } else if pressed {
+        tracing::warn!(
+            keycode,
+            keyval = format_args!("0x{:X}", gdk_keyval),
+            "[IronRDP] Unknown key"
+        );
+    }
+}
+
 impl super::EmbeddedRdpWidget {
     /// Sets up keyboard and mouse input handlers with coordinate transformation
     #[cfg(feature = "rdp-embedded")]
     pub(super) fn setup_input_handlers(&self) {
-        use rustconn_core::rdp_client::{
-            keycode_to_scancode, keyval_to_scancode, keyval_to_unicode,
-        };
-
         // Keyboard input handler
         let key_controller = EventControllerKey::new();
         let state = self.state.clone();
@@ -41,45 +84,7 @@ impl super::EmbeddedRdpWidget {
 
             if embedded && current_state == RdpConnectionState::Connected {
                 if using_ironrdp {
-                    // Use hardware keycode for layout-independent scancode mapping.
-                    // This fixes keyboard layout issues (e.g. German QWERTZ) where
-                    // keyval-based mapping produces wrong characters (#15).
-                    // Fallback chain: keycode → keyval → Unicode
-                    let hw_keycode = keycode;
-                    let gdk_keyval = keyval.into_glib();
-
-                    if let Some(scancode) = keycode_to_scancode(hw_keycode) {
-                        if let Some(ref tx) = *ironrdp_tx.borrow() {
-                            let _ = tx.send(RdpClientCommand::KeyEvent {
-                                scancode: scancode.code,
-                                pressed: true,
-                                extended: scancode.extended,
-                            });
-                        }
-                    } else if let Some(scancode) = keyval_to_scancode(gdk_keyval) {
-                        // Fallback to keyval for keys not in keycode table
-                        if let Some(ref tx) = *ironrdp_tx.borrow() {
-                            let _ = tx.send(RdpClientCommand::KeyEvent {
-                                scancode: scancode.code,
-                                pressed: true,
-                                extended: scancode.extended,
-                            });
-                        }
-                    } else if let Some(ch) = keyval_to_unicode(gdk_keyval) {
-                        // Non-Latin characters (Cyrillic, etc.) — send as Unicode event
-                        if let Some(ref tx) = *ironrdp_tx.borrow() {
-                            let _ = tx.send(RdpClientCommand::UnicodeEvent {
-                                character: ch,
-                                pressed: true,
-                            });
-                        }
-                    } else {
-                        tracing::warn!(
-                            "[IronRDP] Unknown key: keycode={}, keyval=0x{:X}",
-                            hw_keycode,
-                            gdk_keyval
-                        );
-                    }
+                    send_ironrdp_key(keycode, keyval, true, &ironrdp_tx);
                 } else if let Some(ref thread) = *freerdp_thread.borrow() {
                     let _ = thread.send_command(RdpCommand::KeyEvent {
                         keyval: keyval.into_glib(),
@@ -104,33 +109,7 @@ impl super::EmbeddedRdpWidget {
 
             if embedded && current_state == RdpConnectionState::Connected {
                 if using_ironrdp {
-                    let hw_keycode = keycode;
-                    let gdk_keyval = keyval.into_glib();
-
-                    if let Some(scancode) = keycode_to_scancode(hw_keycode) {
-                        if let Some(ref tx) = *ironrdp_tx.borrow() {
-                            let _ = tx.send(RdpClientCommand::KeyEvent {
-                                scancode: scancode.code,
-                                pressed: false,
-                                extended: scancode.extended,
-                            });
-                        }
-                    } else if let Some(scancode) = keyval_to_scancode(gdk_keyval) {
-                        if let Some(ref tx) = *ironrdp_tx.borrow() {
-                            let _ = tx.send(RdpClientCommand::KeyEvent {
-                                scancode: scancode.code,
-                                pressed: false,
-                                extended: scancode.extended,
-                            });
-                        }
-                    } else if let Some(ch) = keyval_to_unicode(gdk_keyval)
-                        && let Some(ref tx) = *ironrdp_tx.borrow()
-                    {
-                        let _ = tx.send(RdpClientCommand::UnicodeEvent {
-                            character: ch,
-                            pressed: false,
-                        });
-                    }
+                    send_ironrdp_key(keycode, keyval, false, &ironrdp_tx);
                 } else if let Some(ref thread) = *freerdp_thread.borrow() {
                     let _ = thread.send_command(RdpCommand::KeyEvent {
                         keyval: keyval.into_glib(),

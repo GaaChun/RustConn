@@ -47,6 +47,7 @@ pub fn start_ssh_connection(
     state: &SharedAppState,
     notebook: &SharedNotebook,
     sidebar: &SharedSidebar,
+    monitoring: &super::types::SharedMonitoring,
     connection_id: Uuid,
     conn: &rustconn_core::Connection,
     logging_enabled: bool,
@@ -62,6 +63,7 @@ pub fn start_ssh_connection(
         let state_clone = state.clone();
         let notebook_clone = notebook.clone();
         let sidebar_clone = sidebar.clone();
+        let monitoring_clone = Rc::clone(monitoring);
         let conn_clone = conn.clone();
 
         // Run port check in background thread
@@ -75,6 +77,7 @@ pub fn start_ssh_connection(
                             &state_clone,
                             &notebook_clone,
                             &sidebar_clone,
+                            &monitoring_clone,
                             connection_id,
                             &conn_clone,
                             logging_enabled,
@@ -112,6 +115,7 @@ pub fn start_ssh_connection(
             state,
             notebook,
             sidebar,
+            monitoring,
             connection_id,
             conn,
             logging_enabled,
@@ -127,6 +131,7 @@ fn start_ssh_connection_internal(
     state: &SharedAppState,
     notebook: &SharedNotebook,
     sidebar: &SharedSidebar,
+    monitoring: &super::types::SharedMonitoring,
     connection_id: Uuid,
     conn: &rustconn_core::Connection,
     logging_enabled: bool,
@@ -428,6 +433,108 @@ fn start_ssh_connection_internal(
 
     // Wire up child exited callback for session cleanup (second call for terminal monitoring)
     MainWindow::setup_child_exited_handler(state, notebook, sidebar, session_id, connection_id);
+
+    // --- SSH status detection: mark sidebar "connected" once terminal output appears ---
+    {
+        let sidebar_clone = sidebar.clone();
+        let notebook_clone = notebook.clone();
+        let connection_id_str = connection_id.to_string();
+        let session_connected = std::rc::Rc::new(std::cell::Cell::new(false));
+        let session_connected_clone = session_connected.clone();
+        let protocol_str = String::from("ssh");
+
+        notebook.connect_contents_changed(session_id, move || {
+            if session_connected_clone.get() {
+                return;
+            }
+            if let Some(row) = notebook_clone.get_terminal_cursor_row(session_id) {
+                tracing::debug!(
+                    protocol = "ssh",
+                    cursor_row = row,
+                    threshold = 2,
+                    "SSH status detection: checking cursor row"
+                );
+                if row > 2 {
+                    sidebar_clone.increment_session_count(&connection_id_str);
+                    session_connected_clone.set(true);
+                    tracing::info!(
+                        protocol = %protocol_str,
+                        cursor_row = row,
+                        "Terminal connection detected as established"
+                    );
+                }
+            }
+        });
+    }
+
+    // --- Deferred monitoring start: wait for SSH to connect before opening monitor ---
+    if let Ok(state_ref) = state.try_borrow() {
+        let settings = state_ref.settings().monitoring.clone();
+        let mon_enabled = conn
+            .monitoring_config
+            .as_ref()
+            .map_or(settings.enabled, |mc| mc.is_enabled(&settings));
+        if mon_enabled {
+            let effective = rustconn_core::MonitoringSettings {
+                enabled: true,
+                interval_secs: conn.monitoring_config.as_ref().map_or_else(
+                    || settings.effective_interval_secs(),
+                    |mc| mc.effective_interval(&settings),
+                ),
+                ..settings
+            };
+            let identity_file_mon = if let rustconn_core::ProtocolConfig::Ssh(ref ssh_cfg) =
+                conn.protocol_config
+            {
+                ssh_cfg
+                    .key_path
+                    .as_ref()
+                    .map(|p| p.to_string_lossy().to_string())
+            } else {
+                None
+            };
+            let cached_pw = state_ref
+                .get_cached_credentials(connection_id)
+                .and_then(|c| {
+                    use secrecy::ExposeSecret;
+                    let pw = c.password.expose_secret().to_string();
+                    if pw.is_empty() { None } else { Some(pw) }
+                });
+
+            let monitoring_clone = Rc::clone(monitoring);
+            let notebook_clone = notebook.clone();
+            let mon_host = conn.host.clone();
+            let mon_port = conn.port;
+            let mon_username = conn.username.clone();
+            let monitoring_started = std::rc::Rc::new(std::cell::Cell::new(false));
+            let monitoring_started_clone = monitoring_started.clone();
+
+            notebook.connect_contents_changed(session_id, move || {
+                if monitoring_started_clone.get() {
+                    return;
+                }
+                let Some(row) = notebook_clone.get_terminal_cursor_row(session_id) else {
+                    return;
+                };
+                if row <= 2 {
+                    return;
+                }
+                monitoring_started_clone.set(true);
+                if let Some(container) = notebook_clone.get_session_container(session_id) {
+                    monitoring_clone.start_monitoring(
+                        session_id,
+                        &container,
+                        &effective,
+                        &mon_host,
+                        mon_port,
+                        mon_username.as_deref(),
+                        identity_file_mon.as_deref(),
+                        cached_pw.as_deref(),
+                    );
+                }
+            });
+        }
+    }
 
     Some(session_id)
 }

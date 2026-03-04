@@ -62,6 +62,12 @@ pub fn cmd_show(config_path: Option<&Path>, name: &str) -> Result<(), CliError> 
             if let Some(ref res) = config.resolution {
                 println!("  Resolution: {}x{}", res.width, res.height);
             }
+            if config.disable_nla {
+                println!("  NLA:      disabled");
+            }
+            if !config.clipboard_enabled {
+                println!("  Clipboard: disabled");
+            }
         }
         rustconn_core::models::ProtocolConfig::Serial(ref config) => {
             println!("  Device:   {}", config.device);

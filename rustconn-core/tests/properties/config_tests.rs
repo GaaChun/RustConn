@@ -173,6 +173,8 @@ fn arb_rdp_config() -> impl Strategy<Value = RdpConfig> {
                 performance_mode: Default::default(),
                 keyboard_layout: None,
                 scale_override: Default::default(),
+                disable_nla: false,
+                clipboard_enabled: true,
             },
         )
 }

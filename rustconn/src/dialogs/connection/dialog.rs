@@ -155,6 +155,10 @@ pub struct ConnectionDialog {
     rdp_scale_override_dropdown: DropDown,
     rdp_audio_check: CheckButton,
     rdp_gateway_entry: Entry,
+    rdp_gateway_port_spin: SpinButton,
+    rdp_gateway_username_entry: Entry,
+    rdp_disable_nla_check: CheckButton,
+    rdp_clipboard_check: CheckButton,
     rdp_shared_folders: Rc<RefCell<Vec<SharedFolder>>>,
     rdp_shared_folders_list: gtk4::ListBox,
     rdp_custom_args_entry: Entry,
@@ -162,7 +166,7 @@ pub struct ConnectionDialog {
     // VNC fields
     vnc_client_mode_dropdown: DropDown,
     vnc_performance_mode_dropdown: DropDown,
-    vnc_encoding_entry: Entry,
+    vnc_encoding_dropdown: DropDown,
     vnc_compression_spin: SpinButton,
     vnc_quality_spin: SpinButton,
     vnc_view_only_check: CheckButton,
@@ -178,6 +182,7 @@ pub struct ConnectionDialog {
     spice_usb_check: CheckButton,
     spice_clipboard_check: CheckButton,
     spice_compression_dropdown: DropDown,
+    spice_proxy_entry: Entry,
     spice_shared_folders: Rc<RefCell<Vec<SharedFolder>>>,
     spice_shared_folders_list: gtk4::ListBox,
     // Zero Trust fields
@@ -202,6 +207,8 @@ pub struct ConnectionDialog {
     zt_oci_bastion_id_entry: adw::EntryRow,
     zt_oci_target_id_entry: adw::EntryRow,
     zt_oci_target_ip_entry: adw::EntryRow,
+    zt_oci_ssh_key_entry: adw::EntryRow,
+    zt_oci_session_ttl_spin: adw::SpinRow,
     // Cloudflare Access fields
     zt_cf_hostname_entry: adw::EntryRow,
     // Teleport fields
@@ -371,7 +378,7 @@ impl ConnectionDialog {
             username_entry,
             username_label,
             domain_entry,
-            _domain_label,
+            domain_label,
             tags_entry,
             tags_label,
             protocol_dropdown,
@@ -461,6 +468,10 @@ impl ConnectionDialog {
             rdp_scale_override_dropdown,
             rdp_audio_check,
             rdp_gateway_entry,
+            rdp_gateway_port_spin,
+            rdp_gateway_username_entry,
+            rdp_disable_nla_check,
+            rdp_clipboard_check,
             rdp_shared_folders,
             rdp_shared_folders_list,
             rdp_custom_args_entry,
@@ -473,7 +484,7 @@ impl ConnectionDialog {
             vnc_box,
             vnc_client_mode_dropdown,
             vnc_performance_mode_dropdown,
-            vnc_encoding_entry,
+            vnc_encoding_dropdown,
             vnc_compression_spin,
             vnc_quality_spin,
             vnc_view_only_check,
@@ -494,6 +505,7 @@ impl ConnectionDialog {
             spice_usb_check,
             spice_clipboard_check,
             spice_compression_dropdown,
+            spice_proxy_entry,
             spice_shared_folders,
             spice_shared_folders_list,
         ) = Self::create_spice_options();
@@ -518,6 +530,8 @@ impl ConnectionDialog {
             zt_oci_bastion_id_entry,
             zt_oci_target_id_entry,
             zt_oci_target_ip_entry,
+            zt_oci_ssh_key_entry,
+            zt_oci_session_ttl_spin,
             zt_cf_hostname_entry,
             zt_teleport_host_entry,
             zt_teleport_cluster_entry,
@@ -584,6 +598,8 @@ impl ConnectionDialog {
             &password_source_dropdown,
             &password_source_label,
             &password_row,
+            &domain_entry,
+            &domain_label,
         );
 
         // === Data Tab (Variables + Custom Properties) ===
@@ -726,12 +742,16 @@ impl ConnectionDialog {
             &rdp_scale_override_dropdown,
             &rdp_audio_check,
             &rdp_gateway_entry,
+            &rdp_gateway_port_spin,
+            &rdp_gateway_username_entry,
+            &rdp_disable_nla_check,
+            &rdp_clipboard_check,
             &rdp_shared_folders,
             &rdp_custom_args_entry,
             &rdp_keyboard_layout_dropdown,
             &vnc_client_mode_dropdown,
             &vnc_performance_mode_dropdown,
-            &vnc_encoding_entry,
+            &vnc_encoding_dropdown,
             &vnc_compression_spin,
             &vnc_quality_spin,
             &vnc_view_only_check,
@@ -745,6 +765,7 @@ impl ConnectionDialog {
             &spice_usb_check,
             &spice_clipboard_check,
             &spice_compression_dropdown,
+            &spice_proxy_entry,
             &spice_shared_folders,
             &zt_provider_dropdown,
             &zt_aws_target_entry,
@@ -761,6 +782,8 @@ impl ConnectionDialog {
             &zt_oci_bastion_id_entry,
             &zt_oci_target_id_entry,
             &zt_oci_target_ip_entry,
+            &zt_oci_ssh_key_entry,
+            &zt_oci_session_ttl_spin,
             &zt_cf_hostname_entry,
             &zt_teleport_host_entry,
             &zt_teleport_cluster_entry,
@@ -862,13 +885,17 @@ impl ConnectionDialog {
             rdp_scale_override_dropdown,
             rdp_audio_check,
             rdp_gateway_entry,
+            rdp_gateway_port_spin,
+            rdp_gateway_username_entry,
+            rdp_disable_nla_check,
+            rdp_clipboard_check,
             rdp_shared_folders,
             rdp_shared_folders_list,
             rdp_custom_args_entry,
             rdp_keyboard_layout_dropdown,
             vnc_client_mode_dropdown,
             vnc_performance_mode_dropdown,
-            vnc_encoding_entry,
+            vnc_encoding_dropdown,
             vnc_compression_spin,
             vnc_quality_spin,
             vnc_view_only_check,
@@ -888,6 +915,7 @@ impl ConnectionDialog {
             spice_usb_check,
             spice_clipboard_check,
             spice_compression_dropdown,
+            spice_proxy_entry,
             spice_shared_folders,
             spice_shared_folders_list,
             zt_provider_dropdown,
@@ -906,6 +934,8 @@ impl ConnectionDialog {
             zt_oci_bastion_id_entry,
             zt_oci_target_id_entry,
             zt_oci_target_ip_entry,
+            zt_oci_ssh_key_entry,
+            zt_oci_session_ttl_spin,
             zt_cf_hostname_entry,
             zt_teleport_host_entry,
             zt_teleport_cluster_entry,
@@ -1277,6 +1307,28 @@ impl ConnectionDialog {
             );
         });
 
+        // Reverse sync: when SSH auth switches to Password(0) but password_source is None(4),
+        // auto-switch password_source to Prompt(0)
+        {
+            let password_source_dropdown = result.password_source_dropdown.clone();
+            let protocol_dropdown = result.protocol_dropdown.clone();
+            let password_row = result.password_row.clone();
+            let variable_row = result.variable_row.clone();
+            result
+                .ssh_auth_dropdown
+                .connect_selected_notify(move |dropdown| {
+                    if dropdown.selected() == 0
+                        && protocol_dropdown.selected() == 0
+                        && password_source_dropdown.selected() == 4
+                    {
+                        password_source_dropdown.set_selected(0);
+                        // Update visibility to match Prompt(0)
+                        password_row.set_visible(false);
+                        variable_row.set_visible(false);
+                    }
+                });
+        }
+
         result
     }
 
@@ -1421,6 +1473,8 @@ impl ConnectionDialog {
         password_source_dropdown: &DropDown,
         password_source_label: &Label,
         password_row: &GtkBox,
+        domain_entry: &Entry,
+        domain_label: &Label,
     ) {
         let stack_clone = stack.clone();
         let port_clone = port_spin.clone();
@@ -1434,6 +1488,8 @@ impl ConnectionDialog {
         let password_source_dropdown = password_source_dropdown.clone();
         let password_source_label = password_source_label.clone();
         let password_row = password_row.clone();
+        let domain_entry = domain_entry.clone();
+        let domain_label = domain_label.clone();
 
         dropdown.connect_selected_notify(move |dropdown| {
             let protocols = [
@@ -1482,6 +1538,11 @@ impl ConnectionDialog {
                 if hide_network {
                     password_row.set_visible(false);
                 }
+
+                // Domain only relevant for RDP (GEN-2)
+                let is_rdp = protocol_id == "rdp";
+                domain_entry.set_visible(is_rdp);
+                domain_label.set_visible(is_rdp);
             }
         });
     }
@@ -1553,12 +1614,16 @@ impl ConnectionDialog {
         rdp_scale_override_dropdown: &DropDown,
         rdp_audio_check: &CheckButton,
         rdp_gateway_entry: &Entry,
+        rdp_gateway_port_spin: &SpinButton,
+        rdp_gateway_username_entry: &Entry,
+        rdp_disable_nla_check: &CheckButton,
+        rdp_clipboard_check: &CheckButton,
         rdp_shared_folders: &Rc<RefCell<Vec<SharedFolder>>>,
         rdp_custom_args_entry: &Entry,
         rdp_keyboard_layout_dropdown: &DropDown,
         vnc_client_mode_dropdown: &DropDown,
         vnc_performance_mode_dropdown: &DropDown,
-        vnc_encoding_entry: &Entry,
+        vnc_encoding_dropdown: &DropDown,
         vnc_compression_spin: &SpinButton,
         vnc_quality_spin: &SpinButton,
         vnc_view_only_check: &CheckButton,
@@ -1572,6 +1637,7 @@ impl ConnectionDialog {
         spice_usb_check: &CheckButton,
         spice_clipboard_check: &CheckButton,
         spice_compression_dropdown: &DropDown,
+        spice_proxy_entry: &Entry,
         spice_shared_folders: &Rc<RefCell<Vec<SharedFolder>>>,
         zt_provider_dropdown: &DropDown,
         zt_aws_target_entry: &adw::EntryRow,
@@ -1588,6 +1654,8 @@ impl ConnectionDialog {
         zt_oci_bastion_id_entry: &adw::EntryRow,
         zt_oci_target_id_entry: &adw::EntryRow,
         zt_oci_target_ip_entry: &adw::EntryRow,
+        zt_oci_ssh_key_entry: &adw::EntryRow,
+        zt_oci_session_ttl_spin: &adw::SpinRow,
         zt_cf_hostname_entry: &adw::EntryRow,
         zt_teleport_host_entry: &adw::EntryRow,
         zt_teleport_cluster_entry: &adw::EntryRow,
@@ -1677,12 +1745,16 @@ impl ConnectionDialog {
         let rdp_scale_override_dropdown = rdp_scale_override_dropdown.clone();
         let rdp_audio_check = rdp_audio_check.clone();
         let rdp_gateway_entry = rdp_gateway_entry.clone();
+        let rdp_gateway_port_spin = rdp_gateway_port_spin.clone();
+        let rdp_gateway_username_entry = rdp_gateway_username_entry.clone();
+        let rdp_disable_nla_check = rdp_disable_nla_check.clone();
+        let rdp_clipboard_check = rdp_clipboard_check.clone();
         let rdp_shared_folders = rdp_shared_folders.clone();
         let rdp_custom_args_entry = rdp_custom_args_entry.clone();
         let rdp_keyboard_layout_dropdown = rdp_keyboard_layout_dropdown.clone();
         let rdp_performance_mode_dropdown = rdp_performance_mode_dropdown.clone();
         let vnc_client_mode_dropdown = vnc_client_mode_dropdown.clone();
-        let vnc_encoding_entry = vnc_encoding_entry.clone();
+        let vnc_encoding_dropdown = vnc_encoding_dropdown.clone();
         let vnc_compression_spin = vnc_compression_spin.clone();
         let vnc_quality_spin = vnc_quality_spin.clone();
         let vnc_view_only_check = vnc_view_only_check.clone();
@@ -1697,6 +1769,7 @@ impl ConnectionDialog {
         let spice_usb_check = spice_usb_check.clone();
         let spice_clipboard_check = spice_clipboard_check.clone();
         let spice_compression_dropdown = spice_compression_dropdown.clone();
+        let spice_proxy_entry = spice_proxy_entry.clone();
         let spice_shared_folders = spice_shared_folders.clone();
         let zt_provider_dropdown = zt_provider_dropdown.clone();
         let zt_aws_target_entry = zt_aws_target_entry.clone();
@@ -1713,6 +1786,8 @@ impl ConnectionDialog {
         let zt_oci_bastion_id_entry = zt_oci_bastion_id_entry.clone();
         let zt_oci_target_id_entry = zt_oci_target_id_entry.clone();
         let zt_oci_target_ip_entry = zt_oci_target_ip_entry.clone();
+        let zt_oci_ssh_key_entry = zt_oci_ssh_key_entry.clone();
+        let zt_oci_session_ttl_spin = zt_oci_session_ttl_spin.clone();
         let zt_cf_hostname_entry = zt_cf_hostname_entry.clone();
         let zt_teleport_host_entry = zt_teleport_host_entry.clone();
         let zt_teleport_cluster_entry = zt_teleport_cluster_entry.clone();
@@ -1746,6 +1821,10 @@ impl ConnectionDialog {
         let logging_timestamp_dropdown = logging_tab.timestamp_dropdown.clone();
         let logging_max_size_spin = logging_tab.max_size_spin.clone();
         let logging_retention_spin = logging_tab.retention_spin.clone();
+        let logging_activity_check = logging_tab.log_activity_check.clone();
+        let logging_input_check = logging_tab.log_input_check.clone();
+        let logging_output_check = logging_tab.log_output_check.clone();
+        let logging_timestamps_check = logging_tab.log_timestamps_check.clone();
         let expect_rules = expect_rules.clone();
         let pre_connect_enabled_check = pre_connect_enabled_check.clone();
         let pre_connect_command_entry = pre_connect_command_entry.clone();
@@ -1810,11 +1889,15 @@ impl ConnectionDialog {
                 rdp_scale_override_dropdown: &rdp_scale_override_dropdown,
                 rdp_audio_check: &rdp_audio_check,
                 rdp_gateway_entry: &rdp_gateway_entry,
+                rdp_gateway_port_spin: &rdp_gateway_port_spin,
+                rdp_gateway_username_entry: &rdp_gateway_username_entry,
+                rdp_disable_nla_check: &rdp_disable_nla_check,
+                rdp_clipboard_check: &rdp_clipboard_check,
                 rdp_shared_folders: &rdp_shared_folders,
                 rdp_custom_args_entry: &rdp_custom_args_entry,
                 rdp_keyboard_layout_dropdown: &rdp_keyboard_layout_dropdown,
                 vnc_client_mode_dropdown: &vnc_client_mode_dropdown,
-                vnc_encoding_entry: &vnc_encoding_entry,
+                vnc_encoding_dropdown: &vnc_encoding_dropdown,
                 vnc_compression_spin: &vnc_compression_spin,
                 vnc_quality_spin: &vnc_quality_spin,
                 vnc_view_only_check: &vnc_view_only_check,
@@ -1828,6 +1911,7 @@ impl ConnectionDialog {
                 spice_usb_check: &spice_usb_check,
                 spice_clipboard_check: &spice_clipboard_check,
                 spice_compression_dropdown: &spice_compression_dropdown,
+                spice_proxy_entry: &spice_proxy_entry,
                 spice_shared_folders: &spice_shared_folders,
                 zt_provider_dropdown: &zt_provider_dropdown,
                 zt_aws_target_entry: &zt_aws_target_entry,
@@ -1844,6 +1928,8 @@ impl ConnectionDialog {
                 zt_oci_bastion_id_entry: &zt_oci_bastion_id_entry,
                 zt_oci_target_id_entry: &zt_oci_target_id_entry,
                 zt_oci_target_ip_entry: &zt_oci_target_ip_entry,
+                zt_oci_ssh_key_entry: &zt_oci_ssh_key_entry,
+                zt_oci_session_ttl_spin: &zt_oci_session_ttl_spin,
                 zt_cf_hostname_entry: &zt_cf_hostname_entry,
                 zt_teleport_host_entry: &zt_teleport_host_entry,
                 zt_teleport_cluster_entry: &zt_teleport_cluster_entry,
@@ -1878,6 +1964,10 @@ impl ConnectionDialog {
                     timestamp_dropdown: logging_timestamp_dropdown.clone(),
                     max_size_spin: logging_max_size_spin.clone(),
                     retention_spin: logging_retention_spin.clone(),
+                    log_activity_check: logging_activity_check.clone(),
+                    log_input_check: logging_input_check.clone(),
+                    log_output_check: logging_output_check.clone(),
+                    log_timestamps_check: logging_timestamps_check.clone(),
                 },
                 expect_rules: &collected_expect_rules,
                 pre_connect_enabled_check: &pre_connect_enabled_check,
@@ -1930,6 +2020,10 @@ impl ConnectionDialog {
         DropDown,
         CheckButton,
         Entry,
+        SpinButton,
+        Entry,
+        CheckButton,
+        CheckButton,
         Rc<RefCell<Vec<SharedFolder>>>,
         gtk4::ListBox,
         Entry,
@@ -2070,17 +2164,29 @@ impl ConnectionDialog {
         let resolution_row_clone = resolution_row.clone();
         let color_row_clone = color_row.clone();
         let scale_row_clone = scale_row.clone();
+        // RDP-1: Info row about embedded dynamic resolution
+        let embedded_info_row = adw::ActionRow::builder()
+            .title(i18n("Dynamic Resolution"))
+            .subtitle(i18n("Embedded mode automatically matches window size"))
+            .activatable(false)
+            .build();
+        embedded_info_row.add_prefix(&gtk4::Image::from_icon_name("dialog-information-symbolic"));
+        display_group.add(&embedded_info_row);
+
+        let embedded_info_clone = embedded_info_row.clone();
         client_mode_dropdown.connect_selected_notify(move |dropdown| {
             let is_embedded = dropdown.selected() == 0;
             resolution_row_clone.set_visible(!is_embedded);
             color_row_clone.set_visible(!is_embedded);
             scale_row_clone.set_visible(is_embedded);
+            embedded_info_clone.set_visible(is_embedded);
         });
 
         // Set initial state (Embedded - hide resolution/color, show scale)
         resolution_row.set_visible(false);
         color_row.set_visible(false);
         scale_row.set_visible(true);
+        embedded_info_row.set_visible(true);
 
         content.append(&display_group);
 
@@ -2099,6 +2205,26 @@ impl ConnectionDialog {
         audio_row.add_suffix(&audio_check);
         features_group.add(&audio_row);
 
+        // Clipboard sharing
+        let clipboard_check = CheckButton::builder().active(true).build();
+        let clipboard_row = adw::ActionRow::builder()
+            .title(i18n("Clipboard Sharing"))
+            .subtitle(i18n("Synchronize clipboard with remote"))
+            .activatable_widget(&clipboard_check)
+            .build();
+        clipboard_row.add_suffix(&clipboard_check);
+        features_group.add(&clipboard_row);
+
+        // Disable NLA
+        let disable_nla_check = CheckButton::new();
+        let nla_row = adw::ActionRow::builder()
+            .title(i18n("Disable NLA"))
+            .subtitle(i18n("Skip Network Level Authentication (less secure)"))
+            .activatable_widget(&disable_nla_check)
+            .build();
+        nla_row.add_suffix(&disable_nla_check);
+        features_group.add(&nla_row);
+
         // Gateway
         let gateway_entry = Entry::builder()
             .hexpand(true)
@@ -2112,6 +2238,45 @@ impl ConnectionDialog {
             .build();
         gateway_row.add_suffix(&gateway_entry);
         features_group.add(&gateway_row);
+
+        // Gateway port
+        let gw_port_adj = gtk4::Adjustment::new(443.0, 1.0, 65535.0, 1.0, 10.0, 0.0);
+        let gateway_port_spin = SpinButton::builder()
+            .adjustment(&gw_port_adj)
+            .climb_rate(1.0)
+            .digits(0)
+            .valign(gtk4::Align::Center)
+            .build();
+        let gw_port_row = adw::ActionRow::builder()
+            .title(i18n("Gateway Port"))
+            .subtitle(i18n("Default: 443"))
+            .build();
+        gw_port_row.add_suffix(&gateway_port_spin);
+        features_group.add(&gw_port_row);
+
+        // Gateway username
+        let gateway_username_entry = Entry::builder()
+            .hexpand(true)
+            .placeholder_text(i18n("Same as connection username"))
+            .valign(gtk4::Align::Center)
+            .build();
+        let gw_user_row = adw::ActionRow::builder()
+            .title(i18n("Gateway Username"))
+            .subtitle(i18n("If different from connection username"))
+            .build();
+        gw_user_row.add_suffix(&gateway_username_entry);
+        features_group.add(&gw_user_row);
+
+        // Show/hide gateway details based on gateway hostname
+        let gw_port_row_clone = gw_port_row.clone();
+        let gw_user_row_clone = gw_user_row.clone();
+        gw_port_row.set_visible(false);
+        gw_user_row.set_visible(false);
+        gateway_entry.connect_changed(move |entry| {
+            let visible = !entry.text().is_empty();
+            gw_port_row_clone.set_visible(visible);
+            gw_user_row_clone.set_visible(visible);
+        });
 
         content.append(&features_group);
 
@@ -2251,6 +2416,10 @@ impl ConnectionDialog {
             scale_override_dropdown,
             audio_check,
             gateway_entry,
+            gateway_port_spin,
+            gateway_username_entry,
+            disable_nla_check,
+            clipboard_check,
             shared_folders,
             folders_list,
             args_entry,
@@ -2354,7 +2523,7 @@ impl ConnectionDialog {
         GtkBox,
         DropDown,
         DropDown,
-        Entry,
+        DropDown,
         SpinButton,
         SpinButton,
         CheckButton,
@@ -2427,18 +2596,29 @@ impl ConnectionDialog {
         performance_mode_row.add_suffix(&performance_mode_dropdown);
         display_group.add(&performance_mode_row);
 
-        // Encoding
-        let encoding_entry = Entry::builder()
-            .hexpand(true)
-            .placeholder_text("tight, zrle, hextile")
+        // VNC-1: Encoding dropdown instead of free text entry
+        let encoding_items: Vec<String> = vec![
+            i18n("Auto"),
+            "Tight".to_string(),
+            "ZRLE".to_string(),
+            "Hextile".to_string(),
+            "Raw".to_string(),
+            "CopyRect".to_string(),
+        ];
+        let encoding_strs: Vec<&str> = encoding_items.iter().map(String::as_str).collect();
+        let encoding_list = StringList::new(&encoding_strs);
+        let encoding_dropdown = DropDown::builder()
+            .model(&encoding_list)
             .valign(gtk4::Align::Center)
             .build();
 
         let encoding_row = adw::ActionRow::builder()
             .title(i18n("Encoding"))
-            .subtitle(i18n("Preferred encoding methods (comma-separated)"))
+            .subtitle(i18n(
+                "Preferred encoding method (overrides Performance Mode)",
+            ))
             .build();
-        encoding_row.add_suffix(&encoding_entry);
+        encoding_row.add_suffix(&encoding_dropdown);
         display_group.add(&encoding_row);
 
         // Scale override dropdown (for embedded mode)
@@ -2505,6 +2685,19 @@ impl ConnectionDialog {
         quality_row.add_suffix(&quality_spin);
         quality_group.add(&quality_row);
 
+        // VNC-2: Sync compression/quality with Performance Mode changes
+        let compression_spin_sync = compression_spin.clone();
+        let quality_spin_sync = quality_spin.clone();
+        performance_mode_dropdown.connect_selected_notify(move |dropdown| {
+            let (comp, qual) = match dropdown.selected() {
+                0 => (0.0, 9.0), // Quality
+                2 => (9.0, 0.0), // Speed
+                _ => (5.0, 5.0), // Balanced
+            };
+            compression_spin_sync.set_value(comp);
+            quality_spin_sync.set_value(qual);
+        });
+
         content.append(&quality_group);
 
         // === Features Group ===
@@ -2544,6 +2737,15 @@ impl ConnectionDialog {
         clipboard_row.add_suffix(&clipboard_check);
         features_group.add(&clipboard_row);
 
+        // VNC-3: Password info row
+        let password_info_row = adw::ActionRow::builder()
+            .title(i18n("Authentication"))
+            .subtitle(i18n("VNC uses the connection password for authentication"))
+            .activatable(false)
+            .build();
+        password_info_row.add_prefix(&gtk4::Image::from_icon_name("dialog-information-symbolic"));
+        features_group.add(&password_info_row);
+
         content.append(&features_group);
 
         // === Advanced Group ===
@@ -2576,7 +2778,7 @@ impl ConnectionDialog {
             vbox,
             client_mode_dropdown,
             performance_mode_dropdown,
-            encoding_entry,
+            encoding_dropdown,
             compression_spin,
             quality_spin,
             view_only_check,
@@ -2598,6 +2800,7 @@ impl ConnectionDialog {
         CheckButton,
         CheckButton,
         DropDown,
+        Entry,
         Rc<RefCell<Vec<SharedFolder>>>,
         gtk4::ListBox,
     ) {
@@ -2653,6 +2856,25 @@ impl ConnectionDialog {
             .build();
         ca_cert_row.add_suffix(&ca_cert_box);
         security_group.add(&ca_cert_row);
+
+        // SPICE-2: Inline file validation for CA certificate path
+        ca_cert_entry.connect_changed(move |entry| {
+            let path_text = entry.text();
+            let path_str = path_text.trim();
+            if path_str.is_empty() {
+                entry.remove_css_class("error");
+                entry.set_tooltip_text(None);
+            } else {
+                let path = std::path::Path::new(path_str);
+                if path.exists() {
+                    entry.remove_css_class("error");
+                    entry.set_tooltip_text(None);
+                } else {
+                    entry.add_css_class("error");
+                    entry.set_tooltip_text(Some(&i18n("File not found")));
+                }
+            }
+        });
 
         // Skip certificate verification
         let skip_verify_check = CheckButton::new();
@@ -2713,7 +2935,36 @@ impl ConnectionDialog {
         compression_row.add_suffix(&compression_dropdown);
         features_group.add(&compression_row);
 
+        // Proxy
+        let proxy_entry = Entry::builder()
+            .hexpand(true)
+            .valign(gtk4::Align::Center)
+            .placeholder_text(i18n("http://proxy:3128"))
+            .build();
+        let proxy_row = adw::ActionRow::builder()
+            .title(i18n("SPICE Proxy"))
+            .subtitle(i18n(
+                "Proxy URL for tunnelled connections (e.g. Proxmox VE)",
+            ))
+            .build();
+        proxy_row.add_suffix(&proxy_entry);
+        features_group.add(&proxy_row);
+
         content.append(&features_group);
+
+        // Wire TLS toggle to CA cert and skip verify sensitivity
+        let ca_cert_row_clone = ca_cert_row.clone();
+        let skip_verify_check_clone = skip_verify_check.clone();
+        tls_check.connect_toggled(move |check| {
+            let on = check.is_active();
+            ca_cert_row_clone.set_sensitive(on);
+            skip_verify_check_clone.set_sensitive(on);
+            if !on {
+                skip_verify_check_clone.set_active(false);
+            }
+        });
+        ca_cert_row.set_sensitive(false);
+        skip_verify_check.set_sensitive(false);
 
         // === Shared Folders Group ===
         let folders_group = adw::PreferencesGroup::builder()
@@ -2782,6 +3033,7 @@ impl ConnectionDialog {
             usb_check,
             clipboard_check,
             compression_dropdown,
+            proxy_entry,
             shared_folders,
             folders_list,
         )
@@ -2807,6 +3059,8 @@ impl ConnectionDialog {
         adw::EntryRow,
         adw::EntryRow,
         adw::EntryRow,
+        adw::EntryRow, // oci_ssh_key
+        adw::SpinRow,  // oci_session_ttl
         adw::EntryRow,
         adw::EntryRow,
         adw::EntryRow,
@@ -2887,7 +3141,7 @@ impl ConnectionDialog {
         provider_stack.add_named(&azure_ssh_box, Some("azure_ssh"));
 
         // OCI Bastion options
-        let (oci_box, oci_bastion_id, oci_target_id, oci_target_ip) =
+        let (oci_box, oci_bastion_id, oci_target_id, oci_target_ip, oci_ssh_key, oci_session_ttl) =
             Self::create_oci_bastion_fields_adw();
         provider_stack.add_named(&oci_box, Some("oci_bastion"));
 
@@ -2981,6 +3235,8 @@ impl ConnectionDialog {
             oci_bastion_id,
             oci_target_id,
             oci_target_ip,
+            oci_ssh_key,
+            oci_session_ttl,
             cf_hostname,
             teleport_host,
             teleport_cluster,
@@ -3087,7 +3343,14 @@ impl ConnectionDialog {
     }
 
     /// Creates OCI Bastion provider fields using libadwaita
-    fn create_oci_bastion_fields_adw() -> (GtkBox, adw::EntryRow, adw::EntryRow, adw::EntryRow) {
+    fn create_oci_bastion_fields_adw() -> (
+        GtkBox,
+        adw::EntryRow,
+        adw::EntryRow,
+        adw::EntryRow,
+        adw::EntryRow,
+        adw::SpinRow,
+    ) {
         let group = adw::PreferencesGroup::builder()
             .title(i18n("OCI Bastion"))
             .description(i18n("Connect via Oracle Cloud Bastion"))
@@ -3102,10 +3365,33 @@ impl ConnectionDialog {
         let target_ip_row = adw::EntryRow::builder().title(i18n("Target IP")).build();
         group.add(&target_ip_row);
 
+        // ZT-2: SSH Public Key file path
+        let ssh_key_row = adw::EntryRow::builder()
+            .title(i18n("SSH Public Key"))
+            .build();
+        ssh_key_row.set_text("~/.ssh/id_rsa.pub");
+        group.add(&ssh_key_row);
+
+        // ZT-2: Session TTL
+        let ttl_adj = gtk4::Adjustment::new(1800.0, 300.0, 10800.0, 300.0, 600.0, 0.0);
+        let ttl_row = adw::SpinRow::builder()
+            .title(i18n("Session TTL"))
+            .subtitle(i18n("Session duration in seconds (default: 1800)"))
+            .adjustment(&ttl_adj)
+            .build();
+        group.add(&ttl_row);
+
         let vbox = GtkBox::new(Orientation::Vertical, 0);
         vbox.append(&group);
 
-        (vbox, bastion_id_row, target_id_row, target_ip_row)
+        (
+            vbox,
+            bastion_id_row,
+            target_id_row,
+            target_ip_row,
+            ssh_key_row,
+            ttl_row,
+        )
     }
 
     /// Creates Cloudflare Access provider fields using libadwaita
@@ -4886,8 +5172,14 @@ impl ConnectionDialog {
         self.rdp_scale_override_dropdown
             .set_selected(rdp.scale_override.index());
         self.rdp_audio_check.set_active(rdp.audio_redirect);
+        self.rdp_clipboard_check.set_active(rdp.clipboard_enabled);
+        self.rdp_disable_nla_check.set_active(rdp.disable_nla);
         if let Some(ref gw) = rdp.gateway {
             self.rdp_gateway_entry.set_text(&gw.hostname);
+            self.rdp_gateway_port_spin.set_value(f64::from(gw.port));
+            if let Some(ref username) = gw.username {
+                self.rdp_gateway_username_entry.set_text(username);
+            }
         }
 
         // Populate shared folders
@@ -4945,8 +5237,17 @@ impl ConnectionDialog {
         self.vnc_performance_mode_dropdown
             .set_selected(vnc.performance_mode.index());
 
-        let encoding_text = vnc.encoding.as_deref().unwrap_or("");
-        self.vnc_encoding_entry.set_text(encoding_text);
+        // VNC-1: Map encoding string to dropdown index
+        // Items: ["Auto", "Tight", "ZRLE", "Hextile", "Raw", "CopyRect"]
+        let encoding_idx = match vnc.encoding.as_deref() {
+            Some("tight") => 1,
+            Some("zrle") => 2,
+            Some("hextile") => 3,
+            Some("raw") => 4,
+            Some("copyrect") => 5,
+            _ => 0, // Auto
+        };
+        self.vnc_encoding_dropdown.set_selected(encoding_idx);
 
         if let Some(comp) = vnc.compression {
             self.vnc_compression_spin.set_value(f64::from(comp));
@@ -4988,6 +5289,11 @@ impl ConnectionDialog {
         };
         self.spice_compression_dropdown
             .set_selected(compression_idx);
+
+        // Set proxy
+        if let Some(ref proxy) = spice.proxy {
+            self.spice_proxy_entry.set_text(proxy);
+        }
 
         // Populate shared folders
         self.spice_shared_folders.borrow_mut().clear();
@@ -5066,6 +5372,10 @@ impl ConnectionDialog {
                 self.zt_oci_target_id_entry
                     .set_text(&cfg.target_resource_id);
                 self.zt_oci_target_ip_entry.set_text(&cfg.target_private_ip);
+                self.zt_oci_ssh_key_entry
+                    .set_text(&cfg.ssh_public_key_file.to_string_lossy());
+                self.zt_oci_session_ttl_spin
+                    .set_value(f64::from(cfg.session_ttl));
             }
             ZeroTrustProviderConfig::CloudflareAccess(cfg) => {
                 self.zt_cf_hostname_entry.set_text(&cfg.hostname);
@@ -5185,6 +5495,8 @@ impl ConnectionDialog {
     pub fn connect_password_source_visibility(&self) {
         let password_row = self.password_row.clone();
         let variable_row = self.variable_row.clone();
+        let ssh_auth_dropdown = self.ssh_auth_dropdown.clone();
+        let protocol_dropdown = self.protocol_dropdown.clone();
 
         self.password_source_dropdown
             .connect_selected_notify(move |dropdown| {
@@ -5193,6 +5505,27 @@ impl ConnectionDialog {
                 password_row.set_visible(selected == 1);
                 // Show variable row for Variable(2) only
                 variable_row.set_visible(selected == 2);
+
+                // Sync: when password source is None(4) and protocol is SSH(0),
+                // auto-switch SSH auth from Password(0) to Public Key(1)
+                if selected == 4
+                    && protocol_dropdown.selected() == 0
+                    && ssh_auth_dropdown.selected() == 0
+                {
+                    ssh_auth_dropdown.set_selected(1);
+                }
+            });
+
+        // Reverse sync: when SSH auth changes to Password(0) while
+        // password source is None(4), auto-switch password source to Prompt(0)
+        let password_source_dropdown = self.password_source_dropdown.clone();
+        let protocol_dropdown2 = self.protocol_dropdown.clone();
+        self.ssh_auth_dropdown
+            .connect_selected_notify(move |dropdown| {
+                let is_ssh = protocol_dropdown2.selected() == 0;
+                if is_ssh && dropdown.selected() == 0 && password_source_dropdown.selected() == 4 {
+                    password_source_dropdown.set_selected(0); // Prompt
+                }
             });
     }
 
@@ -5705,12 +6038,16 @@ struct ConnectionDialogData<'a> {
     rdp_scale_override_dropdown: &'a DropDown,
     rdp_audio_check: &'a CheckButton,
     rdp_gateway_entry: &'a Entry,
+    rdp_gateway_port_spin: &'a SpinButton,
+    rdp_gateway_username_entry: &'a Entry,
+    rdp_disable_nla_check: &'a CheckButton,
+    rdp_clipboard_check: &'a CheckButton,
     rdp_shared_folders: &'a Rc<RefCell<Vec<SharedFolder>>>,
     rdp_custom_args_entry: &'a Entry,
     rdp_keyboard_layout_dropdown: &'a DropDown,
     vnc_client_mode_dropdown: &'a DropDown,
     vnc_performance_mode_dropdown: &'a DropDown,
-    vnc_encoding_entry: &'a Entry,
+    vnc_encoding_dropdown: &'a DropDown,
     vnc_compression_spin: &'a SpinButton,
     vnc_quality_spin: &'a SpinButton,
     vnc_view_only_check: &'a CheckButton,
@@ -5724,6 +6061,7 @@ struct ConnectionDialogData<'a> {
     spice_usb_check: &'a CheckButton,
     spice_clipboard_check: &'a CheckButton,
     spice_compression_dropdown: &'a DropDown,
+    spice_proxy_entry: &'a Entry,
     spice_shared_folders: &'a Rc<RefCell<Vec<SharedFolder>>>,
     // Zero Trust fields
     zt_provider_dropdown: &'a DropDown,
@@ -5741,6 +6079,8 @@ struct ConnectionDialogData<'a> {
     zt_oci_bastion_id_entry: &'a adw::EntryRow,
     zt_oci_target_id_entry: &'a adw::EntryRow,
     zt_oci_target_ip_entry: &'a adw::EntryRow,
+    zt_oci_ssh_key_entry: &'a adw::EntryRow,
+    zt_oci_session_ttl_spin: &'a adw::SpinRow,
     zt_cf_hostname_entry: &'a adw::EntryRow,
     zt_teleport_host_entry: &'a adw::EntryRow,
     zt_teleport_cluster_entry: &'a adw::EntryRow,
@@ -5852,6 +6192,25 @@ impl ConnectionDialogData<'_> {
                         "SSH key path is required for public key authentication".to_string()
                     );
                 }
+            }
+            // SSH-1: Warn when auth=Password but password_source=None
+            if auth_idx == 0 {
+                // Password auth
+                let pw_source_idx = self.password_source_dropdown.selected();
+                if pw_source_idx == 4 {
+                    // None
+                    return Err(
+                        "Password source is 'None' but auth method is Password. Set source to Prompt or Vault.".to_string()
+                    );
+                }
+            }
+        }
+
+        // K8S-1: Kubernetes pod validation
+        if is_kubernetes && !self.k8s_busybox_check.is_active() {
+            let pod = self.k8s_pod_entry.text();
+            if pod.trim().is_empty() {
+                return Err("Pod name is required when Busybox mode is disabled".to_string());
             }
         }
         // RDP (1) and VNC (2) use native embedding, no client validation needed
@@ -6191,8 +6550,16 @@ impl ConnectionDialogData<'_> {
                     bastion_id: self.zt_oci_bastion_id_entry.text().trim().to_string(),
                     target_resource_id: self.zt_oci_target_id_entry.text().trim().to_string(),
                     target_private_ip: self.zt_oci_target_ip_entry.text().trim().to_string(),
-                    ssh_public_key_file: PathBuf::new(),
-                    session_ttl: 1800,
+                    ssh_public_key_file: {
+                        let text = self.zt_oci_ssh_key_entry.text();
+                        let trimmed = text.trim();
+                        if trimmed.is_empty() {
+                            default_ssh_pub_key_path()
+                        } else {
+                            PathBuf::from(trimmed)
+                        }
+                    },
+                    session_ttl: self.zt_oci_session_ttl_spin.value() as u32,
                 })
             }
             ZeroTrustProvider::CloudflareAccess => {
@@ -6494,10 +6861,18 @@ impl ConnectionDialogData<'_> {
             if text.trim().is_empty() {
                 None
             } else {
+                #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+                let port = self.rdp_gateway_port_spin.value() as u16;
+                let username_text = self.rdp_gateway_username_entry.text();
+                let username = if username_text.trim().is_empty() {
+                    None
+                } else {
+                    Some(username_text.trim().to_string())
+                };
                 Some(rustconn_core::models::RdpGateway {
                     hostname: text.trim().to_string(),
-                    port: 443,
-                    username: None,
+                    port,
+                    username,
                 })
             }
         };
@@ -6517,6 +6892,8 @@ impl ConnectionDialogData<'_> {
             custom_args,
             keyboard_layout: dropdown_index_to_klid(self.rdp_keyboard_layout_dropdown.selected()),
             scale_override: ScaleOverride::from_index(self.rdp_scale_override_dropdown.selected()),
+            disable_nla: self.rdp_disable_nla_check.is_active(),
+            clipboard_enabled: self.rdp_clipboard_check.is_active(),
         }
     }
 
@@ -6525,13 +6902,15 @@ impl ConnectionDialogData<'_> {
         let performance_mode =
             VncPerformanceMode::from_index(self.vnc_performance_mode_dropdown.selected());
 
-        let encoding = {
-            let text = self.vnc_encoding_entry.text();
-            if text.trim().is_empty() {
-                None
-            } else {
-                Some(text.trim().to_string())
-            }
+        // VNC-1: Map dropdown index to encoding string
+        // Items: ["Auto", "Tight", "ZRLE", "Hextile", "Raw", "CopyRect"]
+        let encoding = match self.vnc_encoding_dropdown.selected() {
+            1 => Some("tight".to_string()),
+            2 => Some("zrle".to_string()),
+            3 => Some("hextile".to_string()),
+            4 => Some("raw".to_string()),
+            5 => Some("copyrect".to_string()),
+            _ => None, // Auto = no override
         };
 
         #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
@@ -6582,7 +6961,14 @@ impl ConnectionDialogData<'_> {
             shared_folders: self.spice_shared_folders.borrow().clone(),
             clipboard_enabled: self.spice_clipboard_check.is_active(),
             image_compression,
-            proxy: None,
+            proxy: {
+                let text = self.spice_proxy_entry.text();
+                if text.trim().is_empty() {
+                    None
+                } else {
+                    Some(text.trim().to_string())
+                }
+            },
         }
     }
 
@@ -6612,4 +6998,9 @@ impl ConnectionDialogData<'_> {
             .map(std::string::ToString::to_string)
             .collect()
     }
+}
+
+/// Returns the default SSH public key path (~/.ssh/id_rsa.pub)
+fn default_ssh_pub_key_path() -> PathBuf {
+    dirs::home_dir().unwrap_or_default().join(".ssh/id_rsa.pub")
 }

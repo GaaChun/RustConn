@@ -708,7 +708,7 @@ pub struct ProtocolCapabilities {
 - `TelnetProtocol`: Telnet via external `telnet` client (capabilities: terminal, split_view)
 - `SerialProtocol`: Serial via external `picocom` client (capabilities: terminal, split_view)
 - `KubernetesProtocol`: Kubernetes via external `kubectl exec` (capabilities: terminal, split_view)
-- `SftpProtocol`: SFTP file transfer via file manager/mc (capabilities: file_transfer, external_fallback)
+- `SftpProtocol`: SFTP file transfer via file manager/mc (capabilities: file_transfer, external_fallback, split_view when mc mode is active)
 
 ### Adding a New Protocol
 

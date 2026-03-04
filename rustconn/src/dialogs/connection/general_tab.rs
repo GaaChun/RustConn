@@ -155,9 +155,16 @@ pub(super) fn create_basic_tab() -> (
         .label(i18n("Username:"))
         .halign(gtk4::Align::End)
         .build();
-    let current_user = std::env::var("USER").unwrap_or_default();
+    let current_user = std::env::var("USER")
+        .or_else(|_| std::env::var("LOGNAME"))
+        .unwrap_or_default();
+    let placeholder = if current_user.is_empty() {
+        i18n("Username")
+    } else {
+        format!("(default: {current_user})")
+    };
     let username_entry = Entry::builder()
-        .placeholder_text(&format!("(default: {current_user})"))
+        .placeholder_text(&placeholder)
         .hexpand(true)
         .build();
     grid.attach(&username_label, 0, row, 1, 1);

@@ -9,7 +9,7 @@ use secrecy::ExposeSecret;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::i18n::i18n;
+use crate::i18n::{i18n, i18n_f};
 
 use super::launcher::SafeFreeRdpLauncher;
 use super::thread::FreeRdpThread;
@@ -52,9 +52,10 @@ impl super::EmbeddedRdpWidget {
     /// - Requirement 6.4: Automatic fallback to external mode on failure
     pub fn connect(&self, config: &RdpConfig) -> Result<(), EmbeddedRdpError> {
         tracing::debug!(
-            "[EmbeddedRDP] connect() called on widget {}, current generation: {}",
-            self.widget_id,
-            *self.connection_generation.borrow()
+            protocol = "rdp",
+            widget_id = self.widget_id,
+            generation = *self.connection_generation.borrow(),
+            "connect() called"
         );
 
         // Store configuration
@@ -139,8 +140,9 @@ impl super::EmbeddedRdpWidget {
             *counter
         };
         tracing::debug!(
-            "[EmbeddedRDP] Starting connection generation {}",
-            generation
+            protocol = "rdp",
+            generation,
+            "Starting connection generation"
         );
 
         // Get actual widget size for initial resolution
@@ -171,9 +173,10 @@ impl super::EmbeddedRdpWidget {
         };
 
         tracing::debug!(
-            "[EmbeddedRDP] Attempting IronRDP connection to {}:{}",
-            config.host,
-            config.port
+            protocol = "rdp",
+            host = %config.host,
+            port = config.port,
+            "Attempting IronRDP connection"
         );
 
         // Compute RDP desktop scale factor as percentage (e.g. 2.0 → 200)
@@ -183,37 +186,38 @@ impl super::EmbeddedRdpWidget {
         let rdp_scale_percent = (effective_scale * 100.0) as u32;
 
         tracing::debug!(
-            "[EmbeddedRDP] Using resolution {}x{} (widget size)",
-            actual_width,
-            actual_height
+            protocol = "rdp",
+            width = actual_width,
+            height = actual_height,
+            "Using widget-size resolution"
         );
         tracing::debug!(
-            "[EmbeddedRDP] Scale: effective={:.2}x, desktop_scale_factor={}%",
-            effective_scale,
-            rdp_scale_percent
+            protocol = "rdp",
+            effective_scale = format_args!("{:.2}", effective_scale),
+            desktop_scale_factor = rdp_scale_percent,
+            "Scale configuration"
         );
         tracing::debug!(
-            "[EmbeddedRDP] Username: {:?}, Domain: {:?}, Password: {}",
-            config.username,
-            config.domain,
-            if config.password.is_some() {
-                "[REDACTED]"
-            } else {
-                "not set"
-            }
+            protocol = "rdp",
+            has_username = config.username.is_some(),
+            has_domain = config.domain.is_some(),
+            has_password = config.password.is_some(),
+            "Credential status"
         );
 
         // Log shared folders configuration
         if !config.shared_folders.is_empty() {
             tracing::debug!(
-                "[EmbeddedRDP] Configuring {} shared folder(s) via RDPDR",
-                config.shared_folders.len()
+                protocol = "rdp",
+                folder_count = config.shared_folders.len(),
+                "Configuring shared folders via RDPDR"
             );
             for folder in &config.shared_folders {
                 tracing::debug!(
-                    "[EmbeddedRDP]   - '{}' -> {}",
-                    folder.share_name,
-                    folder.local_path.display()
+                    protocol = "rdp",
+                    share_name = %folder.share_name,
+                    local_path = %folder.local_path.display(),
+                    "Shared folder"
                 );
             }
         }
@@ -255,9 +259,10 @@ impl super::EmbeddedRdpWidget {
         // "Got empty identity" error. The server will prompt instead.
         if config.username.is_none() || config.password.is_none() {
             tracing::debug!(
-                "[EmbeddedRDP] Disabling NLA: credentials incomplete (username={}, password={})",
-                config.username.is_some(),
-                config.password.is_some(),
+                protocol = "rdp",
+                has_username = config.username.is_some(),
+                has_password = config.password.is_some(),
+                "Disabling NLA: credentials incomplete"
             );
             client_config = client_config.with_nla(false);
         }
@@ -371,9 +376,9 @@ impl super::EmbeddedRdpWidget {
                 // Check if this polling loop is stale (a newer connection was started)
                 if *connection_generation.borrow() != generation {
                     tracing::debug!(
-                        "[IronRDP] Polling loop generation {} is stale (current: {}), stopping",
+                        protocol = "rdp",
                         generation,
-                        *connection_generation.borrow()
+                        "Polling loop is stale, stopping"
                     );
                     // Clean up client without firing callbacks
                     if let Some(mut c) = client_ref.borrow_mut().take() {
@@ -414,7 +419,12 @@ impl super::EmbeddedRdpWidget {
                     while let Some(event) = client.try_recv_event() {
                         match event {
                             RdpClientEvent::Connected { width, height } => {
-                                tracing::debug!("[IronRDP] Connected: {}x{}", width, height);
+                                tracing::debug!(
+                                    protocol = "rdp",
+                                    width,
+                                    height,
+                                    "IronRDP connected"
+                                );
                                 *state.borrow_mut() = RdpConnectionState::Connected;
 
                                 // Use server's resolution for the buffer
@@ -476,10 +486,7 @@ impl super::EmbeddedRdpWidget {
                                 needs_redraw = true;
                             }
                             RdpClientEvent::Disconnected => {
-                                tracing::debug!(
-                                    "[IronRDP] Disconnected event in generation {}",
-                                    generation
-                                );
+                                tracing::debug!(protocol = "rdp", generation, "Disconnected event");
                                 // Clean up clipboard monitor
                                 if let Some(handler_id) = clipboard_handler_id.borrow_mut().take() {
                                     let display = drawing_area.display();
@@ -497,8 +504,9 @@ impl super::EmbeddedRdpWidget {
                                     should_break = true;
                                 } else {
                                     tracing::debug!(
-                                        "[IronRDP] Ignoring Disconnected from stale generation {}",
-                                        generation
+                                        protocol = "rdp",
+                                        generation,
+                                        "Ignoring Disconnected from stale generation"
                                     );
                                     should_break = true;
                                 }
@@ -562,9 +570,10 @@ impl super::EmbeddedRdpWidget {
                             }
                             RdpClientEvent::ResolutionChanged { width, height } => {
                                 tracing::debug!(
-                                    "[IronRDP] Resolution changed: {}x{}",
+                                    protocol = "rdp",
                                     width,
-                                    height
+                                    height,
+                                    "Resolution changed"
                                 );
                                 *rdp_width_ref.borrow_mut() = u32::from(width);
                                 *rdp_height_ref.borrow_mut() = u32::from(height);
@@ -582,12 +591,15 @@ impl super::EmbeddedRdpWidget {
                                 needs_redraw = true;
                             }
                             RdpClientEvent::AuthRequired => {
-                                tracing::debug!("[IronRDP] Authentication required");
+                                tracing::debug!(protocol = "rdp", "Authentication required");
                             }
                             RdpClientEvent::ClipboardText(text) => {
                                 // Server sent clipboard text - store it, enable Copy button,
                                 // and auto-sync to local GTK clipboard
-                                tracing::debug!("[Clipboard] Received text from server");
+                                tracing::debug!(
+                                    protocol = "rdp",
+                                    "Received clipboard text from server"
+                                );
                                 *remote_clipboard_text.borrow_mut() = Some(text.clone());
                                 copy_button.set_sensitive(true);
                                 copy_button.set_tooltip_text(Some(&i18n(
@@ -613,8 +625,9 @@ impl super::EmbeddedRdpWidget {
                             }
                             RdpClientEvent::ClipboardFormatsAvailable(formats) => {
                                 tracing::debug!(
-                                    "[Clipboard] Formats available: {} formats",
-                                    formats.len()
+                                    protocol = "rdp",
+                                    format_count = formats.len(),
+                                    "Clipboard formats available"
                                 );
                                 *remote_clipboard_formats.borrow_mut() = formats;
                             }
@@ -704,14 +717,15 @@ impl super::EmbeddedRdpWidget {
                                 );
                             }
                             RdpClientEvent::ServerMessage(msg) => {
-                                tracing::debug!("[IronRDP] Server message: {}", msg);
+                                tracing::debug!(protocol = "rdp", message = %msg, "Server message");
                             }
                             #[cfg(feature = "rdp-audio")]
                             RdpClientEvent::AudioFormatChanged(format) => {
                                 tracing::debug!(
-                                    "[Audio] Format changed: {} Hz, {} ch",
-                                    format.samples_per_sec,
-                                    format.channels
+                                    protocol = "rdp",
+                                    sample_rate = format.samples_per_sec,
+                                    channels = format.channels,
+                                    "Audio format changed"
                                 );
                                 if let Ok(mut player_opt) = audio_player.try_borrow_mut() {
                                     if player_opt.is_none() {
@@ -720,7 +734,7 @@ impl super::EmbeddedRdpWidget {
                                     if let Some(ref mut player) = *player_opt
                                         && let Err(e) = player.configure(format)
                                     {
-                                        tracing::warn!("[Audio] Failed to configure: {}", e);
+                                        tracing::warn!(protocol = "rdp", error = %e, "Audio configure failed");
                                     }
                                 }
                             }
@@ -742,7 +756,7 @@ impl super::EmbeddedRdpWidget {
                             }
                             #[cfg(feature = "rdp-audio")]
                             RdpClientEvent::AudioClose => {
-                                tracing::debug!("[Audio] Channel closed");
+                                tracing::debug!(protocol = "rdp", "Audio channel closed");
                                 if let Ok(mut player_opt) = audio_player.try_borrow_mut()
                                     && let Some(ref mut player) = *player_opt
                                 {
@@ -758,9 +772,10 @@ impl super::EmbeddedRdpWidget {
                             }
                             RdpClientEvent::ClipboardDataReady { format_id, data } => {
                                 tracing::debug!(
-                                    "[Clipboard] Data ready for format {}: {} bytes",
+                                    protocol = "rdp",
                                     format_id,
-                                    data.len()
+                                    bytes = data.len(),
+                                    "Clipboard data ready"
                                 );
                                 if let Some(ref sender) = *ironrdp_tx.borrow() {
                                     let _ = sender
@@ -769,25 +784,29 @@ impl super::EmbeddedRdpWidget {
                             }
                             RdpClientEvent::ClipboardFileList(files) => {
                                 tracing::info!(
-                                    "[Clipboard] File list received: {} files",
-                                    files.len()
+                                    protocol = "rdp",
+                                    file_count = files.len(),
+                                    "Clipboard file list received"
                                 );
                                 for file in &files {
                                     tracing::debug!(
-                                        "  - {} ({} bytes, dir={})",
-                                        file.name,
-                                        file.size,
-                                        file.is_directory()
+                                        protocol = "rdp",
+                                        name = %file.name,
+                                        size = file.size,
+                                        is_dir = file.is_directory(),
+                                        "Clipboard file entry"
                                     );
                                 }
                                 let file_count = files.len();
                                 file_transfer.borrow_mut().set_available_files(files);
                                 if file_count > 0 {
-                                    save_files_button
-                                        .set_label(&format!("Save {} Files", file_count));
-                                    save_files_button.set_tooltip_text(Some(&format!(
+                                    save_files_button.set_label(&i18n_f(
+                                        "Save {} Files",
+                                        &[&file_count.to_string()],
+                                    ));
+                                    save_files_button.set_tooltip_text(Some(&i18n_f(
                                         "Save {} files from remote clipboard",
-                                        file_count
+                                        &[&file_count.to_string()],
                                     )));
                                     save_files_button.set_visible(true);
                                     save_files_button.set_sensitive(true);
@@ -801,10 +820,11 @@ impl super::EmbeddedRdpWidget {
                                 is_last,
                             } => {
                                 tracing::debug!(
-                                    "[Clipboard] File contents: stream_id={}, {} bytes, last={}",
+                                    protocol = "rdp",
                                     stream_id,
-                                    data.len(),
-                                    is_last
+                                    bytes = data.len(),
+                                    is_last,
+                                    "Clipboard file contents"
                                 );
                                 file_transfer
                                     .borrow_mut()
@@ -822,7 +842,10 @@ impl super::EmbeddedRdpWidget {
                                 if let Some(ref callback) = *on_file_progress.borrow() {
                                     callback(
                                         progress,
-                                        &format!("Downloaded {}/{} files", completed, total),
+                                        &i18n_f(
+                                            "Downloaded {}/{} files",
+                                            &[&completed.to_string(), &total.to_string()],
+                                        ),
                                     );
                                 }
 
@@ -830,14 +853,16 @@ impl super::EmbeddedRdpWidget {
                                     match file_transfer.borrow().save_download(stream_id) {
                                         Ok(path) => {
                                             tracing::info!(
-                                                "[Clipboard] Saved file: {}",
-                                                path.display()
+                                                protocol = "rdp",
+                                                path = %path.display(),
+                                                "Saved clipboard file"
                                             );
                                         }
                                         Err(e) => {
                                             tracing::error!(
-                                                "[Clipboard] Failed to save file: {}",
-                                                e
+                                                protocol = "rdp",
+                                                error = %e,
+                                                "Failed to save clipboard file"
                                             );
                                         }
                                     }
@@ -854,10 +879,13 @@ impl super::EmbeddedRdpWidget {
 
                                     save_files_button.set_sensitive(true);
                                     let file_count = file_transfer.borrow().available_files.len();
-                                    save_files_button
-                                        .set_label(&format!("Save {} Files", file_count));
+                                    save_files_button.set_label(&i18n_f(
+                                        "Save {} Files",
+                                        &[&file_count.to_string()],
+                                    ));
 
-                                    status_label.set_text(&format!("Saved {} files", count));
+                                    status_label
+                                        .set_text(&i18n_f("Saved {} files", &[&count.to_string()]));
                                     let status_hide = status_label.clone();
                                     glib::timeout_add_local_once(
                                         std::time::Duration::from_secs(3),
@@ -873,9 +901,10 @@ impl super::EmbeddedRdpWidget {
                             }
                             RdpClientEvent::ClipboardFileSize { stream_id, size } => {
                                 tracing::debug!(
-                                    "[Clipboard] File size: stream_id={}, size={}",
+                                    protocol = "rdp",
                                     stream_id,
-                                    size
+                                    size,
+                                    "Clipboard file size"
                                 );
                                 file_transfer.borrow_mut().update_size(stream_id, size);
                             }
@@ -954,52 +983,32 @@ impl super::EmbeddedRdpWidget {
                 c.disconnect();
             }
 
-            // Attempt FreeRDP external fallback
-            let fallback_ok = fallback_config
-                .borrow()
-                .as_ref()
-                .and_then(|cfg| {
-                    let xfreerdp = crate::embedded_rdp::detect::detect_xfreerdp()?;
-                    Some((xfreerdp, cfg.clone()))
-                })
-                .and_then(|(xfreerdp, cfg)| {
-                    let mut cmd = std::process::Command::new(&xfreerdp);
-                    cmd.arg(format!("/v:{}:{}", cfg.host, cfg.port));
-                    if let Some(ref u) = cfg.username {
-                        cmd.arg(format!("/u:{u}"));
+            // Attempt FreeRDP external fallback via SafeFreeRdpLauncher
+            // (uses /from-stdin to avoid exposing password in /proc/PID/cmdline)
+            let fallback_ok = fallback_config.borrow().as_ref().cloned().and_then(|cfg| {
+                let launcher = SafeFreeRdpLauncher::new();
+                match launcher.launch(&cfg) {
+                    Ok(child) => {
+                        tracing::info!(
+                            protocol = "rdp",
+                            host = %cfg.host,
+                            port = %cfg.port,
+                            "[IronRDP] Fallback to external FreeRDP"
+                        );
+                        *fallback_process.borrow_mut() = Some(child);
+                        Some(())
                     }
-                    if let Some(ref p) = cfg.password {
-                        cmd.arg(format!("/p:{}", p.expose_secret()));
+                    Err(e) => {
+                        tracing::error!(
+                            protocol = "rdp",
+                            error = %e,
+                            host = %cfg.host,
+                            "[IronRDP] External FreeRDP fallback failed"
+                        );
+                        None
                     }
-                    if let Some(ref d) = cfg.domain {
-                        cmd.arg(format!("/d:{d}"));
-                    }
-                    cmd.arg(format!("/w:{}", cfg.width));
-                    cmd.arg(format!("/h:{}", cfg.height));
-                    cmd.arg("/cert:ignore");
-                    // Suppress Qt/Wayland warnings
-                    cmd.env("QT_LOGGING_RULES", "*.warning=false");
-                    match cmd.spawn() {
-                        Ok(child) => {
-                            tracing::info!(
-                                protocol = "rdp",
-                                client = %xfreerdp,
-                                host = %cfg.host,
-                                "[IronRDP] Fallback to external FreeRDP"
-                            );
-                            *fallback_process.borrow_mut() = Some(child);
-                            Some(())
-                        }
-                        Err(e) => {
-                            tracing::error!(
-                                protocol = "rdp",
-                                error = %e,
-                                "[IronRDP] External FreeRDP fallback failed"
-                            );
-                            None
-                        }
-                    }
-                });
+                }
+            });
 
             if fallback_ok.is_some() {
                 *state.borrow_mut() = RdpConnectionState::Connected;
@@ -1119,7 +1128,7 @@ impl super::EmbeddedRdpWidget {
             let display = self.drawing_area.display();
             let clipboard = display.clipboard();
             clipboard.disconnect(handler_id);
-            tracing::debug!("[Clipboard] Disconnected local clipboard monitor");
+            tracing::debug!(protocol = "rdp", "Disconnected local clipboard monitor");
         }
         if let Some(mut thread) = self.freerdp_thread.borrow_mut().take() {
             thread.shutdown();
@@ -1143,9 +1152,10 @@ impl super::EmbeddedRdpWidget {
     /// Connects using embedded mode (wlfreerdp) with thread isolation (Requirement 6.3)
     fn connect_embedded(&self, config: &RdpConfig) -> Result<(), EmbeddedRdpError> {
         tracing::debug!(
-            "[EmbeddedRDP] Attempting embedded connection to {}:{}",
-            config.host,
-            config.port
+            protocol = "rdp",
+            host = %config.host,
+            port = config.port,
+            "Attempting embedded FreeRDP connection"
         );
 
         // Initialize Wayland surface
@@ -1200,7 +1210,7 @@ impl super::EmbeddedRdpWidget {
                 while let Some(event) = thread.try_recv_event() {
                     match event {
                         RdpEvent::Connected => {
-                            tracing::debug!("[EmbeddedRDP] Connected!");
+                            tracing::debug!(protocol = "rdp", "FreeRDP connected");
                             *state.borrow_mut() = RdpConnectionState::Connected;
                             if let Some(ref callback) = *on_state_changed.borrow() {
                                 callback(RdpConnectionState::Connected);
@@ -1208,7 +1218,7 @@ impl super::EmbeddedRdpWidget {
                             drawing_area.queue_draw();
                         }
                         RdpEvent::Disconnected => {
-                            tracing::debug!("[EmbeddedRDP] Disconnected");
+                            tracing::debug!(protocol = "rdp", "FreeRDP disconnected");
                             *state.borrow_mut() = RdpConnectionState::Disconnected;
                             if let Some(ref callback) = *on_state_changed.borrow() {
                                 callback(RdpConnectionState::Disconnected);
@@ -1217,7 +1227,7 @@ impl super::EmbeddedRdpWidget {
                             return glib::ControlFlow::Break;
                         }
                         RdpEvent::Error(msg) => {
-                            tracing::error!("[EmbeddedRDP] Error: {}", msg);
+                            tracing::error!(protocol = "rdp", error = %msg, "FreeRDP error");
                             *state.borrow_mut() = RdpConnectionState::Error;
                             if let Some(ref callback) = *on_error.borrow() {
                                 callback(&msg);
@@ -1226,7 +1236,7 @@ impl super::EmbeddedRdpWidget {
                             return glib::ControlFlow::Break;
                         }
                         RdpEvent::FallbackTriggered(reason) => {
-                            tracing::warn!("[EmbeddedRDP] Fallback triggered: {}", reason);
+                            tracing::warn!(protocol = "rdp", reason = %reason, "Fallback triggered");
                             if let Some(ref callback) = *on_fallback.borrow() {
                                 callback(&reason);
                             }
@@ -1243,9 +1253,10 @@ impl super::EmbeddedRdpWidget {
                                 let current_h = *rdp_height_ref.borrow();
                                 if width != current_w || height != current_h {
                                     tracing::debug!(
-                                        "[EmbeddedRDP] Resolution changed: {}x{}",
+                                        protocol = "rdp",
                                         width,
-                                        height
+                                        height,
+                                        "FreeRDP resolution changed"
                                     );
                                     *rdp_width_ref.borrow_mut() = width;
                                     *rdp_height_ref.borrow_mut() = height;
@@ -1256,7 +1267,7 @@ impl super::EmbeddedRdpWidget {
                             let _ = (x, y); // Suppress unused warnings
                         }
                         RdpEvent::AuthRequired => {
-                            tracing::debug!("[EmbeddedRDP] Authentication required");
+                            tracing::debug!(protocol = "rdp", "FreeRDP authentication required");
                         }
                     }
                 }
@@ -1371,9 +1382,10 @@ impl super::EmbeddedRdpWidget {
         let config = self.config.borrow().clone();
         if let Some(mut config) = config {
             tracing::info!(
-                "[RDP Reconnect] Reconnecting with new resolution: {}x{}",
+                protocol = "rdp",
                 width,
-                height
+                height,
+                "Reconnecting with new resolution"
             );
             config = config.with_resolution(width, height);
             self.connect(&config)

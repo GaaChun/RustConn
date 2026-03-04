@@ -78,7 +78,9 @@ impl super::EmbeddedRdpWidget {
                             f64::from(buf_height).mul_add(-scale, f64::from(height)) / 2.0;
 
                         // Save the current transformation matrix
-                        cr.save().unwrap_or(());
+                        if let Err(e) = cr.save() {
+                            tracing::warn!(error = %e, "Cairo save failed");
+                        }
 
                         cr.translate(offset_x, offset_y);
                         cr.scale(scale, scale);
@@ -91,7 +93,9 @@ impl super::EmbeddedRdpWidget {
                         let _ = cr.paint();
 
                         // Restore the transformation matrix
-                        cr.restore().unwrap_or(());
+                        if let Err(e) = cr.restore() {
+                            tracing::warn!(error = %e, "Cairo restore failed");
+                        }
                     }
                 } else {
                     // Show status overlay when not rendering framebuffer

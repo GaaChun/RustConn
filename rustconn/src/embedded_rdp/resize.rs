@@ -8,6 +8,13 @@ use gtk4::prelude::*;
 
 use super::types::RdpConnectionState;
 
+use crate::i18n::i18n;
+
+/// Minimum pixel difference (in device pixels) before triggering an RDP
+/// resolution change on widget resize. Prevents unnecessary reconnects
+/// from minor layout adjustments.
+const RESIZE_THRESHOLD_PX: u32 = 50;
+
 #[cfg(feature = "rdp-embedded")]
 use rustconn_core::rdp_client::RdpClientCommand;
 
@@ -103,7 +110,7 @@ impl super::EmbeddedRdpWidget {
                         let w_diff = (device_width as i32 - current_rdp_w as i32).unsigned_abs();
                         let h_diff = (device_height as i32 - current_rdp_h as i32).unsigned_abs();
 
-                        if w_diff > 50 || h_diff > 50 {
+                        if w_diff > RESIZE_THRESHOLD_PX || h_diff > RESIZE_THRESHOLD_PX {
                             // Round down to multiple of 4 for RDP compatibility
                             let rounded_width = (device_width / 4) * 4;
                             let rounded_height = (device_height / 4) * 4;
@@ -134,7 +141,7 @@ impl super::EmbeddedRdpWidget {
                             }
 
                             // Show reconnecting status
-                            sl.set_text("Reconnecting...");
+                            sl.set_text(&i18n("Reconnecting..."));
                             sl.set_visible(true);
 
                             // Trigger reconnect via callback after short delay

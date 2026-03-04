@@ -124,6 +124,32 @@ pub(super) fn create_advanced_tab() -> (
     mac_row.add_suffix(&mac_entry);
     wol_settings_group.add(&mac_row);
 
+    // MAC address format validation
+    {
+        let entry_clone = mac_entry.clone();
+        mac_entry.connect_changed(move |_| {
+            let text = entry_clone.text();
+            let text = text.trim();
+            if text.is_empty() {
+                entry_clone.remove_css_class("error");
+                entry_clone.set_tooltip_text(None);
+                return;
+            }
+            let mac_re = text.split(':').collect::<Vec<_>>();
+            let valid = mac_re.len() == 6
+                && mac_re
+                    .iter()
+                    .all(|b| b.len() == 2 && b.chars().all(|c| c.is_ascii_hexdigit()));
+            if valid {
+                entry_clone.remove_css_class("error");
+                entry_clone.set_tooltip_text(None);
+            } else {
+                entry_clone.add_css_class("error");
+                entry_clone.set_tooltip_text(Some(&i18n("Format: AA:BB:CC:DD:EE:FF")));
+            }
+        });
+    }
+
     let broadcast_entry = Entry::builder()
         .hexpand(true)
         .valign(gtk4::Align::Center)

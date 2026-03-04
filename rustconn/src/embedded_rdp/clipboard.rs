@@ -2,14 +2,26 @@
 //!
 //! Contains setup for Copy, Paste, and Ctrl+Alt+Del toolbar buttons.
 
-use gtk4::Button;
 use gtk4::glib;
 use gtk4::prelude::*;
+use gtk4::{Button, Label};
+
+use crate::i18n::{i18n, i18n_f};
 
 use super::types::{RdpCommand, RdpConnectionState};
 
 #[cfg(feature = "rdp-embedded")]
 use rustconn_core::rdp_client::RdpClientCommand;
+
+/// Shows a brief status message that auto-hides after the given duration.
+fn show_status_briefly(label: &Label, text: &str, duration_secs: u64) {
+    label.set_text(text);
+    label.set_visible(true);
+    let hide = label.clone();
+    glib::timeout_add_local_once(std::time::Duration::from_secs(duration_secs), move || {
+        hide.set_visible(false);
+    });
+}
 
 impl super::EmbeddedRdpWidget {
     /// Sets up the clipboard Copy/Paste button handlers
@@ -40,19 +52,13 @@ impl super::EmbeddedRdpWidget {
                     clipboard.set_text(text);
 
                     // Show feedback
-                    status_label.set_text(&format!("Copied {char_count} chars"));
-                    status_label.set_visible(true);
-                    let status_hide = status_label.clone();
-                    glib::timeout_add_local_once(std::time::Duration::from_secs(2), move || {
-                        status_hide.set_visible(false);
-                    });
+                    show_status_briefly(
+                        &status_label,
+                        &i18n_f("Copied {} chars", &[&char_count.to_string()]),
+                        2,
+                    );
                 } else {
-                    status_label.set_text("No remote clipboard data");
-                    status_label.set_visible(true);
-                    let status_hide = status_label.clone();
-                    glib::timeout_add_local_once(std::time::Duration::from_secs(2), move || {
-                        status_hide.set_visible(false);
-                    });
+                    show_status_briefly(&status_label, &i18n("No remote clipboard data"), 2);
                 }
             });
         }
@@ -99,15 +105,10 @@ impl super::EmbeddedRdpWidget {
                                     let _ = sender
                                         .send(RdpClientCommand::ClipboardText(text.to_string()));
                                     // Show brief feedback
-                                    status.set_text(&format!("Pasted {char_count} chars"));
-                                    status.set_visible(true);
-                                    // Hide after 2 seconds
-                                    let status_hide = status.clone();
-                                    glib::timeout_add_local_once(
-                                        std::time::Duration::from_secs(2),
-                                        move || {
-                                            status_hide.set_visible(false);
-                                        },
+                                    show_status_briefly(
+                                        &status,
+                                        &i18n_f("Pasted {} chars", &[&char_count.to_string()]),
+                                        2,
                                     );
                                 }
                             }
