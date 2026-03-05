@@ -54,7 +54,25 @@ pub fn start_ssh_connection(
 ) -> Option<Uuid> {
     // Check if port check is needed
     let settings = state.borrow().settings().clone();
-    let should_check = settings.connection.pre_connect_port_check && !conn.skip_port_check;
+    let has_jump_host = matches!(
+        &conn.protocol_config,
+        rustconn_core::ProtocolConfig::Ssh(ssh)
+            if ssh.jump_host_id.is_some() || ssh.proxy_jump.is_some()
+    );
+    // Skip port check when a jump host is configured — the destination
+    // is only reachable through the jump host, so a direct TCP probe
+    // will always time out.
+    let should_check =
+        settings.connection.pre_connect_port_check && !conn.skip_port_check && !has_jump_host;
+
+    if has_jump_host && settings.connection.pre_connect_port_check && !conn.skip_port_check {
+        tracing::debug!(
+            protocol = "ssh",
+            host = %conn.host,
+            port = conn.port,
+            "Skipping port check — connection uses a jump host"
+        );
+    }
 
     if should_check {
         let host = conn.host.clone();

@@ -367,6 +367,7 @@ fn create_connection_group() -> (
     let jump_host_list = StringList::new(&none_refs);
     let jump_host_dropdown = DropDown::new(Some(jump_host_list), gtk4::Expression::NONE);
     jump_host_dropdown.set_selected(0);
+    jump_host_dropdown.set_enable_search(true);
 
     let jump_host_row = adw::ActionRow::builder()
         .title(i18n("Jump Host"))

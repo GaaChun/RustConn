@@ -4750,7 +4750,8 @@ impl ConnectionDialog {
         sorted_conns.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
 
         for conn in sorted_conns {
-            connections_data.push((Some(conn.id), conn.name.clone()));
+            let label = format!("{} ({})", conn.name, conn.host);
+            connections_data.push((Some(conn.id), label));
         }
 
         *self.connections_data.borrow_mut() = connections_data.clone();
