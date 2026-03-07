@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Remmina import fails in Flatpak** — importer now also checks the host path `~/.local/share/remmina/` when running inside Flatpak sandbox ([#44](https://github.com/totoshko88/RustConn/issues/44))
+
+## [0.9.10] - 2026-03-07
+
+### Fixed
+- **Connection dialog Basic tab clipped** — removed redundant outer `ScrolledWindow` wrapping the `ViewStack`; each tab already provides its own scroller, so the nested scroll stole height allocation and clipped the Basic tab content
+- **Dialog minimum sizes missing** — added `set_size_request` to Import, Export, and Shortcuts dialogs to prevent UI breakage on small screens
+
+### Improved
+- **Connection dialog default height** — increased from 500→670px so the Basic tab fields (including Description) are fully visible without scrolling on typical displays
+
 ## [0.9.9] - 2026-03-06
 
 ### Fixed
