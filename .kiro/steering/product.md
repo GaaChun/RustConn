@@ -16,7 +16,7 @@ Embedded clients are preferred. External clients are fallbacks only.
 | SSH | VTE terminal | — | — |
 | RDP | IronRDP | `xfreerdp` | `rdp-embedded` |
 | VNC | vnc-rs | `vncviewer` | `vnc-embedded` |
-| SPICE | — | `remote-viewer` | `spice-embedded` |
+| SPICE | spice-client | `remote-viewer` | `spice-embedded` |
 | Telnet | VTE terminal | — | — |
 | Serial | VTE terminal | — | — |
 | Kubernetes | VTE terminal (`kubectl exec`) | — | — |

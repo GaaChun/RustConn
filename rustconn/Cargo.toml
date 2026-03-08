@@ -41,7 +41,7 @@ cpal = { version = "0.17.3", optional = true }
 serde = { workspace = true, features = ["derive"] }
 
 [features]
-default = ["tray", "vnc-embedded", "rdp-embedded", "rdp-audio", "wayland-native"]
+default = ["tray", "vnc-embedded", "rdp-embedded", "rdp-audio", "wayland-native", "spice-embedded"]
 tray = ["dep:ksni", "dep:resvg"]
 vnc-embedded = ["rustconn-core/vnc-embedded"]
 rdp-embedded = ["rustconn-core/rdp-embedded"]
