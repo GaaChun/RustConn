@@ -745,7 +745,7 @@ pub async fn get_bitwarden_version() -> Option<BitwardenVersion> {
 /// # Errors
 /// Returns `SecretError` if the unlock command fails or password is incorrect
 pub async fn unlock_vault(password: &SecretString) -> SecretResult<SecretString> {
-    let pw = password.expose_secret().to_string();
+    let pw = zeroize::Zeroizing::new(password.expose_secret().to_string());
 
     tokio::task::spawn_blocking(move || unlock_vault_sync(&pw))
         .await

@@ -168,7 +168,7 @@ Test entry points (`property_tests.rs`, `integration_tests.rs`) carry `#![allow(
 |------|-------|:-------:|---------|
 | `vnc-embedded` | `rustconn-core` | Yes | Native VNC via vnc-rs |
 | `rdp-embedded` | `rustconn-core` | Yes | Native RDP via IronRDP |
-| `spice-embedded` | `rustconn-core` | No | Native SPICE client |
+| `spice-embedded` | `rustconn-core` | Yes | Native SPICE client |
 | `tray` | `rustconn` | Yes | System tray (ksni + resvg) |
 | `rdp-audio` | `rustconn` | Yes | RDP audio playback (cpal); implies `rdp-embedded` |
 | `wayland-native` | `rustconn` | Yes | Wayland surface support (gdk4-wayland) |

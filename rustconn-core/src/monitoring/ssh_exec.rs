@@ -10,6 +10,7 @@
 //! variable, and `SSH_ASKPASS_REQUIRE=force` tells OpenSSH to use it
 //! even without a TTY. This eliminates the `sshpass` external dependency.
 
+use std::sync::Arc;
 use std::time::Duration;
 
 use secrecy::{ExposeSecret, SecretString};
@@ -21,6 +22,24 @@ const SSH_EXEC_TIMEOUT_SECS: u64 = 10;
 /// Environment variable name used to pass the password to the askpass script.
 /// Intentionally obscure to reduce exposure in `/proc/PID/environ`.
 const ASKPASS_ENV_VAR: &str = "_RC_MON_PW";
+
+/// RAII wrapper for the temporary `SSH_ASKPASS` script.
+///
+/// Deletes the script file when the last `Arc<AskpassScript>` reference is dropped
+/// (i.e. when the monitoring session ends and the factory closure is freed).
+struct AskpassScript(std::path::PathBuf);
+
+impl Drop for AskpassScript {
+    fn drop(&mut self) {
+        if let Err(e) = std::fs::remove_file(&self.0) {
+            tracing::debug!(
+                path = %self.0.display(),
+                error = %e,
+                "Failed to clean up askpass script"
+            );
+        }
+    }
+}
 
 /// Creates a temporary `SSH_ASKPASS` helper script that echoes the password
 /// from `ASKPASS_ENV_VAR`. The script is created with mode 0700 and lives
@@ -84,9 +103,10 @@ pub fn ssh_exec_factory(
 + 'static {
     // Create the askpass script once at factory creation time.
     // It is reused for every monitoring command invocation.
-    let askpass_path = if password.is_some() {
+    // Wrapped in Arc<AskpassScript> so the file is deleted when the factory is dropped.
+    let askpass_script = if password.is_some() {
         match create_askpass_script() {
-            Ok(p) => Some(p),
+            Ok(p) => Some(Arc::new(AskpassScript(p))),
             Err(e) => {
                 tracing::error!(
                     error = %e,
@@ -106,16 +126,16 @@ pub fn ssh_exec_factory(
         let identity_file = identity_file.clone();
         let password = password.clone();
         let jump_host = jump_host.clone();
-        let askpass_path = askpass_path.clone();
+        let askpass_script = askpass_script.clone();
 
         Box::pin(async move {
             let mut cmd = Command::new("ssh");
 
-            if let (Some(pw), Some(ap)) = (&password, &askpass_path) {
+            if let (Some(pw), Some(script)) = (&password, &askpass_script) {
                 // SSH_ASKPASS mechanism: OpenSSH calls the script to get
                 // the password. DISPLAY must be set (even empty) and
                 // SSH_ASKPASS_REQUIRE=force skips the TTY check.
-                cmd.env("SSH_ASKPASS", ap);
+                cmd.env("SSH_ASKPASS", &script.0);
                 cmd.env("SSH_ASKPASS_REQUIRE", "force");
                 cmd.env(ASKPASS_ENV_VAR, pw.expose_secret());
                 // Ensure DISPLAY is set so SSH considers ASKPASS

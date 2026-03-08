@@ -67,7 +67,7 @@ native-tls = { workspace = true }
 # Note: ironrdp-rdpdr-native 0.5 requires ironrdp-rdpdr 0.5.x which matches ironrdp 0.14
 
 [features]
-default = ["vnc-embedded", "rdp-embedded"]
+default = ["vnc-embedded", "rdp-embedded", "spice-embedded"]
 vnc-embedded = ["dep:vnc-rs"]
 # rdp-embedded feature enables the RdpClient struct with IronRDP
 rdp-embedded = [

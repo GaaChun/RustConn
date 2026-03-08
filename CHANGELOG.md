@@ -11,10 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 - **Removed sshpass dependency** — interactive SSH sessions now use native VTE password injection via `feed_child()`; monitoring SSH uses `SSH_ASKPASS` mechanism with temporary script instead of `SSHPASS` environment variable (no longer visible in `/proc/PID/environ`)
+- **Bitwarden master password zeroized on drop** — `unlock_vault()` now wraps the temporary plain-text password copy in `Zeroizing<String>` so heap memory is scrubbed when the blocking task completes
+- **SSH monitoring askpass script cleaned up on drop** — temporary `SSH_ASKPASS` helper script is now deleted automatically when the monitoring session ends (RAII wrapper with `Drop` impl)
 
 ### Improved
 - **Reduced state.rs complexity** — extracted vault operations (~979 lines) into `vault_ops.rs`, trimming `state.rs` from 3143 to 2167 lines
 - **Reduced window/mod.rs complexity** — extracted `setup_edit_actions` (637 lines), `setup_terminal_actions` (298 lines), and `setup_split_view_actions` (746 lines) into separate modules, trimming `window/mod.rs` from 5316 to 3648 lines
+
+### Changed
+- **SPICE embedded client enabled by default** — `spice-embedded` feature flag now included in default features for both `rustconn-core` and `rustconn` crates; native SPICE client (via `spice-client` crate) is now the primary connection method with `remote-viewer` as fallback
 
 ### Removed
 - **sshpass** — removed from all packaging manifests (Flatpak, Flathub, Debian, OBS RPM, Snap); no longer a runtime dependency
