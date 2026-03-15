@@ -584,6 +584,13 @@ impl ConnectionSidebar {
                     }
                     glib::Propagation::Stop
                 }
+                gdk::Key::F2 => {
+                    // F2: Rename selected connection/group
+                    if let Some(lv) = list_view_weak.upgrade() {
+                        let _ = lv.activate_action("win.rename-item", None);
+                    }
+                    glib::Propagation::Stop
+                }
                 gdk::Key::e | gdk::Key::E if ctrl => {
                     // Ctrl+E: Edit selected connection
                     if let Some(lv) = list_view_weak.upgrade() {
@@ -595,6 +602,27 @@ impl ConnectionSidebar {
                     // Ctrl+D: Duplicate selected connection
                     if let Some(lv) = list_view_weak.upgrade() {
                         let _ = lv.activate_action("win.duplicate-connection", None);
+                    }
+                    glib::Propagation::Stop
+                }
+                gdk::Key::c | gdk::Key::C if ctrl => {
+                    // Ctrl+C: Copy selected connection
+                    if let Some(lv) = list_view_weak.upgrade() {
+                        let _ = lv.activate_action("win.copy-connection", None);
+                    }
+                    glib::Propagation::Stop
+                }
+                gdk::Key::v | gdk::Key::V if ctrl => {
+                    // Ctrl+V: Paste connection
+                    if let Some(lv) = list_view_weak.upgrade() {
+                        let _ = lv.activate_action("win.paste-connection", None);
+                    }
+                    glib::Propagation::Stop
+                }
+                gdk::Key::m | gdk::Key::M if ctrl => {
+                    // Ctrl+M: Move to group
+                    if let Some(lv) = list_view_weak.upgrade() {
+                        let _ = lv.activate_action("win.move-to-group", None);
                     }
                     glib::Propagation::Stop
                 }

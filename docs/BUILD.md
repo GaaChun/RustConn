@@ -14,24 +14,26 @@ System dependencies:
 **Ubuntu/Debian:**
 ```bash
 sudo apt install build-essential libgtk-4-dev libvte-2.91-gtk4-dev \
-    libadwaita-1-dev libdbus-1-dev pkg-config libasound2-dev gettext
+    libadwaita-1-dev libdbus-1-dev libssl-dev pkg-config libasound2-dev \
+    clang cmake gettext
 ```
 
 **Fedora:**
 ```bash
 sudo dnf install gcc gtk4-devel vte291-gtk4-devel libadwaita-devel \
-    dbus-devel alsa-lib-devel gettext
+    dbus-devel openssl-devel alsa-lib-devel clang cmake gettext
 ```
 
 **openSUSE:**
 ```bash
 sudo zypper install gcc gtk4-devel vte-devel libadwaita-devel \
-    dbus-1-devel alsa-devel gettext-tools
+    dbus-1-devel libopenssl-devel alsa-devel clang cmake gettext-tools
 ```
 
 **Arch Linux:**
 ```bash
-sudo pacman -S base-devel gtk4 vte4 libadwaita dbus alsa-lib gettext
+sudo pacman -S base-devel gtk4 vte4 libadwaita dbus openssl alsa-lib \
+    clang cmake gettext
 ```
 
 ---

@@ -892,8 +892,8 @@ impl SplitViewBridge {
             // This is critical - GTK widgets can only have one parent
             Self::detach_terminal_from_parent(&terminal);
 
-            let scrolled = Self::create_terminal_scrolled_window(&terminal);
-            self.adapter.borrow().set_panel_content(panel_id, &scrolled);
+            Self::prepare_terminal_for_panel(&terminal);
+            self.adapter.borrow().set_panel_content(panel_id, &terminal);
 
             // Ensure terminal is visible
             terminal.set_visible(true);
@@ -969,9 +969,9 @@ impl SplitViewBridge {
         // Detach from current parent
         Self::detach_terminal_from_parent(&terminal);
 
-        // Create scrolled window and set as panel content
-        let scrolled = Self::create_terminal_scrolled_window(&terminal);
-        self.adapter.borrow().set_panel_content(panel_id, &scrolled);
+        // Set terminal directly as panel content (no ScrolledWindow)
+        Self::prepare_terminal_for_panel(&terminal);
+        self.adapter.borrow().set_panel_content(panel_id, &terminal);
 
         // Ensure terminal is visible
         terminal.set_visible(true);
@@ -981,27 +981,21 @@ impl SplitViewBridge {
 
     /// Detaches a terminal from its current parent widget
     fn detach_terminal_from_parent(terminal: &Terminal) {
-        if let Some(parent) = terminal.parent() {
-            if let Some(scrolled) = parent.downcast_ref::<gtk4::ScrolledWindow>() {
-                scrolled.set_child(None::<&gtk4::Widget>);
-            } else if let Some(box_widget) = parent.downcast_ref::<GtkBox>() {
-                box_widget.remove(terminal);
-            }
+        if let Some(parent) = terminal.parent()
+            && let Some(box_widget) = parent.downcast_ref::<GtkBox>()
+        {
+            box_widget.remove(terminal);
         }
     }
 
-    /// Creates a scrolled window for a terminal
-    fn create_terminal_scrolled_window(terminal: &Terminal) -> gtk4::ScrolledWindow {
+    /// Prepares a terminal for placement in a split panel.
+    ///
+    /// VTE implements `GtkScrollable` natively — no `ScrolledWindow` needed.
+    /// Wrapping in `ScrolledWindow` intercepts mouse events and breaks
+    /// ncurses apps (mc, htop) that rely on VTE's internal mouse handling.
+    fn prepare_terminal_for_panel(terminal: &Terminal) {
         terminal.set_hexpand(true);
         terminal.set_vexpand(true);
-
-        gtk4::ScrolledWindow::builder()
-            .hscrollbar_policy(gtk4::PolicyType::Never)
-            .vscrollbar_policy(gtk4::PolicyType::Automatic)
-            .hexpand(true)
-            .vexpand(true)
-            .child(terminal)
-            .build()
     }
 
     /// Clears a session from all panes
@@ -1168,9 +1162,9 @@ impl SplitViewBridge {
                     // Detach from current parent
                     Self::detach_terminal_from_parent(&terminal);
 
-                    // Create scrolled window and set as panel content
-                    let scrolled = Self::create_terminal_scrolled_window(&terminal);
-                    adapter.set_panel_content(panel_id, &scrolled);
+                    // Set terminal directly as panel content (no ScrolledWindow)
+                    Self::prepare_terminal_for_panel(&terminal);
+                    adapter.set_panel_content(panel_id, &terminal);
 
                     // Ensure terminal is visible
                     terminal.set_visible(true);
@@ -1366,8 +1360,8 @@ impl SplitViewBridge {
             // Display terminal in panel if available
             if let Some(terminal) = terminal_opt {
                 Self::detach_terminal_from_parent(&terminal);
-                let scrolled = Self::create_terminal_scrolled_window(&terminal);
-                adapter_rc.borrow().set_panel_content(panel_id, &scrolled);
+                Self::prepare_terminal_for_panel(&terminal);
+                adapter_rc.borrow().set_panel_content(panel_id, &terminal);
                 terminal.set_visible(true);
             }
 
@@ -1812,7 +1806,9 @@ impl SplitViewBridge {
         ];
 
         for (icon, description) in &features {
-            let row = adw::ActionRow::builder().title(description).build();
+            let row = adw::ActionRow::builder()
+                .title(gtk4::glib::markup_escape_text(description))
+                .build();
             row.add_prefix(&gtk4::Image::from_icon_name(icon));
             features_group.add(&row);
         }
@@ -1873,7 +1869,9 @@ impl SplitViewBridge {
         ];
 
         for (icon, description) in &quick_features {
-            let row = adw::ActionRow::builder().title(description).build();
+            let row = adw::ActionRow::builder()
+                .title(gtk4::glib::markup_escape_text(description))
+                .build();
             row.add_prefix(&gtk4::Image::from_icon_name(icon));
             quick_group.add(&row);
         }
@@ -2179,8 +2177,8 @@ impl SplitViewBridge {
         // Set terminal content if available from internal map
         if let Some(terminal) = self.terminals.borrow().get(&session_id).cloned() {
             Self::detach_terminal_from_parent(&terminal);
-            let scrolled = Self::create_terminal_scrolled_window(&terminal);
-            self.adapter.borrow().set_panel_content(panel_id, &scrolled);
+            Self::prepare_terminal_for_panel(&terminal);
+            self.adapter.borrow().set_panel_content(panel_id, &terminal);
             terminal.set_visible(true);
         }
 
@@ -2273,8 +2271,8 @@ impl SplitViewBridge {
 
         // Detach terminal from any previous parent and display in panel
         Self::detach_terminal_from_parent(terminal);
-        let scrolled = Self::create_terminal_scrolled_window(terminal);
-        self.adapter.borrow().set_panel_content(panel_id, &scrolled);
+        Self::prepare_terminal_for_panel(terminal);
+        self.adapter.borrow().set_panel_content(panel_id, terminal);
         terminal.set_visible(true);
 
         // Update pane's current_session for filtering in Select Tab

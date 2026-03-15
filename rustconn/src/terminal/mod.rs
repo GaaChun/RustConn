@@ -565,20 +565,17 @@ impl TerminalNotebook {
         // Apply user settings
         config::configure_terminal_with_settings(&terminal, settings);
 
-        // Create scrolled window for terminal
-        let scrolled = gtk4::ScrolledWindow::builder()
-            .hscrollbar_policy(gtk4::PolicyType::Never)
-            .vscrollbar_policy(gtk4::PolicyType::Automatic)
-            .hexpand(true)
-            .vexpand(true)
-            .child(&terminal)
-            .build();
-
-        // Create container for TabView page with terminal inside
+        // VTE implements GtkScrollable natively — no ScrolledWindow needed.
+        // Wrapping in ScrolledWindow intercepts mouse events and breaks
+        // ncurses apps (mc, htop) that rely on VTE's internal mouse handling.
         let container = GtkBox::new(Orientation::Vertical, 0);
         container.set_hexpand(true);
         container.set_vexpand(true);
-        container.append(&scrolled);
+        container.append(&terminal);
+
+        // Right-click context menu on the container (not the terminal)
+        // to avoid GestureClick interfering with VTE mouse event processing.
+        config::setup_context_menu_on_container(&container, &terminal);
 
         // Add page to TabView
         let page = self.tab_view.append(&container);
@@ -993,6 +990,33 @@ impl TerminalNotebook {
         // sandboxed environments like Flatpak (#48).
         env_vec.retain(|e| !e.starts_with("SSH_ASKPASS="));
 
+        // Ensure TERM is set. GUI applications (like RustConn) typically
+        // don't have TERM in their environment. Without it, ncurses-based
+        // programs (mc, htop, etc.) can't detect terminal capabilities
+        // including mouse support, causing raw escape sequences to appear
+        // as text artifacts. VTE doesn't auto-add TERM when envv is provided.
+        //
+        // In Flatpak, use `rustconn-256color` — a custom terminfo entry
+        // identical to `xterm-256color` but without the `XM` extended
+        // capability. `XM` tells ncurses/slang to negotiate SGR mouse
+        // mode (1006) with VTE, but mc cannot parse SGR-encoded mouse
+        // events, causing raw escape fragments like `7;6M7;6m` on clicks.
+        // The custom entry is compiled into /app/share/terminfo/ during
+        // the Flatpak build.
+        if rustconn_core::flatpak::is_flatpak() {
+            env_vec.retain(|e| !e.starts_with("TERM="));
+            env_vec.push(glib::GString::from("TERM=rustconn-256color"));
+            // Prepend /app/share/terminfo so ncurses/slang finds the
+            // custom entry; trailing colon preserves system defaults.
+            if !env_vec.iter().any(|e| e.starts_with("TERMINFO_DIRS=")) {
+                env_vec.push(glib::GString::from(
+                    "TERMINFO_DIRS=/app/share/terminfo:",
+                ));
+            }
+        } else if !env_vec.iter().any(|e| e.starts_with("TERM=")) {
+            env_vec.push(glib::GString::from("TERM=xterm-256color"));
+        }
+
         // Layer caller-provided variables (override parent values)
         if let Some(user_env) = envv {
             for e in user_env {
@@ -1020,7 +1044,7 @@ impl TerminalNotebook {
             working_directory,
             &argv_refs,
             &env_refs,
-            glib::SpawnFlags::DEFAULT,
+            glib::SpawnFlags::SEARCH_PATH_FROM_ENVP,
             || {},
             -1,
             gio::Cancellable::NONE,
@@ -1588,7 +1612,7 @@ impl TerminalNotebook {
 
     /// Gets the page container widget for a session
     ///
-    /// Returns the `GtkBox` that holds the terminal scrolled window.
+    /// Returns the `GtkBox` that holds the terminal.
     /// Used by monitoring to prepend the monitoring bar above the terminal.
     #[must_use]
     pub fn get_session_container(&self, session_id: Uuid) -> Option<GtkBox> {
@@ -1809,37 +1833,26 @@ impl TerminalNotebook {
             return;
         };
 
-        // Check if terminal is already in this container (via scrolled window)
+        // Check if terminal is already in this container
         if let Some(parent) = terminal.parent()
-            && let Some(grandparent) = parent.parent()
-            && grandparent == child
+            && parent == child
         {
             return; // Already in place
         }
 
         // Remove terminal from current parent (if any)
-        if let Some(parent) = terminal.parent() {
-            if let Some(scrolled) = parent.downcast_ref::<gtk4::ScrolledWindow>() {
-                scrolled.set_child(None::<&Widget>);
-            } else if let Some(box_widget) = parent.downcast_ref::<GtkBox>() {
-                box_widget.remove(&terminal);
-            }
+        if let Some(parent) = terminal.parent()
+            && let Some(box_widget) = parent.downcast_ref::<GtkBox>()
+        {
+            box_widget.remove(&terminal);
         }
 
-        // Create new scrolled window and add terminal
-        let scrolled = gtk4::ScrolledWindow::builder()
-            .hscrollbar_policy(gtk4::PolicyType::Never)
-            .vscrollbar_policy(gtk4::PolicyType::Automatic)
-            .hexpand(true)
-            .vexpand(true)
-            .child(&terminal)
-            .build();
-
-        // Clear container and add scrolled window
+        // Clear container and add terminal directly (no ScrolledWindow —
+        // VTE implements GtkScrollable natively)
         while let Some(existing) = container.first_child() {
             container.remove(&existing);
         }
-        container.append(&scrolled);
+        container.append(&terminal);
         terminal.set_visible(true);
     }
 

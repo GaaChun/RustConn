@@ -141,11 +141,24 @@ modules:
           name: libsecret
           stable-only: true
 
+  - name: slang
+    buildsystem: autotools
+    config-opts:
+      - --without-png
+      - --without-pcre
+      - --without-onig
+    sources:
+      - type: archive
+        url: https://www.jedsoft.org/releases/slang/slang-2.3.3.tar.bz2
+        sha256: f9145054ae131973c61208ea82486d5c477e4e4c76a4e07a2fce46d4d17b0f5c
+
   - name: mc
     buildsystem: autotools
     config-opts:
-      - --without-x
-      - --with-screen=ncurses
+      # Use slang instead of ncurses — mc's ncurses backend cannot parse
+      # SGR mouse sequences (mode 1006) from VTE 0.80+, causing raw escape
+      # fragments to appear as text artifacts on mouse clicks.
+      - --with-screen=slang
       - --disable-vfs-sftp
     post-install:
       # Host distros (e.g. openSUSE) export a bash function mc() that sources
@@ -190,6 +203,18 @@ modules:
       - type: archive
         url: https://gitlab.freedesktop.org/mstoeckl/waypipe/-/archive/v0.11.0/waypipe-v0.11.0.tar.gz
         sha256: dc4741bd4435666b4b45ef9b8354c9f742e9c2c5fb99bb49b2ac4f32a371bcd7
+
+  - name: rustconn-terminfo
+    buildsystem: simple
+    build-commands:
+      # Create a custom terminfo entry identical to xterm-256color but
+      # without the XM extended capability. XM tells ncurses/slang to
+      # negotiate SGR mouse mode (1006) with VTE 0.80+, but mc cannot
+      # parse SGR-encoded mouse events — causing raw escape fragments
+      # like "7;6M7;6m" on every click. Removing XM prevents the
+      # negotiation so VTE falls back to X10/normal mouse mode.
+      - infocmp -x -1 xterm-256color | sed 's/xterm-256color/rustconn-256color/' | sed '/XM=/d' | tic -x -o /app/share/terminfo -
+    sources: []
 
   - name: rustconn
     buildsystem: simple

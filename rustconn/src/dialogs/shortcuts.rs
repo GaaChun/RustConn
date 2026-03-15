@@ -77,6 +77,12 @@ const SHORTCUTS: &[ShortcutEntry] = &[
         category: "Connections",
     },
     ShortcutEntry {
+        accel: "<Control>m",
+        keys: "Ctrl+M",
+        description: "Move to group (sidebar)",
+        category: "Connections",
+    },
+    ShortcutEntry {
         accel: "Return",
         keys: "Enter",
         description: "Connect to selected",
