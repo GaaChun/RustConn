@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.10.0] - 2026-03-14
 
 ### Added
+- **Dynamic inventory sync** — new `rustconn-cli sync` command synchronizes connections from external JSON/YAML inventory files; matches by source tag + name + host; supports `--remove-stale` to clean absent connections and `--dry-run` for preview ([#56](https://github.com/totoshko88/RustConn/issues/56))
 - **RDP file association** — double-clicking an `.rdp` file opens RustConn and connects automatically; supports address, credentials, gateway, resolution, audio, and clipboard fields ([#54](https://github.com/totoshko88/RustConn/issues/54))
 - **FreeRDP bundled in Flatpak** — FreeRDP 3.24.0 SDL3 client built into the Flatpak; external RDP works out of the box on Wayland without `DISPLAY`
 - **`sdl-freerdp3` detection** — FreeRDP detection now includes SDL3 variants (`sdl-freerdp3`, `sdl-freerdp`); Wayland priority: `wlfreerdp3` > `wlfreerdp` > `sdl-freerdp3` > `sdl-freerdp` > `xfreerdp3`

@@ -59,6 +59,7 @@ mod spice_client_tests;
 mod split_view;
 mod ssh_agent_tests;
 mod storage_backend_tests;
+mod sync_tests;
 mod tab_group_tests;
 mod task_tests;
 mod template_tests;
