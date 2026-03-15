@@ -447,7 +447,7 @@ label.error {
  * Accessibility: Reduced Motion
  * Respects user preference for reduced motion (GNOME/GTK setting)
  * ============================================================ */
-@media (prefers-reduced-motion) {
+@media (prefers-reduced-motion: reduce) {
     .status-icon,
     .drop-target-highlight {
         transition: none;

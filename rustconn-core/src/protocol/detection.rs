@@ -451,7 +451,13 @@ pub fn detect_picocom() -> ClientInfo {
 /// Waypipe forwards Wayland clients over SSH, similar to `ssh -X` for X11.
 /// It wraps the SSH command: `waypipe ssh user@host`.
 pub fn detect_waypipe() -> ClientInfo {
+    // Try "waypipe" first (standard name, also symlinked in Flatpak)
     if let Some(info) = try_detect_client("waypipe", "waypipe", &["--version"]) {
+        return info;
+    }
+    // C-only build of waypipe installs as "waypipe-c"
+    if let Some(mut info) = try_detect_client("waypipe", "waypipe-c", &["--version"]) {
+        info.name = "waypipe-c".to_string();
         return info;
     }
     ClientInfo::not_installed("waypipe", "Install waypipe package")
@@ -486,6 +492,14 @@ fn detect_client(
 
 /// Finds a binary in PATH
 fn which_binary(binary: &str) -> Option<PathBuf> {
+    // In Flatpak environment, check /app/bin first for bundled clients
+    if crate::flatpak::is_flatpak() {
+        let app_path = PathBuf::from(format!("/app/bin/{binary}"));
+        if app_path.exists() && app_path.is_file() {
+            return Some(app_path);
+        }
+    }
+
     // In snap environment, check SNAP directory first for bundled clients
     if let Ok(snap_dir) = std::env::var("SNAP") {
         // Check common snap binary locations

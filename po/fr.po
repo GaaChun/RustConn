@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rustconn 0.9.15\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-15 03:05+0200\n"
+"POT-Creation-Date: 2026-03-15 05:02+0200\n"
 "PO-Revision-Date: 2026-02-17 00:00+0000\n"
 "Last-Translator: RustConn Team\n"
 "Language-Team: French\n"
@@ -519,7 +519,7 @@ msgstr "Délai du test dépassé"
 
 #: rustconn/src/dialogs/connection/dialog.rs:1393 rustconn/src/sidebar_ui.rs:78
 #: rustconn/src/sidebar_ui.rs:443 rustconn/src/split_view/bridge.rs:1692
-#: rustconn/src/window/ui.rs:116
+#: rustconn/src/window/ui.rs:48 rustconn/src/window/ui.rs:116
 msgid "New Connection"
 msgstr "Nouvelle connexion"
 
@@ -3688,6 +3688,8 @@ msgid "No database selected"
 msgstr "Aucune base de données sélectionnée"
 
 #: rustconn/src/dialogs/settings/secrets_tab.rs:1473
+#: rustconn/src/embedded_rdp/ui.rs:161 rustconn/src/embedded_spice.rs:420
+#: rustconn/src/embedded_trait.rs:318 rustconn/src/session/vnc.rs:202
 msgid "Connected"
 msgstr "Connecté"
 
@@ -4139,7 +4141,7 @@ msgstr "Âge max."
 msgid "Hours before sessions expire"
 msgstr "Heures avant l'expiration des sessions"
 
-#: rustconn/src/dialogs/shortcuts.rs:267 rustconn/src/split_view/bridge.rs:1833
+#: rustconn/src/dialogs/shortcuts.rs:267 rustconn/src/split_view/bridge.rs:1830
 msgid "Keyboard Shortcuts"
 msgstr "Raccourcis clavier"
 
@@ -4765,17 +4767,18 @@ msgid "Copy remote clipboard to local (waiting for remote data...)"
 msgstr "Copier le presse-papiers distant vers local (en attente des données…)"
 
 #: rustconn/src/embedded_rdp/mod.rs:241 rustconn/src/embedded_spice.rs:245
-#: rustconn/src/embedded_trait.rs:207 rustconn/src/embedded_vnc.rs:162
+#: rustconn/src/embedded_trait.rs:210 rustconn/src/embedded_vnc.rs:162
 msgid "Paste"
 msgstr "Coller"
 
 #: rustconn/src/embedded_rdp/mod.rs:242 rustconn/src/embedded_spice.rs:246
-#: rustconn/src/embedded_trait.rs:208 rustconn/src/embedded_vnc.rs:163
+#: rustconn/src/embedded_trait.rs:211 rustconn/src/embedded_vnc.rs:163
 msgid "Paste from local clipboard to remote session"
 msgstr "Coller du presse-papiers local vers la session distante"
 
 #: rustconn/src/embedded_rdp/mod.rs:253 rustconn/src/embedded_spice.rs:258
-#: rustconn/src/embedded_trait.rs:220 rustconn/src/embedded_vnc.rs:175
+#: rustconn/src/embedded_trait.rs:226 rustconn/src/embedded_trait.rs:228
+#: rustconn/src/embedded_vnc.rs:175
 msgid "Send Ctrl+Alt+Del to remote session"
 msgstr "Envoyer Ctrl+Alt+Suppr à la session distante"
 
@@ -4792,13 +4795,14 @@ msgid "Save files from remote clipboard"
 msgstr "Enregistrer les fichiers du presse-papiers distant"
 
 #: rustconn/src/embedded_rdp/mod.rs:284 rustconn/src/embedded_spice.rs:262
-#: rustconn/src/embedded_trait.rs:224 rustconn/src/embedded_vnc.rs:179
+#: rustconn/src/embedded_trait.rs:233 rustconn/src/embedded_vnc.rs:179
 #: rustconn/src/terminal/mod.rs:1064 rustconn/src/terminal/mod.rs:1269
 msgid "Reconnect"
 msgstr "Reconnecter"
 
 #: rustconn/src/embedded_rdp/mod.rs:286 rustconn/src/embedded_spice.rs:264
-#: rustconn/src/embedded_trait.rs:226 rustconn/src/embedded_vnc.rs:181
+#: rustconn/src/embedded_trait.rs:235 rustconn/src/embedded_trait.rs:237
+#: rustconn/src/embedded_vnc.rs:181
 msgid "Reconnect to the remote session"
 msgstr "Reconnecter à la session distante"
 
@@ -4818,15 +4822,46 @@ msgstr "Téléchargement des fichiers..."
 msgid "Reconnecting..."
 msgstr "Reconnexion..."
 
-#: rustconn/src/embedded.rs:62
+#: rustconn/src/embedded_rdp/ui.rs:147 rustconn/src/embedded_spice.rs:415
+msgid "Session ended"
+msgstr "Session terminée"
+
+#: rustconn/src/embedded_rdp/ui.rs:149
+msgid "No connection configured"
+msgstr "Aucune connexion configurée"
+
+#: rustconn/src/embedded_rdp/ui.rs:154
+msgid "Connecting via IronRDP..."
+msgstr "Connexion via IronRDP..."
+
+#: rustconn/src/embedded_rdp/ui.rs:156
+msgid "Starting FreeRDP..."
+msgstr "Démarrage de FreeRDP..."
+
+#: rustconn/src/embedded_rdp/ui.rs:164
+msgid "RDP session running in FreeRDP window"
+msgstr "Session RDP dans la fenêtre FreeRDP"
+
+#: rustconn/src/embedded_rdp/ui.rs:169 rustconn/src/session/vnc.rs:425
+#: rustconn/src/session/vnc.rs:559
+msgid "Connection failed"
+msgstr "Connexion échouée"
+
+#: rustconn/src/embedded_rdp/ui.rs:182
+msgid "Switch to the FreeRDP window to interact with the session"
+msgstr "Basculez vers la fenêtre FreeRDP pour interagir"
+
+#: rustconn/src/embedded.rs:62 rustconn/src/embedded_spice.rs:416
+#: rustconn/src/embedded_trait.rs:314 rustconn/src/session/vnc.rs:293
+#: rustconn/src/session/vnc.rs:368 rustconn/src/session/vnc.rs:468
 msgid "Connecting..."
 msgstr "Connexion…"
 
-#: rustconn/src/embedded.rs:69
+#: rustconn/src/embedded.rs:69 rustconn/src/embedded.rs:72
 msgid "Toggle Fullscreen"
 msgstr "Basculer en plein écran"
 
-#: rustconn/src/embedded.rs:76
+#: rustconn/src/embedded.rs:76 rustconn/src/embedded.rs:79
 msgid "Disconnect"
 msgstr "Déconnecter"
 
@@ -4834,6 +4869,38 @@ msgstr "Déconnecter"
 #: rustconn/src/embedded_vnc.rs:158
 msgid "Copy from remote session to local clipboard"
 msgstr "Copier de la session distante vers le presse-papiers local"
+
+#: rustconn/src/embedded_spice.rs:418 rustconn/src/embedded_trait.rs:316
+#: rustconn/src/session/vnc.rs:411 rustconn/src/session/vnc.rs:545
+msgid "Session running in external window"
+msgstr "Session dans une fenêtre externe"
+
+#: rustconn/src/embedded_spice.rs:421 rustconn/src/embedded_trait.rs:319
+#: rustconn/src/session/vnc.rs:295 rustconn/src/session/vnc.rs:324
+msgid "Connection error"
+msgstr "Erreur de connexion"
+
+#: rustconn/src/embedded_spice.rs:666
+msgid "Pasted to remote"
+msgstr "Collé sur le distant"
+
+#: rustconn/src/embedded_spice.rs:679
+msgid "Copy requested"
+msgstr "Copie demandée"
+
+#: rustconn/src/embedded_trait.rs:205
+msgid "Copy from remote session"
+msgstr ""
+
+#: rustconn/src/embedded_trait.rs:213
+msgid "Paste to remote session"
+msgstr ""
+
+#: rustconn/src/embedded_trait.rs:313 rustconn/src/session/vnc.rs:135
+#: rustconn/src/session/vnc.rs:219 rustconn/src/session/vnc.rs:292
+#: rustconn/src/session/vnc.rs:765
+msgid "Disconnected"
+msgstr "Déconnecté"
 
 #: rustconn/src/embedded_vnc.rs:1234
 msgid "VNC encryption not supported. Install TigerVNC."
@@ -4871,10 +4938,13 @@ msgstr "Durée de fonctionnement"
 msgid "⚠ Monitoring stopped — metrics may be stale"
 msgstr ""
 
-#: rustconn/src/session/vnc.rs:135 rustconn/src/session/vnc.rs:219
-#: rustconn/src/session/vnc.rs:765
-msgid "Disconnected"
-msgstr "Déconnecté"
+#: rustconn/src/session/vnc.rs:236
+msgid "Authenticating..."
+msgstr "Authentification..."
+
+#: rustconn/src/session/vnc.rs:255
+msgid "Authentication failed. Check your credentials."
+msgstr "Authentification échouée. Vérifiez vos identifiants."
 
 #: rustconn/src/sidebar/mod.rs:116
 msgid "Search... (? for help)"
@@ -4937,7 +5007,8 @@ msgid "Open SFTP"
 msgstr "Ouvrir SFTP"
 
 #: rustconn/src/sidebar_ui.rs:271 rustconn/src/sidebar_ui.rs:457
-#: rustconn/src/window/connection_dialogs.rs:197 rustconn/src/window/ui.rs:117
+#: rustconn/src/window/connection_dialogs.rs:197 rustconn/src/window/ui.rs:62
+#: rustconn/src/window/ui.rs:117
 msgid "New Group"
 msgstr "Nouveau groupe"
 
@@ -4945,9 +5016,17 @@ msgstr "Nouveau groupe"
 msgid "Create a new group"
 msgstr "Créer un nouveau groupe"
 
+#: rustconn/src/sidebar_ui.rs:275
+msgid "Create new group"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:280
 msgid "Move selected items to a group"
 msgstr "Déplacer les éléments sélectionnés vers un groupe"
+
+#: rustconn/src/sidebar_ui.rs:283
+msgid "Move selected connections to group"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:288
 msgid "Create Cluster"
@@ -4957,40 +5036,85 @@ msgstr "Créer un cluster"
 msgid "Create a cluster from selected connections"
 msgstr "Créer un cluster à partir des connexions sélectionnées"
 
+#: rustconn/src/sidebar_ui.rs:292
+msgid "Create cluster from selected connections"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:298
 msgid "Select all items (Ctrl+A)"
 msgstr "Tout sélectionner (Ctrl+A)"
+
+#: rustconn/src/sidebar_ui.rs:301
+msgid "Select all connections"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:306
 msgid "Clear selection (Escape)"
 msgstr "Effacer la sélection (Échap)"
 
+#: rustconn/src/sidebar_ui.rs:308
+msgid "Clear selection"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:313
 msgid "Delete all selected items"
 msgstr "Supprimer tous les éléments sélectionnés"
+
+#: rustconn/src/sidebar_ui.rs:317
+msgid "Delete selected connections"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:338
 msgid "Group Operations Mode"
 msgstr "Mode opérations de groupe"
 
+#: rustconn/src/sidebar_ui.rs:341
+msgid "Enable group operations mode for multi-select"
+msgstr ""
+
+#: rustconn/src/sidebar_ui.rs:349
+msgid "View connection history"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:354
 msgid "Sort Alphabetically"
 msgstr "Trier par ordre alphabétique"
+
+#: rustconn/src/sidebar_ui.rs:357
+msgid "Sort connections alphabetically"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:363
 msgid "Sort by Recent Usage"
 msgstr "Trier par utilisation récente"
 
+#: rustconn/src/sidebar_ui.rs:366
+msgid "Sort connections by recent usage"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:372
 msgid "Import Connections (Ctrl+I)"
 msgstr "Importer des connexions (Ctrl+I)"
+
+#: rustconn/src/sidebar_ui.rs:375
+msgid "Import connections from external sources"
+msgstr ""
+
+#: rustconn/src/sidebar_ui.rs:384
+msgid "Export connections to file"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:390
 msgid "Open Password Vault"
 msgstr "Ouvrir le coffre de mots de passe"
 
+#: rustconn/src/sidebar_ui.rs:394
+msgid "Open password vault for credential management"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:429 rustconn/src/split_view/bridge.rs:1699
-#: rustconn/src/window/edit_dialogs.rs:1241 rustconn/src/window/ui.rs:118
+#: rustconn/src/window/edit_dialogs.rs:1241 rustconn/src/window/ui.rs:41
+#: rustconn/src/window/ui.rs:118
 msgid "Quick Connect"
 msgstr "Connexion rapide"
 
@@ -5001,6 +5125,10 @@ msgstr "Importer…"
 #: rustconn/src/sidebar_ui.rs:491
 msgid "Export..."
 msgstr "Exporter…"
+
+#: rustconn/src/sidebar/view.rs:52
+msgid "Pinned"
+msgstr "Épinglé"
 
 #: rustconn/src/split_view/adapter.rs:954
 msgid "Drag to move this session to another panel or tab"
@@ -5067,79 +5195,80 @@ msgstr "Groupes, étiquettes et modèles"
 msgid "Zero Trust tunnels"
 msgstr "Tunnels Zero Trust"
 
-#: rustconn/src/split_view/bridge.rs:1809
+#: rustconn/src/split_view/bridge.rs:1807
 msgid "Command snippets & clusters"
 msgstr "Extraits de commandes et clusters"
 
-#: rustconn/src/split_view/bridge.rs:1813
+#: rustconn/src/split_view/bridge.rs:1810
 msgid "Customizable keybindings"
 msgstr "Raccourcis clavier personnalisables"
 
-#: rustconn/src/split_view/bridge.rs:1837
+#: rustconn/src/split_view/bridge.rs:1834
 msgid "New connection"
 msgstr "Nouvelle connexion"
 
-#: rustconn/src/split_view/bridge.rs:1838
+#: rustconn/src/split_view/bridge.rs:1835
 msgid "Quick connect"
 msgstr "Connexion rapide"
 
-#: rustconn/src/split_view/bridge.rs:1839
+#: rustconn/src/split_view/bridge.rs:1836
 msgid "Command palette"
 msgstr "Palette de commandes"
 
-#: rustconn/src/split_view/bridge.rs:1840
+#: rustconn/src/split_view/bridge.rs:1837
 msgid "Local shell"
 msgstr "Shell local"
 
-#: rustconn/src/split_view/bridge.rs:1841
+#: rustconn/src/split_view/bridge.rs:1838
 msgid "Search"
 msgstr "Rechercher"
 
-#: rustconn/src/split_view/bridge.rs:1842
+#: rustconn/src/split_view/bridge.rs:1839
 msgid "Split vertical"
 msgstr "Diviser verticalement"
 
-#: rustconn/src/split_view/bridge.rs:1843
+#: rustconn/src/split_view/bridge.rs:1840
 msgid "Split horizontal"
 msgstr "Diviser horizontalement"
 
-#: rustconn/src/split_view/bridge.rs:1844
+#: rustconn/src/split_view/bridge.rs:1841
 msgid "Import connections"
 msgstr "Importer des connexions"
 
-#: rustconn/src/split_view/bridge.rs:1845 rustconn/src/window/ui.rs:161
+#: rustconn/src/split_view/bridge.rs:1842 rustconn/src/window/ui.rs:82
+#: rustconn/src/window/ui.rs:161
 msgid "Settings"
 msgstr "Paramètres"
 
-#: rustconn/src/split_view/bridge.rs:1868
+#: rustconn/src/split_view/bridge.rs:1865
 msgid "Quick Access"
 msgstr "Accès rapide"
 
-#: rustconn/src/split_view/bridge.rs:1872
+#: rustconn/src/split_view/bridge.rs:1869
 msgid "Fuzzy search & command palette"
 msgstr "Recherche floue et palette de commandes"
 
-#: rustconn/src/split_view/bridge.rs:1873
+#: rustconn/src/split_view/bridge.rs:1870
 msgid "Pin favorites to sidebar"
 msgstr "Épingler les favoris dans la barre latérale"
 
-#: rustconn/src/split_view/bridge.rs:1876
+#: rustconn/src/split_view/bridge.rs:1871
 msgid "Split view for terminals"
 msgstr "Vue fractionnée pour les terminaux"
 
-#: rustconn/src/split_view/bridge.rs:1880
+#: rustconn/src/split_view/bridge.rs:1872
 msgid "Open .rdp files directly"
 msgstr "Ouvrir les fichiers .rdp directement"
 
-#: rustconn/src/split_view/bridge.rs:1893
+#: rustconn/src/split_view/bridge.rs:1884
 msgid "Import Formats"
 msgstr "Formats d'importation"
 
-#: rustconn/src/split_view/bridge.rs:2013
+#: rustconn/src/split_view/bridge.rs:2004
 msgid "All tabs are already displayed in this split view"
 msgstr "Tous les onglets sont déjà affichés dans cette vue fractionnée"
 
-#: rustconn/src/split_view/bridge.rs:2052
+#: rustconn/src/split_view/bridge.rs:2043
 msgid "Select a tab to display"
 msgstr "Sélectionner un onglet à afficher"
 
@@ -5845,6 +5974,10 @@ msgstr "Utilisateur : {}"
 msgid "Toggle Sidebar (F9)"
 msgstr "Basculer la barre latérale (F9)"
 
+#: rustconn/src/window/ui.rs:34
+msgid "Toggle Sidebar"
+msgstr "Basculer la barre latérale"
+
 #: rustconn/src/window/ui.rs:39
 msgid "Quick Connect (Ctrl+Shift+Q)"
 msgstr "Connexion rapide (Ctrl+Shift+Q)"
@@ -5857,11 +5990,15 @@ msgstr "Nouvelle connexion (Ctrl+N)"
 msgid "Delete Selected (Delete)"
 msgstr "Supprimer la sélection (Suppr)"
 
+#: rustconn/src/window/ui.rs:55
+msgid "Delete Selected"
+msgstr "Supprimer la sélection"
+
 #: rustconn/src/window/ui.rs:60
 msgid "New Group (Ctrl+Shift+N)"
 msgstr "Nouveau groupe (Ctrl+Shift+N)"
 
-#: rustconn/src/window/ui.rs:70
+#: rustconn/src/window/ui.rs:70 rustconn/src/window/ui.rs:72
 msgid "Menu"
 msgstr "Menu"
 
@@ -5873,9 +6010,17 @@ msgstr "Paramètres (Ctrl+,)"
 msgid "Split Vertical (Ctrl+Shift+S)"
 msgstr "Diviser verticalement (Ctrl+Shift+S)"
 
+#: rustconn/src/window/ui.rs:89
+msgid "Split Vertical"
+msgstr "Diviser verticalement"
+
 #: rustconn/src/window/ui.rs:93
 msgid "Split Horizontal (Ctrl+Shift+H)"
 msgstr "Diviser horizontalement (Ctrl+Shift+H)"
+
+#: rustconn/src/window/ui.rs:96
+msgid "Split Horizontal"
+msgstr "Diviser horizontalement"
 
 #: rustconn/src/window/ui.rs:124
 msgid "Snippets..."
@@ -5944,128 +6089,3 @@ msgstr "RustConn"
 #: rustconn/assets/io.github.totoshko88.RustConn.desktop:10
 msgid "ssh;rdp;vnc;spice;telnet;zerotrust;connection;terminal;remote;kubernetes;k8s;serial;sftp;"
 msgstr ""
-
-#~ msgid "Embedded SSH terminals"
-#~ msgstr "Terminaux SSH intégrés"
-
-#~ msgid "Expect automation"
-#~ msgstr "Automatisation Expect"
-
-#~ msgid "Groups and tags"
-#~ msgstr "Groupes et étiquettes"
-
-#~ msgid "Customizable settings"
-#~ msgstr "Paramètres personnalisables"
-
-#~ msgid "Embedded and external clients"
-#~ msgstr "Clients intégrés et externes"
-
-#~ msgid "New group"
-#~ msgstr "Nouveau groupe"
-
-#~ msgid "Close tab"
-#~ msgstr "Fermer l'onglet"
-
-#~ msgid "Next tab"
-#~ msgstr "Onglet suivant"
-
-#~ msgid "Smart search caching"
-#~ msgstr "Cache de recherche intelligent"
-
-#~ msgid "Lazy loading for trees"
-#~ msgstr "Chargement différé des arborescences"
-
-#~ msgid "Virtual scrolling"
-#~ msgstr "Défilement virtuel"
-
-#~ msgid "Embedded VNC/RDP/SPICE"
-#~ msgstr "VNC/RDP/SPICE intégrés"
-
-#~ msgid "ssh;rdp;vnc;spice;telnet;zerotrust;connection;terminal;remote;"
-#~ msgstr "ssh;rdp;vnc;spice;telnet;zerotrust;connexion;terminal;distant;"
-
-#~ msgid "Split view is only available for SSH and Local Shell tabs"
-#~ msgstr ""
-#~ "La vue divisée est disponible uniquement pour les onglets SSH et Shell "
-#~ "local"
-
-#~ msgid "Preferred encoding methods (comma-separated)"
-#~ msgstr "Méthodes d'encodage préférées (séparées par des virgules)"
-
-#~ msgid ""
-#~ "Automatically respond to terminal patterns.\n"
-#~ "                 Rules are matched in priority order (highest first)."
-#~ msgstr ""
-#~ "Répondre automatiquement aux motifs du terminal.\n"
-#~ "                 Les règles sont appliquées par ordre de priorité (la "
-#~ "plus haute en premier)."
-
-#~ msgid "No expect rules configured"
-#~ msgstr "Aucune règle d'attente configurée"
-
-#~ msgid "Test your patterns against sample input"
-#~ msgstr "Testez vos motifs avec un exemple d'entrée"
-
-#~ msgid "Enter text to test against patterns"
-#~ msgstr "Entrez du texte pour tester les motifs"
-
-#~ msgid "Enter text above to test patterns"
-#~ msgstr "Entrez du texte ci-dessus pour tester les motifs"
-
-#~ msgid "Serial uses picocom as the terminal client"
-#~ msgstr "Serial utilise picocom comme client terminal"
-
-#~ msgid "Telnet uses an external telnet client"
-#~ msgstr "Telnet utilise un client telnet externe"
-
-#~ msgid "KeePass is not enabled"
-#~ msgstr "KeePass n'est pas activé"
-
-#~ msgid "Select KeePass, Keyring, or Bitwarden to load password"
-#~ msgstr ""
-#~ "Sélectionnez KeePass, Keyring ou Bitwarden pour charger le mot de passe"
-
-#~ msgid "External RDP client"
-#~ msgstr "Client RDP externe"
-
-#~ msgid "External VNC client"
-#~ msgstr "Client VNC externe"
-
-#~ msgid "Quality (RemoteFX)"
-#~ msgstr "Qualité (RemoteFX)"
-
-#~ msgid "Balanced (Adaptive)"
-#~ msgstr "Équilibré (Adaptatif)"
-
-#~ msgid "Speed (Legacy)"
-#~ msgstr "Vitesse (Legacy)"
-
-#~ msgid "Balanced"
-#~ msgstr "Équilibré"
-
-#~ msgid "Speed"
-#~ msgstr "Vitesse"
-
-#~ msgid "Auto (system)"
-#~ msgstr "Auto (système)"
-
-#~ msgid "Odd"
-#~ msgstr "Impaire"
-
-#~ msgid "Even"
-#~ msgstr "Paire"
-
-#~ msgid "Hardware (RTS/CTS)"
-#~ msgstr "Matériel (RTS/CTS)"
-
-#~ msgid "Software (XON/XOFF)"
-#~ msgstr "Logiciel (XON/XOFF)"
-
-#~ msgid "Automatic"
-#~ msgstr "Automatique"
-
-#~ msgid "Backspace (^H)"
-#~ msgstr "Backspace (^H)"
-
-#~ msgid "Delete (^?)"
-#~ msgstr "Delete (^?)"

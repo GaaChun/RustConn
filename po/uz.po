@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rustconn 0.9.15\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-15 03:05+0200\n"
+"POT-Creation-Date: 2026-03-15 05:02+0200\n"
 "PO-Revision-Date: 2026-02-26 00:00+0000\n"
 "Last-Translator: RustConn Team\n"
 "Language-Team: Uzbek\n"
@@ -516,7 +516,7 @@ msgstr "Test vaqti tugadi"
 
 #: rustconn/src/dialogs/connection/dialog.rs:1393 rustconn/src/sidebar_ui.rs:78
 #: rustconn/src/sidebar_ui.rs:443 rustconn/src/split_view/bridge.rs:1692
-#: rustconn/src/window/ui.rs:116
+#: rustconn/src/window/ui.rs:48 rustconn/src/window/ui.rs:116
 msgid "New Connection"
 msgstr "Yangi ulanish"
 
@@ -3678,6 +3678,8 @@ msgid "No database selected"
 msgstr "Ma'lumotlar bazasi tanlanmagan"
 
 #: rustconn/src/dialogs/settings/secrets_tab.rs:1473
+#: rustconn/src/embedded_rdp/ui.rs:161 rustconn/src/embedded_spice.rs:420
+#: rustconn/src/embedded_trait.rs:318 rustconn/src/session/vnc.rs:202
 msgid "Connected"
 msgstr "Ulangan"
 
@@ -4123,7 +4125,7 @@ msgstr "Maksimal yosh"
 msgid "Hours before sessions expire"
 msgstr "Sessiyalar tugashidan oldingi soatlar"
 
-#: rustconn/src/dialogs/shortcuts.rs:267 rustconn/src/split_view/bridge.rs:1833
+#: rustconn/src/dialogs/shortcuts.rs:267 rustconn/src/split_view/bridge.rs:1830
 msgid "Keyboard Shortcuts"
 msgstr "Klaviatura yorliqlari"
 
@@ -4751,17 +4753,18 @@ msgstr ""
 "ma'lumotlar kutilmoqda...)"
 
 #: rustconn/src/embedded_rdp/mod.rs:241 rustconn/src/embedded_spice.rs:245
-#: rustconn/src/embedded_trait.rs:207 rustconn/src/embedded_vnc.rs:162
+#: rustconn/src/embedded_trait.rs:210 rustconn/src/embedded_vnc.rs:162
 msgid "Paste"
 msgstr "Joylash"
 
 #: rustconn/src/embedded_rdp/mod.rs:242 rustconn/src/embedded_spice.rs:246
-#: rustconn/src/embedded_trait.rs:208 rustconn/src/embedded_vnc.rs:163
+#: rustconn/src/embedded_trait.rs:211 rustconn/src/embedded_vnc.rs:163
 msgid "Paste from local clipboard to remote session"
 msgstr "Mahalliy almashish buferidan masofaviy sessiyaga joylash"
 
 #: rustconn/src/embedded_rdp/mod.rs:253 rustconn/src/embedded_spice.rs:258
-#: rustconn/src/embedded_trait.rs:220 rustconn/src/embedded_vnc.rs:175
+#: rustconn/src/embedded_trait.rs:226 rustconn/src/embedded_trait.rs:228
+#: rustconn/src/embedded_vnc.rs:175
 msgid "Send Ctrl+Alt+Del to remote session"
 msgstr "Masofaviy sessiyaga Ctrl+Alt+Del yuborish"
 
@@ -4778,13 +4781,14 @@ msgid "Save files from remote clipboard"
 msgstr "Masofaviy almashish buferidan fayllarni saqlash"
 
 #: rustconn/src/embedded_rdp/mod.rs:284 rustconn/src/embedded_spice.rs:262
-#: rustconn/src/embedded_trait.rs:224 rustconn/src/embedded_vnc.rs:179
+#: rustconn/src/embedded_trait.rs:233 rustconn/src/embedded_vnc.rs:179
 #: rustconn/src/terminal/mod.rs:1064 rustconn/src/terminal/mod.rs:1269
 msgid "Reconnect"
 msgstr "Qayta ulanish"
 
 #: rustconn/src/embedded_rdp/mod.rs:286 rustconn/src/embedded_spice.rs:264
-#: rustconn/src/embedded_trait.rs:226 rustconn/src/embedded_vnc.rs:181
+#: rustconn/src/embedded_trait.rs:235 rustconn/src/embedded_trait.rs:237
+#: rustconn/src/embedded_vnc.rs:181
 msgid "Reconnect to the remote session"
 msgstr "Masofaviy sessiyaga qayta ulanish"
 
@@ -4804,15 +4808,46 @@ msgstr "Fayllar yuklanmoqda..."
 msgid "Reconnecting..."
 msgstr "Qayta ulanish..."
 
-#: rustconn/src/embedded.rs:62
+#: rustconn/src/embedded_rdp/ui.rs:147 rustconn/src/embedded_spice.rs:415
+msgid "Session ended"
+msgstr ""
+
+#: rustconn/src/embedded_rdp/ui.rs:149
+msgid "No connection configured"
+msgstr ""
+
+#: rustconn/src/embedded_rdp/ui.rs:154
+msgid "Connecting via IronRDP..."
+msgstr ""
+
+#: rustconn/src/embedded_rdp/ui.rs:156
+msgid "Starting FreeRDP..."
+msgstr ""
+
+#: rustconn/src/embedded_rdp/ui.rs:164
+msgid "RDP session running in FreeRDP window"
+msgstr ""
+
+#: rustconn/src/embedded_rdp/ui.rs:169 rustconn/src/session/vnc.rs:425
+#: rustconn/src/session/vnc.rs:559
+msgid "Connection failed"
+msgstr "Ulanish muvaffaqiyatsiz"
+
+#: rustconn/src/embedded_rdp/ui.rs:182
+msgid "Switch to the FreeRDP window to interact with the session"
+msgstr ""
+
+#: rustconn/src/embedded.rs:62 rustconn/src/embedded_spice.rs:416
+#: rustconn/src/embedded_trait.rs:314 rustconn/src/session/vnc.rs:293
+#: rustconn/src/session/vnc.rs:368 rustconn/src/session/vnc.rs:468
 msgid "Connecting..."
 msgstr "Ulanmoqda..."
 
-#: rustconn/src/embedded.rs:69
+#: rustconn/src/embedded.rs:69 rustconn/src/embedded.rs:72
 msgid "Toggle Fullscreen"
 msgstr "To'liq ekranni almashtirish"
 
-#: rustconn/src/embedded.rs:76
+#: rustconn/src/embedded.rs:76 rustconn/src/embedded.rs:79
 msgid "Disconnect"
 msgstr "Uzish"
 
@@ -4820,6 +4855,38 @@ msgstr "Uzish"
 #: rustconn/src/embedded_vnc.rs:158
 msgid "Copy from remote session to local clipboard"
 msgstr "Masofaviy sessiyadan mahalliy almashish buferiga nusxalash"
+
+#: rustconn/src/embedded_spice.rs:418 rustconn/src/embedded_trait.rs:316
+#: rustconn/src/session/vnc.rs:411 rustconn/src/session/vnc.rs:545
+msgid "Session running in external window"
+msgstr ""
+
+#: rustconn/src/embedded_spice.rs:421 rustconn/src/embedded_trait.rs:319
+#: rustconn/src/session/vnc.rs:295 rustconn/src/session/vnc.rs:324
+msgid "Connection error"
+msgstr "Ulanish xatosi"
+
+#: rustconn/src/embedded_spice.rs:666
+msgid "Pasted to remote"
+msgstr ""
+
+#: rustconn/src/embedded_spice.rs:679
+msgid "Copy requested"
+msgstr ""
+
+#: rustconn/src/embedded_trait.rs:205
+msgid "Copy from remote session"
+msgstr ""
+
+#: rustconn/src/embedded_trait.rs:213
+msgid "Paste to remote session"
+msgstr ""
+
+#: rustconn/src/embedded_trait.rs:313 rustconn/src/session/vnc.rs:135
+#: rustconn/src/session/vnc.rs:219 rustconn/src/session/vnc.rs:292
+#: rustconn/src/session/vnc.rs:765
+msgid "Disconnected"
+msgstr "Uzilgan"
 
 #: rustconn/src/embedded_vnc.rs:1234
 msgid "VNC encryption not supported. Install TigerVNC."
@@ -4857,10 +4924,13 @@ msgstr "Ishlash vaqti"
 msgid "⚠ Monitoring stopped — metrics may be stale"
 msgstr ""
 
-#: rustconn/src/session/vnc.rs:135 rustconn/src/session/vnc.rs:219
-#: rustconn/src/session/vnc.rs:765
-msgid "Disconnected"
-msgstr "Uzilgan"
+#: rustconn/src/session/vnc.rs:236
+msgid "Authenticating..."
+msgstr "Autentifikatsiya..."
+
+#: rustconn/src/session/vnc.rs:255
+msgid "Authentication failed. Check your credentials."
+msgstr "Autentifikatsiya muvaffaqiyatsiz. Ma'lumotlaringizni tekshiring."
 
 #: rustconn/src/sidebar/mod.rs:116
 msgid "Search... (? for help)"
@@ -4923,7 +4993,8 @@ msgid "Open SFTP"
 msgstr "SFTP ochish"
 
 #: rustconn/src/sidebar_ui.rs:271 rustconn/src/sidebar_ui.rs:457
-#: rustconn/src/window/connection_dialogs.rs:197 rustconn/src/window/ui.rs:117
+#: rustconn/src/window/connection_dialogs.rs:197 rustconn/src/window/ui.rs:62
+#: rustconn/src/window/ui.rs:117
 msgid "New Group"
 msgstr "Yangi guruh"
 
@@ -4931,9 +5002,17 @@ msgstr "Yangi guruh"
 msgid "Create a new group"
 msgstr "Yangi guruh yaratish"
 
+#: rustconn/src/sidebar_ui.rs:275
+msgid "Create new group"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:280
 msgid "Move selected items to a group"
 msgstr "Tanlangan elementlarni guruhga ko'chirish"
+
+#: rustconn/src/sidebar_ui.rs:283
+msgid "Move selected connections to group"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:288
 msgid "Create Cluster"
@@ -4943,40 +5022,85 @@ msgstr "Klaster yaratish"
 msgid "Create a cluster from selected connections"
 msgstr "Tanlangan ulanishlardan klaster yaratish"
 
+#: rustconn/src/sidebar_ui.rs:292
+msgid "Create cluster from selected connections"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:298
 msgid "Select all items (Ctrl+A)"
 msgstr "Barcha elementlarni tanlash (Ctrl+A)"
+
+#: rustconn/src/sidebar_ui.rs:301
+msgid "Select all connections"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:306
 msgid "Clear selection (Escape)"
 msgstr "Tanlovni tozalash (Escape)"
 
+#: rustconn/src/sidebar_ui.rs:308
+msgid "Clear selection"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:313
 msgid "Delete all selected items"
 msgstr "Barcha tanlangan elementlarni o'chirish"
+
+#: rustconn/src/sidebar_ui.rs:317
+msgid "Delete selected connections"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:338
 msgid "Group Operations Mode"
 msgstr "Guruh operatsiyalari rejimi"
 
+#: rustconn/src/sidebar_ui.rs:341
+msgid "Enable group operations mode for multi-select"
+msgstr ""
+
+#: rustconn/src/sidebar_ui.rs:349
+msgid "View connection history"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:354
 msgid "Sort Alphabetically"
 msgstr "Alifbo tartibida saralash"
+
+#: rustconn/src/sidebar_ui.rs:357
+msgid "Sort connections alphabetically"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:363
 msgid "Sort by Recent Usage"
 msgstr "So'nggi foydalanish bo'yicha saralash"
 
+#: rustconn/src/sidebar_ui.rs:366
+msgid "Sort connections by recent usage"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:372
 msgid "Import Connections (Ctrl+I)"
 msgstr "Ulanishlarni import qilish (Ctrl+I)"
+
+#: rustconn/src/sidebar_ui.rs:375
+msgid "Import connections from external sources"
+msgstr ""
+
+#: rustconn/src/sidebar_ui.rs:384
+msgid "Export connections to file"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:390
 msgid "Open Password Vault"
 msgstr "Parol omborini ochish"
 
+#: rustconn/src/sidebar_ui.rs:394
+msgid "Open password vault for credential management"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:429 rustconn/src/split_view/bridge.rs:1699
-#: rustconn/src/window/edit_dialogs.rs:1241 rustconn/src/window/ui.rs:118
+#: rustconn/src/window/edit_dialogs.rs:1241 rustconn/src/window/ui.rs:41
+#: rustconn/src/window/ui.rs:118
 msgid "Quick Connect"
 msgstr "Tezkor ulanish"
 
@@ -4987,6 +5111,10 @@ msgstr "Import..."
 #: rustconn/src/sidebar_ui.rs:491
 msgid "Export..."
 msgstr "Eksport..."
+
+#: rustconn/src/sidebar/view.rs:52
+msgid "Pinned"
+msgstr "Mahkamlangan"
 
 #: rustconn/src/split_view/adapter.rs:954
 msgid "Drag to move this session to another panel or tab"
@@ -5053,79 +5181,80 @@ msgstr "Guruhlar, teglar va shablonlar"
 msgid "Zero Trust tunnels"
 msgstr "Zero Trust tunnellar"
 
-#: rustconn/src/split_view/bridge.rs:1809
+#: rustconn/src/split_view/bridge.rs:1807
 msgid "Command snippets & clusters"
 msgstr "Buyruq parchalari va klasterlar"
 
-#: rustconn/src/split_view/bridge.rs:1813
+#: rustconn/src/split_view/bridge.rs:1810
 msgid "Customizable keybindings"
 msgstr "Sozlanadigan tugma birikmalari"
 
-#: rustconn/src/split_view/bridge.rs:1837
+#: rustconn/src/split_view/bridge.rs:1834
 msgid "New connection"
 msgstr "Yangi ulanish"
 
-#: rustconn/src/split_view/bridge.rs:1838
+#: rustconn/src/split_view/bridge.rs:1835
 msgid "Quick connect"
 msgstr "Tezkor ulanish"
 
-#: rustconn/src/split_view/bridge.rs:1839
+#: rustconn/src/split_view/bridge.rs:1836
 msgid "Command palette"
 msgstr "Buyruqlar palitrasi"
 
-#: rustconn/src/split_view/bridge.rs:1840
+#: rustconn/src/split_view/bridge.rs:1837
 msgid "Local shell"
 msgstr "Mahalliy qobiq"
 
-#: rustconn/src/split_view/bridge.rs:1841
+#: rustconn/src/split_view/bridge.rs:1838
 msgid "Search"
 msgstr "Qidirish"
 
-#: rustconn/src/split_view/bridge.rs:1842
+#: rustconn/src/split_view/bridge.rs:1839
 msgid "Split vertical"
 msgstr "Vertikal bo'lish"
 
-#: rustconn/src/split_view/bridge.rs:1843
+#: rustconn/src/split_view/bridge.rs:1840
 msgid "Split horizontal"
 msgstr "Gorizontal bo'lish"
 
-#: rustconn/src/split_view/bridge.rs:1844
+#: rustconn/src/split_view/bridge.rs:1841
 msgid "Import connections"
 msgstr "Ulanishlarni import qilish"
 
-#: rustconn/src/split_view/bridge.rs:1845 rustconn/src/window/ui.rs:161
+#: rustconn/src/split_view/bridge.rs:1842 rustconn/src/window/ui.rs:82
+#: rustconn/src/window/ui.rs:161
 msgid "Settings"
 msgstr "Sozlamalar"
 
-#: rustconn/src/split_view/bridge.rs:1868
+#: rustconn/src/split_view/bridge.rs:1865
 msgid "Quick Access"
 msgstr "Tezkor kirish"
 
-#: rustconn/src/split_view/bridge.rs:1872
+#: rustconn/src/split_view/bridge.rs:1869
 msgid "Fuzzy search & command palette"
 msgstr "Loyqa qidiruv va buyruqlar palitrasi"
 
-#: rustconn/src/split_view/bridge.rs:1873
+#: rustconn/src/split_view/bridge.rs:1870
 msgid "Pin favorites to sidebar"
 msgstr "Sevimlilarni yon panelga mahkamlash"
 
-#: rustconn/src/split_view/bridge.rs:1876
+#: rustconn/src/split_view/bridge.rs:1871
 msgid "Split view for terminals"
 msgstr "Terminallar uchun bo'lingan ko'rinish"
 
-#: rustconn/src/split_view/bridge.rs:1880
+#: rustconn/src/split_view/bridge.rs:1872
 msgid "Open .rdp files directly"
 msgstr ".rdp fayllarini to'g'ridan-to'g'ri ochish"
 
-#: rustconn/src/split_view/bridge.rs:1893
+#: rustconn/src/split_view/bridge.rs:1884
 msgid "Import Formats"
 msgstr "Import formatlari"
 
-#: rustconn/src/split_view/bridge.rs:2013
+#: rustconn/src/split_view/bridge.rs:2004
 msgid "All tabs are already displayed in this split view"
 msgstr "Barcha tablar allaqachon ushbu bo'lingan ko'rinishda ko'rsatilgan"
 
-#: rustconn/src/split_view/bridge.rs:2052
+#: rustconn/src/split_view/bridge.rs:2043
 msgid "Select a tab to display"
 msgstr "Ko'rsatish uchun tabni tanlang"
 
@@ -5829,6 +5958,10 @@ msgstr "Foydalanuvchi: {}"
 msgid "Toggle Sidebar (F9)"
 msgstr "Yon panelni almashtirish (F9)"
 
+#: rustconn/src/window/ui.rs:34
+msgid "Toggle Sidebar"
+msgstr ""
+
 #: rustconn/src/window/ui.rs:39
 msgid "Quick Connect (Ctrl+Shift+Q)"
 msgstr "Tezkor ulanish (Ctrl+Shift+Q)"
@@ -5841,11 +5974,15 @@ msgstr "Yangi ulanish (Ctrl+N)"
 msgid "Delete Selected (Delete)"
 msgstr "Tanlanganlarni o'chirish (Delete)"
 
+#: rustconn/src/window/ui.rs:55
+msgid "Delete Selected"
+msgstr ""
+
 #: rustconn/src/window/ui.rs:60
 msgid "New Group (Ctrl+Shift+N)"
 msgstr "Yangi guruh (Ctrl+Shift+N)"
 
-#: rustconn/src/window/ui.rs:70
+#: rustconn/src/window/ui.rs:70 rustconn/src/window/ui.rs:72
 msgid "Menu"
 msgstr "Menyu"
 
@@ -5857,9 +5994,17 @@ msgstr "Sozlamalar (Ctrl+,)"
 msgid "Split Vertical (Ctrl+Shift+S)"
 msgstr "Vertikal bo'lish (Ctrl+Shift+S)"
 
+#: rustconn/src/window/ui.rs:89
+msgid "Split Vertical"
+msgstr ""
+
 #: rustconn/src/window/ui.rs:93
 msgid "Split Horizontal (Ctrl+Shift+H)"
 msgstr "Gorizontal bo'lish (Ctrl+Shift+H)"
+
+#: rustconn/src/window/ui.rs:96
+msgid "Split Horizontal"
+msgstr ""
 
 #: rustconn/src/window/ui.rs:124
 msgid "Snippets..."
@@ -5928,126 +6073,3 @@ msgstr "RustConn"
 #: rustconn/assets/io.github.totoshko88.RustConn.desktop:10
 msgid "ssh;rdp;vnc;spice;telnet;zerotrust;connection;terminal;remote;kubernetes;k8s;serial;sftp;"
 msgstr ""
-
-#~ msgid "Embedded SSH terminals"
-#~ msgstr "O'rnatilgan SSH terminallar"
-
-#~ msgid "Expect automation"
-#~ msgstr "Expect avtomatlashtirish"
-
-#~ msgid "Groups and tags"
-#~ msgstr "Guruhlar va teglar"
-
-#~ msgid "Customizable settings"
-#~ msgstr "Sozlanadigan parametrlar"
-
-#~ msgid "Embedded and external clients"
-#~ msgstr "O'rnatilgan va tashqi mijozlar"
-
-#~ msgid "New group"
-#~ msgstr "Yangi guruh"
-
-#~ msgid "Close tab"
-#~ msgstr "Tabni yopish"
-
-#~ msgid "Next tab"
-#~ msgstr "Keyingi tab"
-
-#~ msgid "Smart search caching"
-#~ msgstr "Aqlli qidirish keshlash"
-
-#~ msgid "Lazy loading for trees"
-#~ msgstr "Daraxtlar uchun dangasa yuklash"
-
-#~ msgid "Virtual scrolling"
-#~ msgstr "Virtual aylantirish"
-
-#~ msgid "Embedded VNC/RDP/SPICE"
-#~ msgstr "O'rnatilgan VNC/RDP/SPICE"
-
-#~ msgid "ssh;rdp;vnc;spice;telnet;zerotrust;connection;terminal;remote;"
-#~ msgstr "ssh;rdp;vnc;spice;telnet;zerotrust;ulanish;terminal;masofaviy;"
-
-#~ msgid "Split view is only available for SSH and Local Shell tabs"
-#~ msgstr ""
-#~ "Bo'lingan ko'rinish faqat SSH va mahalliy qobiq varaqalari uchun mavjud"
-
-#~ msgid "Preferred encoding methods (comma-separated)"
-#~ msgstr "Afzal kodlash usullari (vergul bilan ajratilgan)"
-
-#~ msgid ""
-#~ "Automatically respond to terminal patterns.\n"
-#~ "                 Rules are matched in priority order (highest first)."
-#~ msgstr ""
-#~ "Terminal namunalariga avtomatik javob berish.\n"
-#~ "                 Qoidalar ustuvorlik tartibida solishtiriladi (eng yuqori "
-#~ "birinchi)."
-
-#~ msgid "No expect rules configured"
-#~ msgstr "Expect qoidalari sozlanmagan"
-
-#~ msgid "Test your patterns against sample input"
-#~ msgstr "Shablonlarni namuna kiritish bilan tekshirish"
-
-#~ msgid "Enter text to test against patterns"
-#~ msgstr "Shablonlarga qarshi tekshirish uchun matn kiriting"
-
-#~ msgid "Enter text above to test patterns"
-#~ msgstr "Shablonlarni tekshirish uchun yuqoriga matn kiriting"
-
-#~ msgid "Serial uses picocom as the terminal client"
-#~ msgstr "Serial picocom ni terminal mijoz sifatida ishlatadi"
-
-#~ msgid "Telnet uses an external telnet client"
-#~ msgstr "Telnet tashqi telnet mijozini ishlatadi"
-
-#~ msgid "KeePass is not enabled"
-#~ msgstr "KeePass yoqilmagan"
-
-#~ msgid "Select KeePass, Keyring, or Bitwarden to load password"
-#~ msgstr "Parolni yuklash uchun KeePass, Keyring yoki Bitwarden ni tanlang"
-
-#~ msgid "External RDP client"
-#~ msgstr "Tashqi RDP mijoz"
-
-#~ msgid "External VNC client"
-#~ msgstr "Tashqi VNC mijoz"
-
-#~ msgid "Quality (RemoteFX)"
-#~ msgstr "Sifat (RemoteFX)"
-
-#~ msgid "Balanced (Adaptive)"
-#~ msgstr "Muvozanatli (Moslashuvchan)"
-
-#~ msgid "Speed (Legacy)"
-#~ msgstr "Tezlik (Eski)"
-
-#~ msgid "Balanced"
-#~ msgstr "Muvozanatli"
-
-#~ msgid "Speed"
-#~ msgstr "Tezlik"
-
-#~ msgid "Auto (system)"
-#~ msgstr "Avto (tizim)"
-
-#~ msgid "Odd"
-#~ msgstr "Toq"
-
-#~ msgid "Even"
-#~ msgstr "Juft"
-
-#~ msgid "Hardware (RTS/CTS)"
-#~ msgstr "Apparat (RTS/CTS)"
-
-#~ msgid "Software (XON/XOFF)"
-#~ msgstr "Dasturiy (XON/XOFF)"
-
-#~ msgid "Automatic"
-#~ msgstr "Avtomatik"
-
-#~ msgid "Backspace (^H)"
-#~ msgstr "Backspace (^H)"
-
-#~ msgid "Delete (^?)"
-#~ msgstr "Delete (^?)"

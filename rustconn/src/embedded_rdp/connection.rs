@@ -1202,7 +1202,7 @@ impl super::EmbeddedRdpWidget {
         let freerdp_thread = FreeRdpThread::spawn(config)?;
 
         // Send connect command to the thread
-        freerdp_thread.send_command(RdpCommand::Connect(config.clone()))?;
+        freerdp_thread.send_command(RdpCommand::Connect(Box::new(config.clone())))?;
 
         // Store the thread handle
         *self.freerdp_thread.borrow_mut() = Some(freerdp_thread);

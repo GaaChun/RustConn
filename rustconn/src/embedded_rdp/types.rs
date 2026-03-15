@@ -272,7 +272,7 @@ impl RdpConfig {
 #[derive(Debug, Clone)]
 pub enum RdpCommand {
     /// Connect to an RDP server
-    Connect(RdpConfig),
+    Connect(Box<RdpConfig>),
     /// Disconnect from the server
     Disconnect,
     /// Send keyboard event
@@ -391,7 +391,7 @@ mod tests {
     #[test]
     fn test_rdp_command_variants() {
         let config = RdpConfig::new("test.example.com");
-        let cmd = RdpCommand::Connect(config);
+        let cmd = RdpCommand::Connect(Box::new(config));
         assert!(matches!(cmd, RdpCommand::Connect(_)));
 
         let cmd = RdpCommand::Disconnect;

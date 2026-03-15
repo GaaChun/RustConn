@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rustconn 0.9.15\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-15 03:05+0200\n"
+"POT-Creation-Date: 2026-03-15 05:02+0200\n"
 "PO-Revision-Date: 2026-02-17 00:00+0000\n"
 "Last-Translator: RustConn Team\n"
 "Language-Team: Slovak\n"
@@ -509,7 +509,7 @@ msgstr "Časový limit testu vypršal"
 
 #: rustconn/src/dialogs/connection/dialog.rs:1393 rustconn/src/sidebar_ui.rs:78
 #: rustconn/src/sidebar_ui.rs:443 rustconn/src/split_view/bridge.rs:1692
-#: rustconn/src/window/ui.rs:116
+#: rustconn/src/window/ui.rs:48 rustconn/src/window/ui.rs:116
 msgid "New Connection"
 msgstr "Nové pripojenie"
 
@@ -3669,6 +3669,8 @@ msgid "No database selected"
 msgstr "Žiadna databáza nevybraná"
 
 #: rustconn/src/dialogs/settings/secrets_tab.rs:1473
+#: rustconn/src/embedded_rdp/ui.rs:161 rustconn/src/embedded_spice.rs:420
+#: rustconn/src/embedded_trait.rs:318 rustconn/src/session/vnc.rs:202
 msgid "Connected"
 msgstr "Pripojené"
 
@@ -4114,7 +4116,7 @@ msgstr "Max. vek"
 msgid "Hours before sessions expire"
 msgstr "Hodiny do vypršania relácií"
 
-#: rustconn/src/dialogs/shortcuts.rs:267 rustconn/src/split_view/bridge.rs:1833
+#: rustconn/src/dialogs/shortcuts.rs:267 rustconn/src/split_view/bridge.rs:1830
 msgid "Keyboard Shortcuts"
 msgstr "Klávesové skratky"
 
@@ -4739,17 +4741,18 @@ msgstr ""
 "vzdialenú schránku do miestnej (čakanie na vzdialené dáta...)"
 
 #: rustconn/src/embedded_rdp/mod.rs:241 rustconn/src/embedded_spice.rs:245
-#: rustconn/src/embedded_trait.rs:207 rustconn/src/embedded_vnc.rs:162
+#: rustconn/src/embedded_trait.rs:210 rustconn/src/embedded_vnc.rs:162
 msgid "Paste"
 msgstr "Prilepiť"
 
 #: rustconn/src/embedded_rdp/mod.rs:242 rustconn/src/embedded_spice.rs:246
-#: rustconn/src/embedded_trait.rs:208 rustconn/src/embedded_vnc.rs:163
+#: rustconn/src/embedded_trait.rs:211 rustconn/src/embedded_vnc.rs:163
 msgid "Paste from local clipboard to remote session"
 msgstr "Prilepiť z miestnej schránky do vzdialenej relácie"
 
 #: rustconn/src/embedded_rdp/mod.rs:253 rustconn/src/embedded_spice.rs:258
-#: rustconn/src/embedded_trait.rs:220 rustconn/src/embedded_vnc.rs:175
+#: rustconn/src/embedded_trait.rs:226 rustconn/src/embedded_trait.rs:228
+#: rustconn/src/embedded_vnc.rs:175
 msgid "Send Ctrl+Alt+Del to remote session"
 msgstr "Odoslať Ctrl+Alt+Del do vzdialenej relácie"
 
@@ -4766,13 +4769,14 @@ msgid "Save files from remote clipboard"
 msgstr "Uložiť súbory zo vzdialenej schránky"
 
 #: rustconn/src/embedded_rdp/mod.rs:284 rustconn/src/embedded_spice.rs:262
-#: rustconn/src/embedded_trait.rs:224 rustconn/src/embedded_vnc.rs:179
+#: rustconn/src/embedded_trait.rs:233 rustconn/src/embedded_vnc.rs:179
 #: rustconn/src/terminal/mod.rs:1064 rustconn/src/terminal/mod.rs:1269
 msgid "Reconnect"
 msgstr "Znovu pripojiť"
 
 #: rustconn/src/embedded_rdp/mod.rs:286 rustconn/src/embedded_spice.rs:264
-#: rustconn/src/embedded_trait.rs:226 rustconn/src/embedded_vnc.rs:181
+#: rustconn/src/embedded_trait.rs:235 rustconn/src/embedded_trait.rs:237
+#: rustconn/src/embedded_vnc.rs:181
 msgid "Reconnect to the remote session"
 msgstr "Znovu pripojiť k vzdialenej relácii"
 
@@ -4792,15 +4796,46 @@ msgstr "Sťahovanie súborov..."
 msgid "Reconnecting..."
 msgstr "Opätovné pripojenie..."
 
-#: rustconn/src/embedded.rs:62
+#: rustconn/src/embedded_rdp/ui.rs:147 rustconn/src/embedded_spice.rs:415
+msgid "Session ended"
+msgstr ""
+
+#: rustconn/src/embedded_rdp/ui.rs:149
+msgid "No connection configured"
+msgstr ""
+
+#: rustconn/src/embedded_rdp/ui.rs:154
+msgid "Connecting via IronRDP..."
+msgstr ""
+
+#: rustconn/src/embedded_rdp/ui.rs:156
+msgid "Starting FreeRDP..."
+msgstr ""
+
+#: rustconn/src/embedded_rdp/ui.rs:164
+msgid "RDP session running in FreeRDP window"
+msgstr ""
+
+#: rustconn/src/embedded_rdp/ui.rs:169 rustconn/src/session/vnc.rs:425
+#: rustconn/src/session/vnc.rs:559
+msgid "Connection failed"
+msgstr "Pripojenie zlyhalo"
+
+#: rustconn/src/embedded_rdp/ui.rs:182
+msgid "Switch to the FreeRDP window to interact with the session"
+msgstr ""
+
+#: rustconn/src/embedded.rs:62 rustconn/src/embedded_spice.rs:416
+#: rustconn/src/embedded_trait.rs:314 rustconn/src/session/vnc.rs:293
+#: rustconn/src/session/vnc.rs:368 rustconn/src/session/vnc.rs:468
 msgid "Connecting..."
 msgstr "Pripájanie..."
 
-#: rustconn/src/embedded.rs:69
+#: rustconn/src/embedded.rs:69 rustconn/src/embedded.rs:72
 msgid "Toggle Fullscreen"
 msgstr "Prepnúť celú obrazovku"
 
-#: rustconn/src/embedded.rs:76
+#: rustconn/src/embedded.rs:76 rustconn/src/embedded.rs:79
 msgid "Disconnect"
 msgstr "Odpojiť"
 
@@ -4808,6 +4843,38 @@ msgstr "Odpojiť"
 #: rustconn/src/embedded_vnc.rs:158
 msgid "Copy from remote session to local clipboard"
 msgstr "Kopírovať zo vzdialenej relácie do miestnej schránky"
+
+#: rustconn/src/embedded_spice.rs:418 rustconn/src/embedded_trait.rs:316
+#: rustconn/src/session/vnc.rs:411 rustconn/src/session/vnc.rs:545
+msgid "Session running in external window"
+msgstr ""
+
+#: rustconn/src/embedded_spice.rs:421 rustconn/src/embedded_trait.rs:319
+#: rustconn/src/session/vnc.rs:295 rustconn/src/session/vnc.rs:324
+msgid "Connection error"
+msgstr "Chyba pripojenia"
+
+#: rustconn/src/embedded_spice.rs:666
+msgid "Pasted to remote"
+msgstr ""
+
+#: rustconn/src/embedded_spice.rs:679
+msgid "Copy requested"
+msgstr ""
+
+#: rustconn/src/embedded_trait.rs:205
+msgid "Copy from remote session"
+msgstr ""
+
+#: rustconn/src/embedded_trait.rs:213
+msgid "Paste to remote session"
+msgstr ""
+
+#: rustconn/src/embedded_trait.rs:313 rustconn/src/session/vnc.rs:135
+#: rustconn/src/session/vnc.rs:219 rustconn/src/session/vnc.rs:292
+#: rustconn/src/session/vnc.rs:765
+msgid "Disconnected"
+msgstr "Odpojené"
 
 #: rustconn/src/embedded_vnc.rs:1234
 msgid "VNC encryption not supported. Install TigerVNC."
@@ -4845,10 +4912,13 @@ msgstr "Doba prevádzky"
 msgid "⚠ Monitoring stopped — metrics may be stale"
 msgstr ""
 
-#: rustconn/src/session/vnc.rs:135 rustconn/src/session/vnc.rs:219
-#: rustconn/src/session/vnc.rs:765
-msgid "Disconnected"
-msgstr "Odpojené"
+#: rustconn/src/session/vnc.rs:236
+msgid "Authenticating..."
+msgstr "Overovanie..."
+
+#: rustconn/src/session/vnc.rs:255
+msgid "Authentication failed. Check your credentials."
+msgstr "Overenie zlyhalo. Skontrolujte prihlasovacie údaje."
 
 #: rustconn/src/sidebar/mod.rs:116
 msgid "Search... (? for help)"
@@ -4911,7 +4981,8 @@ msgid "Open SFTP"
 msgstr "Otvoriť SFTP"
 
 #: rustconn/src/sidebar_ui.rs:271 rustconn/src/sidebar_ui.rs:457
-#: rustconn/src/window/connection_dialogs.rs:197 rustconn/src/window/ui.rs:117
+#: rustconn/src/window/connection_dialogs.rs:197 rustconn/src/window/ui.rs:62
+#: rustconn/src/window/ui.rs:117
 msgid "New Group"
 msgstr "Nová skupina"
 
@@ -4919,9 +4990,17 @@ msgstr "Nová skupina"
 msgid "Create a new group"
 msgstr "Vytvoriť novú skupinu"
 
+#: rustconn/src/sidebar_ui.rs:275
+msgid "Create new group"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:280
 msgid "Move selected items to a group"
 msgstr "Presunúť vybrané položky do skupiny"
+
+#: rustconn/src/sidebar_ui.rs:283
+msgid "Move selected connections to group"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:288
 msgid "Create Cluster"
@@ -4931,40 +5010,85 @@ msgstr "Vytvoriť cluster"
 msgid "Create a cluster from selected connections"
 msgstr "Vytvoriť cluster z vybraných pripojení"
 
+#: rustconn/src/sidebar_ui.rs:292
+msgid "Create cluster from selected connections"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:298
 msgid "Select all items (Ctrl+A)"
 msgstr "Vybrať všetky položky (Ctrl+A)"
+
+#: rustconn/src/sidebar_ui.rs:301
+msgid "Select all connections"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:306
 msgid "Clear selection (Escape)"
 msgstr "Zrušiť výber (Escape)"
 
+#: rustconn/src/sidebar_ui.rs:308
+msgid "Clear selection"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:313
 msgid "Delete all selected items"
 msgstr "Odstrániť všetky vybrané položky"
+
+#: rustconn/src/sidebar_ui.rs:317
+msgid "Delete selected connections"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:338
 msgid "Group Operations Mode"
 msgstr "Režim skupinových operácií"
 
+#: rustconn/src/sidebar_ui.rs:341
+msgid "Enable group operations mode for multi-select"
+msgstr ""
+
+#: rustconn/src/sidebar_ui.rs:349
+msgid "View connection history"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:354
 msgid "Sort Alphabetically"
 msgstr "Zoradiť abecedne"
+
+#: rustconn/src/sidebar_ui.rs:357
+msgid "Sort connections alphabetically"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:363
 msgid "Sort by Recent Usage"
 msgstr "Zoradiť podľa posledného použitia"
 
+#: rustconn/src/sidebar_ui.rs:366
+msgid "Sort connections by recent usage"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:372
 msgid "Import Connections (Ctrl+I)"
 msgstr "Importovať pripojenia (Ctrl+I)"
+
+#: rustconn/src/sidebar_ui.rs:375
+msgid "Import connections from external sources"
+msgstr ""
+
+#: rustconn/src/sidebar_ui.rs:384
+msgid "Export connections to file"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:390
 msgid "Open Password Vault"
 msgstr "Otvoriť trezor hesiel"
 
+#: rustconn/src/sidebar_ui.rs:394
+msgid "Open password vault for credential management"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:429 rustconn/src/split_view/bridge.rs:1699
-#: rustconn/src/window/edit_dialogs.rs:1241 rustconn/src/window/ui.rs:118
+#: rustconn/src/window/edit_dialogs.rs:1241 rustconn/src/window/ui.rs:41
+#: rustconn/src/window/ui.rs:118
 msgid "Quick Connect"
 msgstr "Rýchle pripojenie"
 
@@ -4975,6 +5099,10 @@ msgstr "Importovať..."
 #: rustconn/src/sidebar_ui.rs:491
 msgid "Export..."
 msgstr "Exportovať..."
+
+#: rustconn/src/sidebar/view.rs:52
+msgid "Pinned"
+msgstr "Pripnuté"
 
 #: rustconn/src/split_view/adapter.rs:954
 msgid "Drag to move this session to another panel or tab"
@@ -5041,79 +5169,80 @@ msgstr "Skupiny, štítky a šablóny"
 msgid "Zero Trust tunnels"
 msgstr "Tunely Zero Trust"
 
-#: rustconn/src/split_view/bridge.rs:1809
+#: rustconn/src/split_view/bridge.rs:1807
 msgid "Command snippets & clusters"
 msgstr "Úryvky príkazov a clustery"
 
-#: rustconn/src/split_view/bridge.rs:1813
+#: rustconn/src/split_view/bridge.rs:1810
 msgid "Customizable keybindings"
 msgstr "Prispôsobiteľné klávesové skratky"
 
-#: rustconn/src/split_view/bridge.rs:1837
+#: rustconn/src/split_view/bridge.rs:1834
 msgid "New connection"
 msgstr "Nové pripojenie"
 
-#: rustconn/src/split_view/bridge.rs:1838
+#: rustconn/src/split_view/bridge.rs:1835
 msgid "Quick connect"
 msgstr "Rýchle pripojenie"
 
-#: rustconn/src/split_view/bridge.rs:1839
+#: rustconn/src/split_view/bridge.rs:1836
 msgid "Command palette"
 msgstr "Paleta príkazov"
 
-#: rustconn/src/split_view/bridge.rs:1840
+#: rustconn/src/split_view/bridge.rs:1837
 msgid "Local shell"
 msgstr "Miestny shell"
 
-#: rustconn/src/split_view/bridge.rs:1841
+#: rustconn/src/split_view/bridge.rs:1838
 msgid "Search"
 msgstr "Hľadať"
 
-#: rustconn/src/split_view/bridge.rs:1842
+#: rustconn/src/split_view/bridge.rs:1839
 msgid "Split vertical"
 msgstr "Rozdeliť zvisle"
 
-#: rustconn/src/split_view/bridge.rs:1843
+#: rustconn/src/split_view/bridge.rs:1840
 msgid "Split horizontal"
 msgstr "Rozdeliť vodorovne"
 
-#: rustconn/src/split_view/bridge.rs:1844
+#: rustconn/src/split_view/bridge.rs:1841
 msgid "Import connections"
 msgstr "Importovať pripojenia"
 
-#: rustconn/src/split_view/bridge.rs:1845 rustconn/src/window/ui.rs:161
+#: rustconn/src/split_view/bridge.rs:1842 rustconn/src/window/ui.rs:82
+#: rustconn/src/window/ui.rs:161
 msgid "Settings"
 msgstr "Nastavenia"
 
-#: rustconn/src/split_view/bridge.rs:1868
+#: rustconn/src/split_view/bridge.rs:1865
 msgid "Quick Access"
 msgstr "Rýchly prístup"
 
-#: rustconn/src/split_view/bridge.rs:1872
+#: rustconn/src/split_view/bridge.rs:1869
 msgid "Fuzzy search & command palette"
 msgstr "Fuzzy vyhľadávanie a paleta príkazov"
 
-#: rustconn/src/split_view/bridge.rs:1873
+#: rustconn/src/split_view/bridge.rs:1870
 msgid "Pin favorites to sidebar"
 msgstr "Pripnúť obľúbené na bočný panel"
 
-#: rustconn/src/split_view/bridge.rs:1876
+#: rustconn/src/split_view/bridge.rs:1871
 msgid "Split view for terminals"
 msgstr "Rozdelené zobrazenie pre terminály"
 
-#: rustconn/src/split_view/bridge.rs:1880
+#: rustconn/src/split_view/bridge.rs:1872
 msgid "Open .rdp files directly"
 msgstr "Otvárať súbory .rdp priamo"
 
-#: rustconn/src/split_view/bridge.rs:1893
+#: rustconn/src/split_view/bridge.rs:1884
 msgid "Import Formats"
 msgstr "Formáty importu"
 
-#: rustconn/src/split_view/bridge.rs:2013
+#: rustconn/src/split_view/bridge.rs:2004
 msgid "All tabs are already displayed in this split view"
 msgstr "Všetky karty sú už zobrazené v tomto rozdelenom zobrazení"
 
-#: rustconn/src/split_view/bridge.rs:2052
+#: rustconn/src/split_view/bridge.rs:2043
 msgid "Select a tab to display"
 msgstr "Vyberte kartu na zobrazenie"
 
@@ -5816,6 +5945,10 @@ msgstr "Používateľ: {}"
 msgid "Toggle Sidebar (F9)"
 msgstr "Prepnúť bočný panel (F9)"
 
+#: rustconn/src/window/ui.rs:34
+msgid "Toggle Sidebar"
+msgstr ""
+
 #: rustconn/src/window/ui.rs:39
 msgid "Quick Connect (Ctrl+Shift+Q)"
 msgstr "Rýchle pripojenie (Ctrl+Shift+Q)"
@@ -5828,11 +5961,15 @@ msgstr "Nové pripojenie (Ctrl+N)"
 msgid "Delete Selected (Delete)"
 msgstr "Odstrániť vybrané (Delete)"
 
+#: rustconn/src/window/ui.rs:55
+msgid "Delete Selected"
+msgstr ""
+
 #: rustconn/src/window/ui.rs:60
 msgid "New Group (Ctrl+Shift+N)"
 msgstr "Nová skupina (Ctrl+Shift+N)"
 
-#: rustconn/src/window/ui.rs:70
+#: rustconn/src/window/ui.rs:70 rustconn/src/window/ui.rs:72
 msgid "Menu"
 msgstr "Menu"
 
@@ -5844,9 +5981,17 @@ msgstr "Nastavenia (Ctrl+,)"
 msgid "Split Vertical (Ctrl+Shift+S)"
 msgstr "Rozdeliť zvisle (Ctrl+Shift+S)"
 
+#: rustconn/src/window/ui.rs:89
+msgid "Split Vertical"
+msgstr ""
+
 #: rustconn/src/window/ui.rs:93
 msgid "Split Horizontal (Ctrl+Shift+H)"
 msgstr "Rozdeliť vodorovne (Ctrl+Shift+H)"
+
+#: rustconn/src/window/ui.rs:96
+msgid "Split Horizontal"
+msgstr ""
 
 #: rustconn/src/window/ui.rs:124
 msgid "Snippets..."
@@ -5915,126 +6060,3 @@ msgstr "RustConn"
 #: rustconn/assets/io.github.totoshko88.RustConn.desktop:10
 msgid "ssh;rdp;vnc;spice;telnet;zerotrust;connection;terminal;remote;kubernetes;k8s;serial;sftp;"
 msgstr ""
-
-#~ msgid "Embedded SSH terminals"
-#~ msgstr "Vstavané SSH terminály"
-
-#~ msgid "Expect automation"
-#~ msgstr "Automatizácia Expect"
-
-#~ msgid "Groups and tags"
-#~ msgstr "Skupiny a štítky"
-
-#~ msgid "Customizable settings"
-#~ msgstr "Prispôsobiteľné nastavenia"
-
-#~ msgid "Embedded and external clients"
-#~ msgstr "Vstavaní a externí klienti"
-
-#~ msgid "New group"
-#~ msgstr "Nová skupina"
-
-#~ msgid "Close tab"
-#~ msgstr "Zavrieť kartu"
-
-#~ msgid "Next tab"
-#~ msgstr "Ďalšia karta"
-
-#~ msgid "Smart search caching"
-#~ msgstr "Inteligentné ukladanie vyhľadávania"
-
-#~ msgid "Lazy loading for trees"
-#~ msgstr "Lenivé načítanie stromov"
-
-#~ msgid "Virtual scrolling"
-#~ msgstr "Virtuálne posúvanie"
-
-#~ msgid "Embedded VNC/RDP/SPICE"
-#~ msgstr "Vstavané VNC/RDP/SPICE"
-
-#~ msgid "ssh;rdp;vnc;spice;telnet;zerotrust;connection;terminal;remote;"
-#~ msgstr "ssh;rdp;vnc;spice;telnet;zerotrust;pripojenie;terminál;vzdialené;"
-
-#~ msgid "Split view is only available for SSH and Local Shell tabs"
-#~ msgstr ""
-#~ "Rozdelené zobrazenie je dostupné iba pre karty SSH a miestneho shellu"
-
-#~ msgid "Preferred encoding methods (comma-separated)"
-#~ msgstr "Preferované metódy kódovania (oddelené čiarkami)"
-
-#~ msgid ""
-#~ "Automatically respond to terminal patterns.\n"
-#~ "                 Rules are matched in priority order (highest first)."
-#~ msgstr ""
-#~ "Automaticky reagovať na vzory terminálu.\n"
-#~ "                 Pravidlá sú porovnávané v poradí priority (najvyššia "
-#~ "prvá)."
-
-#~ msgid "No expect rules configured"
-#~ msgstr "Žiadne pravidlá očakávania nie sú nakonfigurované"
-
-#~ msgid "Test your patterns against sample input"
-#~ msgstr "Otestujte svoje vzory na ukážkovom vstupe"
-
-#~ msgid "Enter text to test against patterns"
-#~ msgstr "Zadajte text na testovanie vzorov"
-
-#~ msgid "Enter text above to test patterns"
-#~ msgstr "Zadajte text vyššie na testovanie vzorov"
-
-#~ msgid "Serial uses picocom as the terminal client"
-#~ msgstr "Serial používa picocom ako terminálový klient"
-
-#~ msgid "Telnet uses an external telnet client"
-#~ msgstr "Telnet používa externého telnet klienta"
-
-#~ msgid "KeePass is not enabled"
-#~ msgstr "KeePass nie je povolený"
-
-#~ msgid "Select KeePass, Keyring, or Bitwarden to load password"
-#~ msgstr "Vyberte KeePass, Keyring alebo Bitwarden na načítanie hesla"
-
-#~ msgid "External RDP client"
-#~ msgstr "Externý RDP klient"
-
-#~ msgid "External VNC client"
-#~ msgstr "Externý VNC klient"
-
-#~ msgid "Quality (RemoteFX)"
-#~ msgstr "Kvalita (RemoteFX)"
-
-#~ msgid "Balanced (Adaptive)"
-#~ msgstr "Vyvážený (Adaptívny)"
-
-#~ msgid "Speed (Legacy)"
-#~ msgstr "Rýchlosť (Legacy)"
-
-#~ msgid "Balanced"
-#~ msgstr "Vyvážený"
-
-#~ msgid "Speed"
-#~ msgstr "Rýchlosť"
-
-#~ msgid "Auto (system)"
-#~ msgstr "Auto (systémový)"
-
-#~ msgid "Odd"
-#~ msgstr "Nepárna"
-
-#~ msgid "Even"
-#~ msgstr "Párna"
-
-#~ msgid "Hardware (RTS/CTS)"
-#~ msgstr "Hardvérové (RTS/CTS)"
-
-#~ msgid "Software (XON/XOFF)"
-#~ msgstr "Softvérové (XON/XOFF)"
-
-#~ msgid "Automatic"
-#~ msgstr "Automaticky"
-
-#~ msgid "Backspace (^H)"
-#~ msgstr "Backspace (^H)"
-
-#~ msgid "Delete (^?)"
-#~ msgstr "Delete (^?)"

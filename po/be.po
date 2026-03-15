@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rustconn 0.9.15\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-15 03:05+0200\n"
+"POT-Creation-Date: 2026-03-15 05:02+0200\n"
 "PO-Revision-Date: 2026-02-17 00:00+0000\n"
 "Last-Translator: RustConn Team\n"
 "Language-Team: Belarusian\n"
@@ -513,7 +513,7 @@ msgstr "Час тэсту скончыўся"
 
 #: rustconn/src/dialogs/connection/dialog.rs:1393 rustconn/src/sidebar_ui.rs:78
 #: rustconn/src/sidebar_ui.rs:443 rustconn/src/split_view/bridge.rs:1692
-#: rustconn/src/window/ui.rs:116
+#: rustconn/src/window/ui.rs:48 rustconn/src/window/ui.rs:116
 msgid "New Connection"
 msgstr "Новае злучэнне"
 
@@ -3673,6 +3673,8 @@ msgid "No database selected"
 msgstr "База дадзеных не абрана"
 
 #: rustconn/src/dialogs/settings/secrets_tab.rs:1473
+#: rustconn/src/embedded_rdp/ui.rs:161 rustconn/src/embedded_spice.rs:420
+#: rustconn/src/embedded_trait.rs:318 rustconn/src/session/vnc.rs:202
 msgid "Connected"
 msgstr "Злучана"
 
@@ -4118,7 +4120,7 @@ msgstr "Макс. узрост"
 msgid "Hours before sessions expire"
 msgstr "Гадзіны да заканчэння сеансаў"
 
-#: rustconn/src/dialogs/shortcuts.rs:267 rustconn/src/split_view/bridge.rs:1833
+#: rustconn/src/dialogs/shortcuts.rs:267 rustconn/src/split_view/bridge.rs:1830
 msgid "Keyboard Shortcuts"
 msgstr "Клавіятурныя скароты"
 
@@ -4743,17 +4745,18 @@ msgstr ""
 "аддалены буфер абмену ў лакальны (чаканне аддаленых даных...)"
 
 #: rustconn/src/embedded_rdp/mod.rs:241 rustconn/src/embedded_spice.rs:245
-#: rustconn/src/embedded_trait.rs:207 rustconn/src/embedded_vnc.rs:162
+#: rustconn/src/embedded_trait.rs:210 rustconn/src/embedded_vnc.rs:162
 msgid "Paste"
 msgstr "Уставіць"
 
 #: rustconn/src/embedded_rdp/mod.rs:242 rustconn/src/embedded_spice.rs:246
-#: rustconn/src/embedded_trait.rs:208 rustconn/src/embedded_vnc.rs:163
+#: rustconn/src/embedded_trait.rs:211 rustconn/src/embedded_vnc.rs:163
 msgid "Paste from local clipboard to remote session"
 msgstr "Уставіць з лакальнага буфера абмену ў аддалены сеанс"
 
 #: rustconn/src/embedded_rdp/mod.rs:253 rustconn/src/embedded_spice.rs:258
-#: rustconn/src/embedded_trait.rs:220 rustconn/src/embedded_vnc.rs:175
+#: rustconn/src/embedded_trait.rs:226 rustconn/src/embedded_trait.rs:228
+#: rustconn/src/embedded_vnc.rs:175
 msgid "Send Ctrl+Alt+Del to remote session"
 msgstr "Адправіць Ctrl+Alt+Del у аддалены сеанс"
 
@@ -4770,13 +4773,14 @@ msgid "Save files from remote clipboard"
 msgstr "Захаваць файлы з аддаленага буфера абмену"
 
 #: rustconn/src/embedded_rdp/mod.rs:284 rustconn/src/embedded_spice.rs:262
-#: rustconn/src/embedded_trait.rs:224 rustconn/src/embedded_vnc.rs:179
+#: rustconn/src/embedded_trait.rs:233 rustconn/src/embedded_vnc.rs:179
 #: rustconn/src/terminal/mod.rs:1064 rustconn/src/terminal/mod.rs:1269
 msgid "Reconnect"
 msgstr "Перазлучыцца"
 
 #: rustconn/src/embedded_rdp/mod.rs:286 rustconn/src/embedded_spice.rs:264
-#: rustconn/src/embedded_trait.rs:226 rustconn/src/embedded_vnc.rs:181
+#: rustconn/src/embedded_trait.rs:235 rustconn/src/embedded_trait.rs:237
+#: rustconn/src/embedded_vnc.rs:181
 msgid "Reconnect to the remote session"
 msgstr "Перазлучыцца з аддаленым сеансам"
 
@@ -4796,15 +4800,46 @@ msgstr "Спампоўка файлаў..."
 msgid "Reconnecting..."
 msgstr "Перазлучэнне..."
 
-#: rustconn/src/embedded.rs:62
+#: rustconn/src/embedded_rdp/ui.rs:147 rustconn/src/embedded_spice.rs:415
+msgid "Session ended"
+msgstr ""
+
+#: rustconn/src/embedded_rdp/ui.rs:149
+msgid "No connection configured"
+msgstr ""
+
+#: rustconn/src/embedded_rdp/ui.rs:154
+msgid "Connecting via IronRDP..."
+msgstr ""
+
+#: rustconn/src/embedded_rdp/ui.rs:156
+msgid "Starting FreeRDP..."
+msgstr ""
+
+#: rustconn/src/embedded_rdp/ui.rs:164
+msgid "RDP session running in FreeRDP window"
+msgstr ""
+
+#: rustconn/src/embedded_rdp/ui.rs:169 rustconn/src/session/vnc.rs:425
+#: rustconn/src/session/vnc.rs:559
+msgid "Connection failed"
+msgstr "Злучэнне не ўдалося"
+
+#: rustconn/src/embedded_rdp/ui.rs:182
+msgid "Switch to the FreeRDP window to interact with the session"
+msgstr ""
+
+#: rustconn/src/embedded.rs:62 rustconn/src/embedded_spice.rs:416
+#: rustconn/src/embedded_trait.rs:314 rustconn/src/session/vnc.rs:293
+#: rustconn/src/session/vnc.rs:368 rustconn/src/session/vnc.rs:468
 msgid "Connecting..."
 msgstr "Злучэнне..."
 
-#: rustconn/src/embedded.rs:69
+#: rustconn/src/embedded.rs:69 rustconn/src/embedded.rs:72
 msgid "Toggle Fullscreen"
 msgstr "Поўнаэкранны рэжым"
 
-#: rustconn/src/embedded.rs:76
+#: rustconn/src/embedded.rs:76 rustconn/src/embedded.rs:79
 msgid "Disconnect"
 msgstr "Адлучыцца"
 
@@ -4812,6 +4847,38 @@ msgstr "Адлучыцца"
 #: rustconn/src/embedded_vnc.rs:158
 msgid "Copy from remote session to local clipboard"
 msgstr "Капіяваць з аддаленага сеансу ў лакальны буфер абмену"
+
+#: rustconn/src/embedded_spice.rs:418 rustconn/src/embedded_trait.rs:316
+#: rustconn/src/session/vnc.rs:411 rustconn/src/session/vnc.rs:545
+msgid "Session running in external window"
+msgstr ""
+
+#: rustconn/src/embedded_spice.rs:421 rustconn/src/embedded_trait.rs:319
+#: rustconn/src/session/vnc.rs:295 rustconn/src/session/vnc.rs:324
+msgid "Connection error"
+msgstr "Памылка злучэння"
+
+#: rustconn/src/embedded_spice.rs:666
+msgid "Pasted to remote"
+msgstr ""
+
+#: rustconn/src/embedded_spice.rs:679
+msgid "Copy requested"
+msgstr ""
+
+#: rustconn/src/embedded_trait.rs:205
+msgid "Copy from remote session"
+msgstr ""
+
+#: rustconn/src/embedded_trait.rs:213
+msgid "Paste to remote session"
+msgstr ""
+
+#: rustconn/src/embedded_trait.rs:313 rustconn/src/session/vnc.rs:135
+#: rustconn/src/session/vnc.rs:219 rustconn/src/session/vnc.rs:292
+#: rustconn/src/session/vnc.rs:765
+msgid "Disconnected"
+msgstr "Адлучана"
 
 #: rustconn/src/embedded_vnc.rs:1234
 msgid "VNC encryption not supported. Install TigerVNC."
@@ -4849,10 +4916,13 @@ msgstr "Час працы"
 msgid "⚠ Monitoring stopped — metrics may be stale"
 msgstr ""
 
-#: rustconn/src/session/vnc.rs:135 rustconn/src/session/vnc.rs:219
-#: rustconn/src/session/vnc.rs:765
-msgid "Disconnected"
-msgstr "Адлучана"
+#: rustconn/src/session/vnc.rs:236
+msgid "Authenticating..."
+msgstr "Аўтэнтыфікацыя..."
+
+#: rustconn/src/session/vnc.rs:255
+msgid "Authentication failed. Check your credentials."
+msgstr "Аўтэнтыфікацыя не ўдалася. Праверце ўліковыя даныя."
 
 #: rustconn/src/sidebar/mod.rs:116
 msgid "Search... (? for help)"
@@ -4915,7 +4985,8 @@ msgid "Open SFTP"
 msgstr "Адкрыць SFTP"
 
 #: rustconn/src/sidebar_ui.rs:271 rustconn/src/sidebar_ui.rs:457
-#: rustconn/src/window/connection_dialogs.rs:197 rustconn/src/window/ui.rs:117
+#: rustconn/src/window/connection_dialogs.rs:197 rustconn/src/window/ui.rs:62
+#: rustconn/src/window/ui.rs:117
 msgid "New Group"
 msgstr "Новая група"
 
@@ -4923,9 +4994,17 @@ msgstr "Новая група"
 msgid "Create a new group"
 msgstr "Стварыць новую групу"
 
+#: rustconn/src/sidebar_ui.rs:275
+msgid "Create new group"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:280
 msgid "Move selected items to a group"
 msgstr "Перамясціць абраныя элементы ў групу"
+
+#: rustconn/src/sidebar_ui.rs:283
+msgid "Move selected connections to group"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:288
 msgid "Create Cluster"
@@ -4935,40 +5014,85 @@ msgstr "Стварыць кластар"
 msgid "Create a cluster from selected connections"
 msgstr "Стварыць кластар з абраных злучэнняў"
 
+#: rustconn/src/sidebar_ui.rs:292
+msgid "Create cluster from selected connections"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:298
 msgid "Select all items (Ctrl+A)"
 msgstr "Абраць усе элементы (Ctrl+A)"
+
+#: rustconn/src/sidebar_ui.rs:301
+msgid "Select all connections"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:306
 msgid "Clear selection (Escape)"
 msgstr "Зняць выбар (Escape)"
 
+#: rustconn/src/sidebar_ui.rs:308
+msgid "Clear selection"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:313
 msgid "Delete all selected items"
 msgstr "Выдаліць усе абраныя элементы"
+
+#: rustconn/src/sidebar_ui.rs:317
+msgid "Delete selected connections"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:338
 msgid "Group Operations Mode"
 msgstr "Рэжым групавых аперацый"
 
+#: rustconn/src/sidebar_ui.rs:341
+msgid "Enable group operations mode for multi-select"
+msgstr ""
+
+#: rustconn/src/sidebar_ui.rs:349
+msgid "View connection history"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:354
 msgid "Sort Alphabetically"
 msgstr "Сартаваць па алфавіце"
+
+#: rustconn/src/sidebar_ui.rs:357
+msgid "Sort connections alphabetically"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:363
 msgid "Sort by Recent Usage"
 msgstr "Сартаваць па апошнім выкарыстанні"
 
+#: rustconn/src/sidebar_ui.rs:366
+msgid "Sort connections by recent usage"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:372
 msgid "Import Connections (Ctrl+I)"
 msgstr "Імпарт злучэнняў (Ctrl+I)"
+
+#: rustconn/src/sidebar_ui.rs:375
+msgid "Import connections from external sources"
+msgstr ""
+
+#: rustconn/src/sidebar_ui.rs:384
+msgid "Export connections to file"
+msgstr ""
 
 #: rustconn/src/sidebar_ui.rs:390
 msgid "Open Password Vault"
 msgstr "Адкрыць сховішча пароляў"
 
+#: rustconn/src/sidebar_ui.rs:394
+msgid "Open password vault for credential management"
+msgstr ""
+
 #: rustconn/src/sidebar_ui.rs:429 rustconn/src/split_view/bridge.rs:1699
-#: rustconn/src/window/edit_dialogs.rs:1241 rustconn/src/window/ui.rs:118
+#: rustconn/src/window/edit_dialogs.rs:1241 rustconn/src/window/ui.rs:41
+#: rustconn/src/window/ui.rs:118
 msgid "Quick Connect"
 msgstr "Хуткае злучэнне"
 
@@ -4979,6 +5103,10 @@ msgstr "Імпарт..."
 #: rustconn/src/sidebar_ui.rs:491
 msgid "Export..."
 msgstr "Экспарт..."
+
+#: rustconn/src/sidebar/view.rs:52
+msgid "Pinned"
+msgstr "Замацавана"
 
 #: rustconn/src/split_view/adapter.rs:954
 msgid "Drag to move this session to another panel or tab"
@@ -5045,79 +5173,80 @@ msgstr "Групы, тэгі і шаблоны"
 msgid "Zero Trust tunnels"
 msgstr "Тунэлі Zero Trust"
 
-#: rustconn/src/split_view/bridge.rs:1809
+#: rustconn/src/split_view/bridge.rs:1807
 msgid "Command snippets & clusters"
 msgstr "Фрагменты каманд і кластары"
 
-#: rustconn/src/split_view/bridge.rs:1813
+#: rustconn/src/split_view/bridge.rs:1810
 msgid "Customizable keybindings"
 msgstr "Наладжвальныя клавішы"
 
-#: rustconn/src/split_view/bridge.rs:1837
+#: rustconn/src/split_view/bridge.rs:1834
 msgid "New connection"
 msgstr "Новае злучэнне"
 
-#: rustconn/src/split_view/bridge.rs:1838
+#: rustconn/src/split_view/bridge.rs:1835
 msgid "Quick connect"
 msgstr "Хуткае злучэнне"
 
-#: rustconn/src/split_view/bridge.rs:1839
+#: rustconn/src/split_view/bridge.rs:1836
 msgid "Command palette"
 msgstr "Палітра каманд"
 
-#: rustconn/src/split_view/bridge.rs:1840
+#: rustconn/src/split_view/bridge.rs:1837
 msgid "Local shell"
 msgstr "Лакальная абалонка"
 
-#: rustconn/src/split_view/bridge.rs:1841
+#: rustconn/src/split_view/bridge.rs:1838
 msgid "Search"
 msgstr "Пошук"
 
-#: rustconn/src/split_view/bridge.rs:1842
+#: rustconn/src/split_view/bridge.rs:1839
 msgid "Split vertical"
 msgstr "Падзяліць вертыкальна"
 
-#: rustconn/src/split_view/bridge.rs:1843
+#: rustconn/src/split_view/bridge.rs:1840
 msgid "Split horizontal"
 msgstr "Падзяліць гарызантальна"
 
-#: rustconn/src/split_view/bridge.rs:1844
+#: rustconn/src/split_view/bridge.rs:1841
 msgid "Import connections"
 msgstr "Імпарт злучэнняў"
 
-#: rustconn/src/split_view/bridge.rs:1845 rustconn/src/window/ui.rs:161
+#: rustconn/src/split_view/bridge.rs:1842 rustconn/src/window/ui.rs:82
+#: rustconn/src/window/ui.rs:161
 msgid "Settings"
 msgstr "Налады"
 
-#: rustconn/src/split_view/bridge.rs:1868
+#: rustconn/src/split_view/bridge.rs:1865
 msgid "Quick Access"
 msgstr "Хуткі доступ"
 
-#: rustconn/src/split_view/bridge.rs:1872
+#: rustconn/src/split_view/bridge.rs:1869
 msgid "Fuzzy search & command palette"
 msgstr "Нечоткі пошук і палітра каманд"
 
-#: rustconn/src/split_view/bridge.rs:1873
+#: rustconn/src/split_view/bridge.rs:1870
 msgid "Pin favorites to sidebar"
 msgstr "Замацуй абраныя на бакавой панэлі"
 
-#: rustconn/src/split_view/bridge.rs:1876
+#: rustconn/src/split_view/bridge.rs:1871
 msgid "Split view for terminals"
 msgstr "Падзелены выгляд для тэрміналаў"
 
-#: rustconn/src/split_view/bridge.rs:1880
+#: rustconn/src/split_view/bridge.rs:1872
 msgid "Open .rdp files directly"
 msgstr "Адкрывай .rdp файлы напрамую"
 
-#: rustconn/src/split_view/bridge.rs:1893
+#: rustconn/src/split_view/bridge.rs:1884
 msgid "Import Formats"
 msgstr "Фарматы імпарту"
 
-#: rustconn/src/split_view/bridge.rs:2013
+#: rustconn/src/split_view/bridge.rs:2004
 msgid "All tabs are already displayed in this split view"
 msgstr "Усе ўкладкі ўжо адлюстраваны ў гэтым падзеленым выглядзе"
 
-#: rustconn/src/split_view/bridge.rs:2052
+#: rustconn/src/split_view/bridge.rs:2043
 msgid "Select a tab to display"
 msgstr "Абярыце ўкладку для адлюстравання"
 
@@ -5821,6 +5950,10 @@ msgstr "Карыстальнік: {}"
 msgid "Toggle Sidebar (F9)"
 msgstr "Бакавая панэль (F9)"
 
+#: rustconn/src/window/ui.rs:34
+msgid "Toggle Sidebar"
+msgstr ""
+
 #: rustconn/src/window/ui.rs:39
 msgid "Quick Connect (Ctrl+Shift+Q)"
 msgstr "Хуткае злучэнне (Ctrl+Shift+Q)"
@@ -5833,11 +5966,15 @@ msgstr "Новае злучэнне (Ctrl+N)"
 msgid "Delete Selected (Delete)"
 msgstr "Выдаліць абранае (Delete)"
 
+#: rustconn/src/window/ui.rs:55
+msgid "Delete Selected"
+msgstr ""
+
 #: rustconn/src/window/ui.rs:60
 msgid "New Group (Ctrl+Shift+N)"
 msgstr "Новая група (Ctrl+Shift+N)"
 
-#: rustconn/src/window/ui.rs:70
+#: rustconn/src/window/ui.rs:70 rustconn/src/window/ui.rs:72
 msgid "Menu"
 msgstr "Меню"
 
@@ -5849,9 +5986,17 @@ msgstr "Налады (Ctrl+,)"
 msgid "Split Vertical (Ctrl+Shift+S)"
 msgstr "Падзяліць вертыкальна (Ctrl+Shift+S)"
 
+#: rustconn/src/window/ui.rs:89
+msgid "Split Vertical"
+msgstr ""
+
 #: rustconn/src/window/ui.rs:93
 msgid "Split Horizontal (Ctrl+Shift+H)"
 msgstr "Падзяліць гарызантальна (Ctrl+Shift+H)"
+
+#: rustconn/src/window/ui.rs:96
+msgid "Split Horizontal"
+msgstr ""
 
 #: rustconn/src/window/ui.rs:124
 msgid "Snippets..."
@@ -5920,126 +6065,3 @@ msgstr "RustConn"
 #: rustconn/assets/io.github.totoshko88.RustConn.desktop:10
 msgid "ssh;rdp;vnc;spice;telnet;zerotrust;connection;terminal;remote;kubernetes;k8s;serial;sftp;"
 msgstr ""
-
-#~ msgid "Embedded SSH terminals"
-#~ msgstr "Убудаваныя SSH-тэрміналы"
-
-#~ msgid "Expect automation"
-#~ msgstr "Аўтаматызацыя Expect"
-
-#~ msgid "Groups and tags"
-#~ msgstr "Групы і тэгі"
-
-#~ msgid "Customizable settings"
-#~ msgstr "Наладжвальныя параметры"
-
-#~ msgid "Embedded and external clients"
-#~ msgstr "Убудаваныя і знешнія кліенты"
-
-#~ msgid "New group"
-#~ msgstr "Новая група"
-
-#~ msgid "Close tab"
-#~ msgstr "Закрыць укладку"
-
-#~ msgid "Next tab"
-#~ msgstr "Наступная ўкладка"
-
-#~ msgid "Smart search caching"
-#~ msgstr "Разумнае кэшаванне пошуку"
-
-#~ msgid "Lazy loading for trees"
-#~ msgstr "Лянівая загрузка дрэў"
-
-#~ msgid "Virtual scrolling"
-#~ msgstr "Віртуальная пракрутка"
-
-#~ msgid "Embedded VNC/RDP/SPICE"
-#~ msgstr "Убудаваныя VNC/RDP/SPICE"
-
-#~ msgid "ssh;rdp;vnc;spice;telnet;zerotrust;connection;terminal;remote;"
-#~ msgstr "ssh;rdp;vnc;spice;telnet;zerotrust;злучэнне;тэрмінал;аддалены;"
-
-#~ msgid "Split view is only available for SSH and Local Shell tabs"
-#~ msgstr ""
-#~ "Падзелены выгляд даступны толькі для ўкладак SSH і лакальнай абалонкі"
-
-#~ msgid "Preferred encoding methods (comma-separated)"
-#~ msgstr "Пераважныя метады кадзіроўкі (праз коску)"
-
-#~ msgid ""
-#~ "Automatically respond to terminal patterns.\n"
-#~ "                 Rules are matched in priority order (highest first)."
-#~ msgstr ""
-#~ "Аўтаматычна адказваць на шаблоны тэрмінала.\n"
-#~ "                 Правілы супастаўляюцца ў парадку прыярытэту (найвышэйшы "
-#~ "першы)."
-
-#~ msgid "No expect rules configured"
-#~ msgstr "Правілы чакання не наладжаны"
-
-#~ msgid "Test your patterns against sample input"
-#~ msgstr "Праверце шаблоны на ўзорным уводзе"
-
-#~ msgid "Enter text to test against patterns"
-#~ msgstr "Увядзіце тэкст для праверкі шаблонаў"
-
-#~ msgid "Enter text above to test patterns"
-#~ msgstr "Увядзіце тэкст вышэй для праверкі шаблонаў"
-
-#~ msgid "Serial uses picocom as the terminal client"
-#~ msgstr "Serial выкарыстоўвае picocom як тэрмінальны кліент"
-
-#~ msgid "Telnet uses an external telnet client"
-#~ msgstr "Telnet выкарыстоўвае знешні telnet-кліент"
-
-#~ msgid "KeePass is not enabled"
-#~ msgstr "KeePass не ўключаны"
-
-#~ msgid "Select KeePass, Keyring, or Bitwarden to load password"
-#~ msgstr "Абярыце KeePass, Keyring або Bitwarden для загрузкі пароля"
-
-#~ msgid "External RDP client"
-#~ msgstr "Знешні RDP-кліент"
-
-#~ msgid "External VNC client"
-#~ msgstr "Знешні VNC-кліент"
-
-#~ msgid "Quality (RemoteFX)"
-#~ msgstr "Якасць (RemoteFX)"
-
-#~ msgid "Balanced (Adaptive)"
-#~ msgstr "Збалансаваны (адаптыўны)"
-
-#~ msgid "Speed (Legacy)"
-#~ msgstr "Хуткасць (састарэлы)"
-
-#~ msgid "Balanced"
-#~ msgstr "Збалансаваны"
-
-#~ msgid "Speed"
-#~ msgstr "Хуткасць"
-
-#~ msgid "Auto (system)"
-#~ msgstr "Аўта (сістэмны)"
-
-#~ msgid "Odd"
-#~ msgstr "Няцотная"
-
-#~ msgid "Even"
-#~ msgstr "Цотная"
-
-#~ msgid "Hardware (RTS/CTS)"
-#~ msgstr "Апаратнае (RTS/CTS)"
-
-#~ msgid "Software (XON/XOFF)"
-#~ msgstr "Праграмнае (XON/XOFF)"
-
-#~ msgid "Automatic"
-#~ msgstr "Аўтаматычна"
-
-#~ msgid "Backspace (^H)"
-#~ msgstr "Backspace (^H)"
-
-#~ msgid "Delete (^?)"
-#~ msgstr "Delete (^?)"

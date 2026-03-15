@@ -199,7 +199,7 @@ impl VncSessionWidget {
         let state_callback_clone = state_callback.clone();
         self.display.connect_vnc_connected(move |_| {
             *state_clone.borrow_mut() = SessionState::Connected;
-            status_label_clone.set_text("Connected");
+            status_label_clone.set_text(&i18n("Connected"));
             #[cfg(not(feature = "adw-1-6"))]
             spinner_clone.set_spinning(false);
             spinner_clone.set_visible(false);
@@ -233,7 +233,7 @@ impl VncSessionWidget {
         let state_callback_clone = state_callback.clone();
         self.display.connect_vnc_auth_credential(move |_, creds| {
             *state_clone.borrow_mut() = SessionState::Authenticating;
-            status_label_clone.set_text("Authenticating...");
+            status_label_clone.set_text(&i18n("Authenticating..."));
 
             if let Some(ref callback) = *state_callback_clone.borrow() {
                 callback(SessionState::Authenticating);
@@ -252,7 +252,7 @@ impl VncSessionWidget {
         self.display.connect_vnc_auth_failure(move |_, msg| {
             let error = SessionError::authentication_failed(msg);
             *state_clone.borrow_mut() = SessionState::Error(error.clone());
-            status_label_clone.set_text(&format!("Authentication failed: {msg}"));
+            status_label_clone.set_text(&i18n("Authentication failed. Check your credentials."));
             #[cfg(not(feature = "adw-1-6"))]
             spinner_clone.set_spinning(false);
             spinner_clone.set_visible(false);
@@ -289,12 +289,12 @@ impl VncSessionWidget {
                     status_label.set_visible(false);
                 } else {
                     let status_text = match vnc_state {
-                        VncConnectionState::Disconnected => "Disconnected",
-                        VncConnectionState::Connecting => "Connecting...",
-                        VncConnectionState::Connected => "", // Won't be shown
-                        VncConnectionState::Error => "Connection error",
+                        VncConnectionState::Disconnected => i18n("Disconnected"),
+                        VncConnectionState::Connecting => i18n("Connecting..."),
+                        VncConnectionState::Connected => String::new(), // Won't be shown
+                        VncConnectionState::Error => i18n("Connection error"),
                     };
-                    status_label.set_text(status_text);
+                    status_label.set_text(&status_text);
                     status_label.set_visible(true);
                 }
 
@@ -321,7 +321,7 @@ impl VncSessionWidget {
         self.embedded_widget.connect_error(move |msg| {
             let error = SessionError::connection_failed(msg);
             *state.borrow_mut() = SessionState::Error(error.clone());
-            status_label.set_text(&format!("Error: {msg}"));
+            status_label.set_text(&i18n("Connection error"));
 
             if let Some(ref callback) = *state_callback.borrow() {
                 callback(SessionState::Error(error));
@@ -364,8 +364,7 @@ impl VncSessionWidget {
 
         // Update state to connecting
         *self.state.borrow_mut() = SessionState::Connecting;
-        self.status_label
-            .set_text(&format!("Connecting to {host}:{port}..."));
+        self.status_label.set_text(&i18n("Connecting..."));
         self.spinner.set_visible(true);
         #[cfg(not(feature = "adw-1-6"))]
         self.spinner.set_spinning(true);
@@ -408,7 +407,7 @@ impl VncSessionWidget {
                 *self.is_external.borrow_mut() = true;
                 *self.state.borrow_mut() = SessionState::Connected;
                 self.status_label
-                    .set_text(&format!("Session running in external {viewer} window"));
+                    .set_text(&i18n("Session running in external window"));
                 #[cfg(not(feature = "adw-1-6"))]
                 self.spinner.set_spinning(false);
                 self.spinner.set_visible(false);
@@ -422,7 +421,7 @@ impl VncSessionWidget {
             }
             Err(e) => {
                 *self.state.borrow_mut() = SessionState::Disconnected;
-                self.status_label.set_text("Connection failed");
+                self.status_label.set_text(&i18n("Connection failed"));
                 #[cfg(not(feature = "adw-1-6"))]
                 self.spinner.set_spinning(false);
                 self.spinner.set_visible(false);
@@ -464,8 +463,7 @@ impl VncSessionWidget {
 
         // Update state to connecting
         *self.state.borrow_mut() = SessionState::Connecting;
-        self.status_label
-            .set_text(&format!("Connecting to {host}:{port}..."));
+        self.status_label.set_text(&i18n("Connecting..."));
         self.spinner.set_visible(true);
         #[cfg(not(feature = "adw-1-6"))]
         self.spinner.set_spinning(true);
@@ -542,7 +540,7 @@ impl VncSessionWidget {
                 *self.is_external.borrow_mut() = true;
                 *self.state.borrow_mut() = SessionState::Connected;
                 self.status_label
-                    .set_text(&format!("Session running in external {viewer} window"));
+                    .set_text(&i18n("Session running in external window"));
                 #[cfg(not(feature = "adw-1-6"))]
                 self.spinner.set_spinning(false);
                 self.spinner.set_visible(false);
@@ -556,7 +554,7 @@ impl VncSessionWidget {
             }
             Err(e) => {
                 *self.state.borrow_mut() = SessionState::Disconnected;
-                self.status_label.set_text("Connection failed");
+                self.status_label.set_text(&i18n("Connection failed"));
                 #[cfg(not(feature = "adw-1-6"))]
                 self.spinner.set_spinning(false);
                 self.spinner.set_visible(false);

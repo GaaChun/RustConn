@@ -3492,10 +3492,10 @@ impl MainWindow {
                     Ok(connection) => {
                         // Add the imported connection to state and connect
                         let conn_id = connection.id;
-                        if let Ok(mut state_mut) = self.state.try_borrow_mut() {
-                            if let Err(e) = state_mut.create_connection(connection) {
-                                tracing::error!(%e, "Failed to add imported .rdp connection");
-                            }
+                        if let Ok(mut state_mut) = self.state.try_borrow_mut()
+                            && let Err(e) = state_mut.create_connection(connection)
+                        {
+                            tracing::error!(%e, "Failed to add imported .rdp connection");
                         }
                         Self::start_connection_with_split(
                             &self.state,

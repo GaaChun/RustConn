@@ -315,10 +315,10 @@ fn start_ssh_connection_internal(
                     .custom_options
                     .keys()
                     .any(|k| k.eq_ignore_ascii_case("UserKnownHostsFile"));
-                if !user_set {
-                    rustconn_core::get_flatpak_known_hosts_path()
-                } else {
+                if user_set {
                     None
+                } else {
+                    rustconn_core::get_flatpak_known_hosts_path()
                 }
             };
             if let Some(ref kh_path) = flatpak_known_hosts {
@@ -362,13 +362,13 @@ fn start_ssh_connection_internal(
                         vec!["ssh".to_string(), "-W".to_string(), "%h:%p".to_string()];
 
                     // Pass identity file to jump host if we have one
-                    if let Some(pos) = args.iter().position(|a| a == "-i") {
-                        if let Some(key_path) = args.get(pos + 1) {
-                            proxy_parts.push("-i".to_string());
-                            proxy_parts.push(key_path.clone());
-                            proxy_parts.push("-o".to_string());
-                            proxy_parts.push("IdentitiesOnly=yes".to_string());
-                        }
+                    if let Some(pos) = args.iter().position(|a| a == "-i")
+                        && let Some(key_path) = args.get(pos + 1)
+                    {
+                        proxy_parts.push("-i".to_string());
+                        proxy_parts.push(key_path.clone());
+                        proxy_parts.push("-o".to_string());
+                        proxy_parts.push("IdentitiesOnly=yes".to_string());
                     }
 
                     // Pass UserKnownHostsFile to jump host

@@ -213,8 +213,26 @@ pub fn ensure_ssh_agent() -> Option<SshAgentInfo> {
 
     tracing::info!("SSH_AUTH_SOCK not set or socket missing; starting ssh-agent");
 
-    let output = match std::process::Command::new("ssh-agent")
-        .arg("-s")
+    // In Flatpak, ~/.ssh is mounted read-only so ssh-agent cannot create its
+    // socket there. Use `-a <path>` to place the socket in a writable directory.
+    let explicit_socket = if crate::flatpak::is_flatpak() {
+        let dir = std::env::var("XDG_RUNTIME_DIR").unwrap_or_else(|_| "/tmp".to_string());
+        let path = format!("{dir}/rustconn-ssh-agent.sock");
+        // Remove stale socket from a previous run
+        let _ = std::fs::remove_file(&path);
+        tracing::debug!(%path, "Using explicit ssh-agent socket path (Flatpak)");
+        Some(path)
+    } else {
+        None
+    };
+
+    let mut cmd = std::process::Command::new("ssh-agent");
+    if let Some(ref sock_path) = explicit_socket {
+        cmd.arg("-a").arg(sock_path);
+    }
+    cmd.arg("-s");
+
+    let output = match cmd
         .stdin(std::process::Stdio::null())
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())

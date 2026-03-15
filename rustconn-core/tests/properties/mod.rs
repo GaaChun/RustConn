@@ -36,6 +36,7 @@ mod log_config_tests;
 mod log_context_tests;
 mod log_sanitization_tests;
 mod logging_tests;
+mod monitoring_tests;
 mod native_export_tests;
 mod password_generator_tests;
 mod port_check_tests;

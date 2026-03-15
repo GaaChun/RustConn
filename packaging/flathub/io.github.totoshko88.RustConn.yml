@@ -20,6 +20,8 @@ finish-args:
   # Home directory access for SSH keys
   - --filesystem=home/.ssh:ro
   # AWS/GCP/Azure CLI config directories for ZeroTrust connections
+  # .aws needs read-write: AWS CLI v2 SSO writes session tokens to ~/.aws/sso/cache/
+  # and credential_process caches to ~/.aws/cli/cache/ during interactive login via local shell
   - --filesystem=home/.aws
   - --filesystem=home/.config/gcloud:ro
   - --filesystem=home/.azure:ro
@@ -166,6 +168,28 @@ modules:
           project-id: 1894
           stable-only: true
           url-template: http://ftp.midnight-commander.org/mc-$version.tar.xz
+
+  - name: waypipe
+    buildsystem: meson
+    config-opts:
+      # Build the C-only version — avoids pulling in cargo dependencies for waypipe itself
+      - -Dbuild_rs=false
+      - -Dbuild_c=true
+      - -Dman-pages=disabled
+      - -Dtests=false
+      # Compression support (lz4/zstd available in GNOME SDK)
+      - -Dwith_lz4=enabled
+      - -Dwith_zstd=enabled
+      # Disable GPU buffer sharing and video codec (not needed for basic Wayland forwarding)
+      - -Dwith_dmabuf=disabled
+      - -Dwith_video=disabled
+    post-install:
+      # C-only build installs as "waypipe-c"; create symlink so detection finds "waypipe"
+      - ln -sf waypipe-c /app/bin/waypipe
+    sources:
+      - type: archive
+        url: https://gitlab.freedesktop.org/mstoeckl/waypipe/-/archive/v0.11.0/waypipe-v0.11.0.tar.gz
+        sha256: dc4741bd4435666b4b45ef9b8354c9f742e9c2c5fb99bb49b2ac4f32a371bcd7
 
   - name: rustconn
     buildsystem: simple

@@ -47,11 +47,12 @@ RustConn uses embedded Rust implementations for protocols:
 | SSH | VTE terminal | Always embedded |
 | RDP | IronRDP | Embedded Rust client |
 | VNC | vnc-rs | Embedded Rust client |
-| Telnet | External `telnet` | VTE terminal session |
-| Serial | External `picocom` | VTE terminal session, requires `serial-port` interface |
+| Telnet | Bundled `telnet` | VTE terminal session (inetutils) |
+| Serial | Bundled `picocom` | VTE terminal session, requires `serial-port` interface |
 | SPICE | — | External only (see below) |
+| Waypipe | Bundled `waypipe` | Wayland application forwarding over SSH |
 
-No external protocol clients (xfreerdp, vncviewer) are needed for SSH, RDP, and VNC. Telnet requires the `telnet` client on the host. Serial requires the `serial-port` interface to be connected.
+No external protocol clients (xfreerdp, vncviewer) are needed for SSH, RDP, and VNC. Telnet and waypipe are bundled in the snap. Serial requires the `serial-port` interface to be connected.
 
 ### Serial Console
 
@@ -169,6 +170,20 @@ sudo apt update && sudo apt install boundary
 sudo snap connect rustconn:host-boundary-cli
 ```
 
+### Kubernetes (kubectl)
+
+Kubernetes connections require `kubectl` on the host:
+
+```bash
+# Install: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+# Connect interfaces
+sudo snap connect rustconn:host-usr-bin
+sudo snap connect rustconn:kube-credentials
+```
+
 ### Password Manager CLIs
 
 #### Bitwarden CLI
@@ -270,9 +285,11 @@ Due to snap confinement, RustConn stores data in snap-specific locations:
 | Security | High | High | Medium |
 | Setup | Manual interfaces | Automatic | None needed |
 | SSH/RDP/VNC | ✅ Embedded | ✅ Embedded | ✅ Embedded |
-| Telnet | Host CLI | ✅ Bundled (inetutils) | ✅ Host CLI |
+| Telnet | ✅ Bundled (inetutils) | ✅ Bundled (inetutils) | ✅ Host CLI |
 | Serial | ✅ Bundled (picocom) | ✅ Bundled (picocom) | ✅ Host CLI |
+| Waypipe | ✅ Bundled | ✅ Bundled | ✅ Host CLI |
 | SPICE | Host CLI | ✅ Via Flatpak Components | ✅ Host CLI |
+| Kubernetes | Host kubectl | Host kubectl (flatpak-spawn) | ✅ Host kubectl |
 | Zero Trust | Host CLIs | ✅ Via Flatpak Components | ✅ Host CLIs |
 | Password CLIs | Host CLIs | ✅ Via Flatpak Components | ✅ Host CLIs |
 | Package Size | ~50 MB | ~50 MB | ~30 MB |

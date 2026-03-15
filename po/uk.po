@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rustconn 0.9.15\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-15 03:05+0200\n"
+"POT-Creation-Date: 2026-03-15 05:02+0200\n"
 "PO-Revision-Date: 2026-03-12 00:00+0000\n"
 "Last-Translator: Mykola Zubkov <zubkov139@ukr.net>\n"
 "Language-Team: Ukrainian\n"
@@ -516,7 +516,7 @@ msgstr "Час перевірки вичерпано"
 
 #: rustconn/src/dialogs/connection/dialog.rs:1393 rustconn/src/sidebar_ui.rs:78
 #: rustconn/src/sidebar_ui.rs:443 rustconn/src/split_view/bridge.rs:1692
-#: rustconn/src/window/ui.rs:116
+#: rustconn/src/window/ui.rs:48 rustconn/src/window/ui.rs:116
 msgid "New Connection"
 msgstr "Новий з'єднок"
 
@@ -3671,6 +3671,8 @@ msgid "No database selected"
 msgstr "Базу даних не вибрано"
 
 #: rustconn/src/dialogs/settings/secrets_tab.rs:1473
+#: rustconn/src/embedded_rdp/ui.rs:161 rustconn/src/embedded_spice.rs:420
+#: rustconn/src/embedded_trait.rs:318 rustconn/src/session/vnc.rs:202
 msgid "Connected"
 msgstr "З'єднано"
 
@@ -4116,7 +4118,7 @@ msgstr "Макс. вік"
 msgid "Hours before sessions expire"
 msgstr "Годин до закінчення реченця сеансів"
 
-#: rustconn/src/dialogs/shortcuts.rs:267 rustconn/src/split_view/bridge.rs:1833
+#: rustconn/src/dialogs/shortcuts.rs:267 rustconn/src/split_view/bridge.rs:1830
 msgid "Keyboard Shortcuts"
 msgstr "Клавіятурні скоротини"
 
@@ -4741,17 +4743,18 @@ msgid "Copy remote clipboard to local (waiting for remote data...)"
 msgstr "Копіюй віддалений буфер до локального (чекання відомостей...)"
 
 #: rustconn/src/embedded_rdp/mod.rs:241 rustconn/src/embedded_spice.rs:245
-#: rustconn/src/embedded_trait.rs:207 rustconn/src/embedded_vnc.rs:162
+#: rustconn/src/embedded_trait.rs:210 rustconn/src/embedded_vnc.rs:162
 msgid "Paste"
 msgstr "Устав"
 
 #: rustconn/src/embedded_rdp/mod.rs:242 rustconn/src/embedded_spice.rs:246
-#: rustconn/src/embedded_trait.rs:208 rustconn/src/embedded_vnc.rs:163
+#: rustconn/src/embedded_trait.rs:211 rustconn/src/embedded_vnc.rs:163
 msgid "Paste from local clipboard to remote session"
 msgstr "Устав із локального буфера до віддаленої сеансу"
 
 #: rustconn/src/embedded_rdp/mod.rs:253 rustconn/src/embedded_spice.rs:258
-#: rustconn/src/embedded_trait.rs:220 rustconn/src/embedded_vnc.rs:175
+#: rustconn/src/embedded_trait.rs:226 rustconn/src/embedded_trait.rs:228
+#: rustconn/src/embedded_vnc.rs:175
 msgid "Send Ctrl+Alt+Del to remote session"
 msgstr "Надішли Ctrl+Alt+Del до віддаленої сеансу"
 
@@ -4768,13 +4771,14 @@ msgid "Save files from remote clipboard"
 msgstr "Збережи файли з віддаленого буфера"
 
 #: rustconn/src/embedded_rdp/mod.rs:284 rustconn/src/embedded_spice.rs:262
-#: rustconn/src/embedded_trait.rs:224 rustconn/src/embedded_vnc.rs:179
+#: rustconn/src/embedded_trait.rs:233 rustconn/src/embedded_vnc.rs:179
 #: rustconn/src/terminal/mod.rs:1064 rustconn/src/terminal/mod.rs:1269
 msgid "Reconnect"
 msgstr "Перепід'єднай"
 
 #: rustconn/src/embedded_rdp/mod.rs:286 rustconn/src/embedded_spice.rs:264
-#: rustconn/src/embedded_trait.rs:226 rustconn/src/embedded_vnc.rs:181
+#: rustconn/src/embedded_trait.rs:235 rustconn/src/embedded_trait.rs:237
+#: rustconn/src/embedded_vnc.rs:181
 msgid "Reconnect to the remote session"
 msgstr "Перепід'єднай до віддаленої сеансу"
 
@@ -4794,15 +4798,46 @@ msgstr "Завантаження файлів..."
 msgid "Reconnecting..."
 msgstr "Перепідключення..."
 
-#: rustconn/src/embedded.rs:62
+#: rustconn/src/embedded_rdp/ui.rs:147 rustconn/src/embedded_spice.rs:415
+msgid "Session ended"
+msgstr "Сеанс завершено"
+
+#: rustconn/src/embedded_rdp/ui.rs:149
+msgid "No connection configured"
+msgstr "З'єднання не налаштовано"
+
+#: rustconn/src/embedded_rdp/ui.rs:154
+msgid "Connecting via IronRDP..."
+msgstr "З'єднання через IronRDP..."
+
+#: rustconn/src/embedded_rdp/ui.rs:156
+msgid "Starting FreeRDP..."
+msgstr "Запуск FreeRDP..."
+
+#: rustconn/src/embedded_rdp/ui.rs:164
+msgid "RDP session running in FreeRDP window"
+msgstr "RDP-сеанс працює у вікні FreeRDP"
+
+#: rustconn/src/embedded_rdp/ui.rs:169 rustconn/src/session/vnc.rs:425
+#: rustconn/src/session/vnc.rs:559
+msgid "Connection failed"
+msgstr "З'єднання не вдалося"
+
+#: rustconn/src/embedded_rdp/ui.rs:182
+msgid "Switch to the FreeRDP window to interact with the session"
+msgstr "Перейдіть до вікна FreeRDP для взаємодії з сеансом"
+
+#: rustconn/src/embedded.rs:62 rustconn/src/embedded_spice.rs:416
+#: rustconn/src/embedded_trait.rs:314 rustconn/src/session/vnc.rs:293
+#: rustconn/src/session/vnc.rs:368 rustconn/src/session/vnc.rs:468
 msgid "Connecting..."
 msgstr "Під'єднання..."
 
-#: rustconn/src/embedded.rs:69
+#: rustconn/src/embedded.rs:69 rustconn/src/embedded.rs:72
 msgid "Toggle Fullscreen"
 msgstr "Перемкни повноекранного режима"
 
-#: rustconn/src/embedded.rs:76
+#: rustconn/src/embedded.rs:76 rustconn/src/embedded.rs:79
 msgid "Disconnect"
 msgstr "Від'єднай"
 
@@ -4810,6 +4845,38 @@ msgstr "Від'єднай"
 #: rustconn/src/embedded_vnc.rs:158
 msgid "Copy from remote session to local clipboard"
 msgstr "Копіюй із віддаленої сеансу до локального буфера"
+
+#: rustconn/src/embedded_spice.rs:418 rustconn/src/embedded_trait.rs:316
+#: rustconn/src/session/vnc.rs:411 rustconn/src/session/vnc.rs:545
+msgid "Session running in external window"
+msgstr "Сеанс працює у зовнішньому вікні"
+
+#: rustconn/src/embedded_spice.rs:421 rustconn/src/embedded_trait.rs:319
+#: rustconn/src/session/vnc.rs:295 rustconn/src/session/vnc.rs:324
+msgid "Connection error"
+msgstr "Помилка з'єднання"
+
+#: rustconn/src/embedded_spice.rs:666
+msgid "Pasted to remote"
+msgstr "Вставлено на віддалений"
+
+#: rustconn/src/embedded_spice.rs:679
+msgid "Copy requested"
+msgstr "Запит на копіювання"
+
+#: rustconn/src/embedded_trait.rs:205
+msgid "Copy from remote session"
+msgstr "Копіювати з віддаленого сеансу"
+
+#: rustconn/src/embedded_trait.rs:213
+msgid "Paste to remote session"
+msgstr "Вставити до віддаленого сеансу"
+
+#: rustconn/src/embedded_trait.rs:313 rustconn/src/session/vnc.rs:135
+#: rustconn/src/session/vnc.rs:219 rustconn/src/session/vnc.rs:292
+#: rustconn/src/session/vnc.rs:765
+msgid "Disconnected"
+msgstr "Від'єднано"
 
 #: rustconn/src/embedded_vnc.rs:1234
 msgid "VNC encryption not supported. Install TigerVNC."
@@ -4847,10 +4914,13 @@ msgstr "Час роботи"
 msgid "⚠ Monitoring stopped — metrics may be stale"
 msgstr ""
 
-#: rustconn/src/session/vnc.rs:135 rustconn/src/session/vnc.rs:219
-#: rustconn/src/session/vnc.rs:765
-msgid "Disconnected"
-msgstr "Від'єднано"
+#: rustconn/src/session/vnc.rs:236
+msgid "Authenticating..."
+msgstr "Автентифікація..."
+
+#: rustconn/src/session/vnc.rs:255
+msgid "Authentication failed. Check your credentials."
+msgstr "Автентифікація не вдалася. Перевірте облікові дані."
 
 #: rustconn/src/sidebar/mod.rs:116
 msgid "Search... (? for help)"
@@ -4913,7 +4983,8 @@ msgid "Open SFTP"
 msgstr "Відкрий SFTP"
 
 #: rustconn/src/sidebar_ui.rs:271 rustconn/src/sidebar_ui.rs:457
-#: rustconn/src/window/connection_dialogs.rs:197 rustconn/src/window/ui.rs:117
+#: rustconn/src/window/connection_dialogs.rs:197 rustconn/src/window/ui.rs:62
+#: rustconn/src/window/ui.rs:117
 msgid "New Group"
 msgstr "Нова група"
 
@@ -4921,9 +4992,17 @@ msgstr "Нова група"
 msgid "Create a new group"
 msgstr "Створи нову групу"
 
+#: rustconn/src/sidebar_ui.rs:275
+msgid "Create new group"
+msgstr "Створити нову групу"
+
 #: rustconn/src/sidebar_ui.rs:280
 msgid "Move selected items to a group"
 msgstr "Перемісти вибрані складники до групи"
+
+#: rustconn/src/sidebar_ui.rs:283
+msgid "Move selected connections to group"
+msgstr "Перемістити вибрані з'єднання до групи"
 
 #: rustconn/src/sidebar_ui.rs:288
 msgid "Create Cluster"
@@ -4933,40 +5012,85 @@ msgstr "Створи кластера"
 msgid "Create a cluster from selected connections"
 msgstr "Створи кластера з обраних з'єднків"
 
+#: rustconn/src/sidebar_ui.rs:292
+msgid "Create cluster from selected connections"
+msgstr "Створити кластер із вибраних з'єднань"
+
 #: rustconn/src/sidebar_ui.rs:298
 msgid "Select all items (Ctrl+A)"
 msgstr "Вибери всі складники (Ctrl+A)"
+
+#: rustconn/src/sidebar_ui.rs:301
+msgid "Select all connections"
+msgstr "Вибрати всі з'єднання"
 
 #: rustconn/src/sidebar_ui.rs:306
 msgid "Clear selection (Escape)"
 msgstr "Очисть вибір (Escape)"
 
+#: rustconn/src/sidebar_ui.rs:308
+msgid "Clear selection"
+msgstr "Очистити вибір"
+
 #: rustconn/src/sidebar_ui.rs:313
 msgid "Delete all selected items"
 msgstr "Вилучи всі вибрані складники"
+
+#: rustconn/src/sidebar_ui.rs:317
+msgid "Delete selected connections"
+msgstr "Вилучити вибрані з'єднання"
 
 #: rustconn/src/sidebar_ui.rs:338
 msgid "Group Operations Mode"
 msgstr "Режим групових операцій"
 
+#: rustconn/src/sidebar_ui.rs:341
+msgid "Enable group operations mode for multi-select"
+msgstr "Увімкнути режим групових операцій"
+
+#: rustconn/src/sidebar_ui.rs:349
+msgid "View connection history"
+msgstr "Переглянути історію з'єднань"
+
 #: rustconn/src/sidebar_ui.rs:354
 msgid "Sort Alphabetically"
 msgstr "Сортуй за абеткою"
+
+#: rustconn/src/sidebar_ui.rs:357
+msgid "Sort connections alphabetically"
+msgstr "Сортувати з'єднання за алфавітом"
 
 #: rustconn/src/sidebar_ui.rs:363
 msgid "Sort by Recent Usage"
 msgstr "Сортуй за останнім застосунком"
 
+#: rustconn/src/sidebar_ui.rs:366
+msgid "Sort connections by recent usage"
+msgstr "Сортувати за останнім використанням"
+
 #: rustconn/src/sidebar_ui.rs:372
 msgid "Import Connections (Ctrl+I)"
 msgstr "Імпортування з'єднань (Ctrl+I)"
+
+#: rustconn/src/sidebar_ui.rs:375
+msgid "Import connections from external sources"
+msgstr "Імпортувати з зовнішніх джерел"
+
+#: rustconn/src/sidebar_ui.rs:384
+msgid "Export connections to file"
+msgstr "Експортувати з'єднання до файлу"
 
 #: rustconn/src/sidebar_ui.rs:390
 msgid "Open Password Vault"
 msgstr "Відкрий сховище паролів"
 
+#: rustconn/src/sidebar_ui.rs:394
+msgid "Open password vault for credential management"
+msgstr "Відкрити сховище паролів"
+
 #: rustconn/src/sidebar_ui.rs:429 rustconn/src/split_view/bridge.rs:1699
-#: rustconn/src/window/edit_dialogs.rs:1241 rustconn/src/window/ui.rs:118
+#: rustconn/src/window/edit_dialogs.rs:1241 rustconn/src/window/ui.rs:41
+#: rustconn/src/window/ui.rs:118
 msgid "Quick Connect"
 msgstr "Швидке з'єднування"
 
@@ -4977,6 +5101,10 @@ msgstr "Імпортуй.."
 #: rustconn/src/sidebar_ui.rs:491
 msgid "Export..."
 msgstr "Експортуй..."
+
+#: rustconn/src/sidebar/view.rs:52
+msgid "Pinned"
+msgstr "Закріплено"
 
 #: rustconn/src/split_view/adapter.rs:954
 msgid "Drag to move this session to another panel or tab"
@@ -5043,79 +5171,80 @@ msgstr "Групи, теги та шаблони"
 msgid "Zero Trust tunnels"
 msgstr "Тунелі Zero Trust"
 
-#: rustconn/src/split_view/bridge.rs:1809
+#: rustconn/src/split_view/bridge.rs:1807
 msgid "Command snippets & clusters"
 msgstr "Фрагменти команд і кластери"
 
-#: rustconn/src/split_view/bridge.rs:1813
+#: rustconn/src/split_view/bridge.rs:1810
 msgid "Customizable keybindings"
 msgstr "Налаштовувані клавіші"
 
-#: rustconn/src/split_view/bridge.rs:1837
+#: rustconn/src/split_view/bridge.rs:1834
 msgid "New connection"
 msgstr "Нове з'єднування"
 
-#: rustconn/src/split_view/bridge.rs:1838
+#: rustconn/src/split_view/bridge.rs:1835
 msgid "Quick connect"
 msgstr "Швидке з'єднування"
 
-#: rustconn/src/split_view/bridge.rs:1839
+#: rustconn/src/split_view/bridge.rs:1836
 msgid "Command palette"
 msgstr "Палітра команд"
 
-#: rustconn/src/split_view/bridge.rs:1840
+#: rustconn/src/split_view/bridge.rs:1837
 msgid "Local shell"
 msgstr "Локальна оболонка"
 
-#: rustconn/src/split_view/bridge.rs:1841
+#: rustconn/src/split_view/bridge.rs:1838
 msgid "Search"
 msgstr "Пошук"
 
-#: rustconn/src/split_view/bridge.rs:1842
+#: rustconn/src/split_view/bridge.rs:1839
 msgid "Split vertical"
 msgstr "Розділи доземно"
 
-#: rustconn/src/split_view/bridge.rs:1843
+#: rustconn/src/split_view/bridge.rs:1840
 msgid "Split horizontal"
 msgstr "Розділи поземно"
 
-#: rustconn/src/split_view/bridge.rs:1844
+#: rustconn/src/split_view/bridge.rs:1841
 msgid "Import connections"
 msgstr "Імпорт з'єднань"
 
-#: rustconn/src/split_view/bridge.rs:1845 rustconn/src/window/ui.rs:161
+#: rustconn/src/split_view/bridge.rs:1842 rustconn/src/window/ui.rs:82
+#: rustconn/src/window/ui.rs:161
 msgid "Settings"
 msgstr "Налаштування"
 
-#: rustconn/src/split_view/bridge.rs:1868
+#: rustconn/src/split_view/bridge.rs:1865
 msgid "Quick Access"
 msgstr "Швидкий доступ"
 
-#: rustconn/src/split_view/bridge.rs:1872
+#: rustconn/src/split_view/bridge.rs:1869
 msgid "Fuzzy search & command palette"
 msgstr "Нечіткий пошук і палітра команд"
 
-#: rustconn/src/split_view/bridge.rs:1873
+#: rustconn/src/split_view/bridge.rs:1870
 msgid "Pin favorites to sidebar"
 msgstr "Закріпи обрані на бічній панелі"
 
-#: rustconn/src/split_view/bridge.rs:1876
+#: rustconn/src/split_view/bridge.rs:1871
 msgid "Split view for terminals"
 msgstr "Розділений вигляд для терміналів"
 
-#: rustconn/src/split_view/bridge.rs:1880
+#: rustconn/src/split_view/bridge.rs:1872
 msgid "Open .rdp files directly"
 msgstr "Відкривай .rdp файли напряму"
 
-#: rustconn/src/split_view/bridge.rs:1893
+#: rustconn/src/split_view/bridge.rs:1884
 msgid "Import Formats"
 msgstr "Формати імпортування"
 
-#: rustconn/src/split_view/bridge.rs:2013
+#: rustconn/src/split_view/bridge.rs:2004
 msgid "All tabs are already displayed in this split view"
 msgstr "Усі вкладки вже відображено в цьому розділеному вигляді"
 
-#: rustconn/src/split_view/bridge.rs:2052
+#: rustconn/src/split_view/bridge.rs:2043
 msgid "Select a tab to display"
 msgstr "Вибери вкладку, щоб відобразити"
 
@@ -5817,6 +5946,10 @@ msgstr "Користувач: {}"
 msgid "Toggle Sidebar (F9)"
 msgstr "Перемкни бічну панель (F9)"
 
+#: rustconn/src/window/ui.rs:34
+msgid "Toggle Sidebar"
+msgstr "Бічна панель"
+
 #: rustconn/src/window/ui.rs:39
 msgid "Quick Connect (Ctrl+Shift+Q)"
 msgstr "Швидке доєднання (Ctrl+Shift+Q)"
@@ -5829,11 +5962,15 @@ msgstr "Новий з'єднок (Ctrl+N)"
 msgid "Delete Selected (Delete)"
 msgstr "Вилучи вибране (Delete)"
 
+#: rustconn/src/window/ui.rs:55
+msgid "Delete Selected"
+msgstr "Вилучити вибране"
+
 #: rustconn/src/window/ui.rs:60
 msgid "New Group (Ctrl+Shift+N)"
 msgstr "Нова група (Ctrl+Shift+N)"
 
-#: rustconn/src/window/ui.rs:70
+#: rustconn/src/window/ui.rs:70 rustconn/src/window/ui.rs:72
 msgid "Menu"
 msgstr "Меню"
 
@@ -5845,9 +5982,17 @@ msgstr "Налаштування (Ctrl+,)"
 msgid "Split Vertical (Ctrl+Shift+S)"
 msgstr "Розділи доземно (Ctrl+Shift+S)"
 
+#: rustconn/src/window/ui.rs:89
+msgid "Split Vertical"
+msgstr "Розділи вертикально"
+
 #: rustconn/src/window/ui.rs:93
 msgid "Split Horizontal (Ctrl+Shift+H)"
 msgstr "Розділи поземно (Ctrl+Shift+H)"
+
+#: rustconn/src/window/ui.rs:96
+msgid "Split Horizontal"
+msgstr "Розділи горизонтально"
 
 #: rustconn/src/window/ui.rs:124
 msgid "Snippets..."
@@ -5916,381 +6061,3 @@ msgstr "RustConn"
 #: rustconn/assets/io.github.totoshko88.RustConn.desktop:10
 msgid "ssh;rdp;vnc;spice;telnet;zerotrust;connection;terminal;remote;kubernetes;k8s;serial;sftp;"
 msgstr ""
-
-#~ msgid "Embedded SSH terminals"
-#~ msgstr "Убудовані SSH-термінали"
-
-#~ msgid "Expect automation"
-#~ msgstr "Автоматизація Expect"
-
-#~ msgid "Groups and tags"
-#~ msgstr "Групи та теґи"
-
-#~ msgid "Customizable settings"
-#~ msgstr "Налаштовувані параметри"
-
-#~ msgid "Embedded and external clients"
-#~ msgstr "Убудовані та зовнішні клієнти"
-
-#~ msgid "New group"
-#~ msgstr "Нова група"
-
-#~ msgid "Close tab"
-#~ msgstr "Згорни вкладку"
-
-#~ msgid "Next tab"
-#~ msgstr "Чергова вкладка"
-
-#~ msgid "Smart search caching"
-#~ msgstr "Розумне кешування пошуку"
-
-#~ msgid "Lazy loading for trees"
-#~ msgstr "Ліниве завантажування дерев"
-
-#~ msgid "Virtual scrolling"
-#~ msgstr "Віртуальна прокрутка"
-
-#~ msgid "Embedded VNC/RDP/SPICE"
-#~ msgstr "Убудовані VNC/RDP/SPICE"
-
-#~ msgid "ssh;rdp;vnc;spice;telnet;zerotrust;connection;terminal;remote;"
-#~ msgstr "ssh;rdp;vnc;spice;telnet;zerotrust;з'єднок;термінал;віддалений;"
-
-#~ msgid "Split view is only available for SSH and Local Shell tabs"
-#~ msgstr ""
-#~ "Розділений вигляд доступний лише для вкладок SSH та локальної оболонки"
-
-#~ msgid "Brazilian (br)"
-#~ msgstr "Бразильська (br)"
-
-#~ msgid "UK English (gb)"
-#~ msgstr "Англійська (Британія)"
-
-#~ msgid "Swiss German (ch)"
-#~ msgstr "Швейцарська німецька (ch)"
-
-#~ msgid "Austrian (at)"
-#~ msgstr "Австрійська (at)"
-
-#~ msgid "Belgian (be)"
-#~ msgstr "Бельгійська (be)"
-
-#~ msgid "Preferred encoding methods (comma-separated)"
-#~ msgstr "Бажані методи кодування (через кому)"
-
-#~ msgid ""
-#~ "Automatically respond to terminal patterns.\n"
-#~ "                 Rules are matched in priority order (highest first)."
-#~ msgstr ""
-#~ "Автоматично відповідай на шаблони термінала.\n"
-#~ "                 Правила звіряються за пріоритетом (найвищий перший)."
-
-#~ msgid "No expect rules configured"
-#~ msgstr "Нема правил очікування"
-
-#~ msgid "Test your patterns against sample input"
-#~ msgstr "Перевір шаблони на зразковому вводі"
-
-#~ msgid "Enter text to test against patterns"
-#~ msgstr "Уведи текст для перевірки шаблонів"
-
-#~ msgid "Enter text above to test patterns"
-#~ msgstr "Уведи текст вище для перевірки шаблонів"
-
-#~ msgid "Serial uses picocom as the terminal client"
-#~ msgstr "Serial використовує picocom як термінальний клієнт"
-
-#~ msgid "Telnet uses an external telnet client"
-#~ msgstr "Telnet використовує зовнішній telnet-клієнт"
-
-#~ msgid "KeePass is not enabled"
-#~ msgstr "KeePass не ввімкнуто"
-
-#~ msgid "Select KeePass, Keyring, or Bitwarden to load password"
-#~ msgstr "Вибери KeePass, Keyring або Bitwarden, щоб завантажити пароля"
-
-#~ msgid ""
-#~ "Are you sure you want to delete the group '{}'?\n"
-#~ "\n"
-#~ "This will also delete {} connection(s) in this group."
-#~ msgstr ""
-#~ "Ви впевнені, що хочете вилучити групу «{}»?\n"
-#~ "\n"
-#~ "Це також вилучи {} з'єднань у цій групі."
-
-#~ msgid ""
-#~ "Including passwords may expose sensitive data. Only enable if you trust "
-#~ "the destination."
-#~ msgstr ""
-#~ "Увімкнення паролів може розкрити конфіденційні відомости. Умикай лише, "
-#~ "якщо довіряєш призначенню."
-
-#~ msgid ""
-#~ "Passwords are stored in your password manager and not included in exports "
-#~ "by default. Export your credential structure separately if needed."
-#~ msgstr ""
-#~ "Паролі збережено у Вашому менеджері паролів і їх не доєднують до "
-#~ "експортування за замовчуванням. За потреби експортуйте структуру "
-#~ "облікових відомостей окремо."
-
-#~ msgid "Not initialized (run 'pass init <gpg-id>')"
-#~ msgstr "Не ініціялізовано (виконай 'pass init <gpg-id>')"
-
-#~ msgid "Run 'pass init <gpg-id>' to initialize"
-#~ msgstr "Виконай 'pass init <gpg-id>' для ініціялізації"
-
-#~ msgid "More tabs"
-#~ msgstr "Більше вкладок"
-
-#~ msgid "All Protocols"
-#~ msgstr "Усі протоколи"
-
-#~ msgid "Status:"
-#~ msgstr "Стан:"
-
-#~ msgid "All Statuses"
-#~ msgstr "Усі стани"
-
-#~ msgid "Starting"
-#~ msgstr "Запускання"
-
-#~ msgid "Refresh Dashboard"
-#~ msgstr "Онови панель"
-
-#~ msgid "No active sessions"
-#~ msgstr "Нема активних сеансів"
-
-#~ msgid "Duration"
-#~ msgstr "Тривалість"
-
-#~ msgid "Focus Session"
-#~ msgstr "Переходь до сеансу"
-
-#~ msgid "Connection Dashboard"
-#~ msgstr "Панель з'єднувань"
-
-#~ msgid "Open"
-#~ msgstr "Відкрий"
-
-#~ msgid "Reset"
-#~ msgstr "Скидай"
-
-#~ msgid "No Connections"
-#~ msgstr "Нема з'єднувань"
-
-#~ msgid "Create your first connection to get started"
-#~ msgstr "Щоб розпочати - створи первий з'єднок"
-
-#~ msgid "No Results Found"
-#~ msgstr "Нічого не знайдено"
-
-#~ msgid "No connections match"
-#~ msgstr "Нема відповідних з'єднувань"
-
-#~ msgid "No Active Sessions"
-#~ msgstr "Нема активних сеансів"
-
-#~ msgid "Connect to a server to start a session"
-#~ msgstr "Щоб розпочати сеанса - з'єднайся з сервером"
-
-#~ msgid "No Groups"
-#~ msgstr "Нема груп"
-
-#~ msgid "Create groups to organize your connections"
-#~ msgstr "Щоб зорганізувати з'єднування - створи групи"
-
-#~ msgid "No Snippets"
-#~ msgstr "Нема фраґментів"
-
-#~ msgid "Create command snippets for quick access"
-#~ msgstr "Для швидкого доступу - створи фраґменти команд"
-
-#~ msgid "No Templates"
-#~ msgstr "Нема шаблонів"
-
-#~ msgid "Create templates for common connection configurations"
-#~ msgstr "Для типових конфіґурацій з'єднувань - створи шаблони"
-
-#~ msgid "No Connection History"
-#~ msgstr "Нема історії з'єднувань"
-
-#~ msgid "Your recent connections will appear here"
-#~ msgstr "Останні ваші з'єднки з'являться тут"
-
-#~ msgid "Session Settings"
-#~ msgstr "Налаштування сеансу"
-
-#~ msgid "Exit Fullscreen"
-#~ msgstr "Вийди з повноекранного режиму"
-
-#~ msgid ""
-#~ "Automatically respond to terminal patterns.\n"
-#~ "Rules are matched in priority order (highest first)."
-#~ msgstr ""
-#~ "Автоматична відповідь на шаблони терміналу.\n"
-#~ "Правила перевіряються за пріоритетом (найвищий першим)."
-
-#~ msgid "X11 Forwarding"
-#~ msgstr "Перенаправлення X11"
-
-#~ msgid "Forward X11 display to local host (-X)"
-#~ msgstr "Перенаправ дисплей X11 на локальний гост (-X)"
-
-#~ msgid "Enable compression for slow connections (-C)"
-#~ msgstr "Увімкни стиснення для повільних з'єднків (-C)"
-
-#~ msgid "Additional SSH command-line options"
-#~ msgstr "Додаткові параметри командного рядка SSH"
-
-#~ msgid "Device Path"
-#~ msgstr "Шлях до пристрою"
-
-#~ msgid "Path to the serial device"
-#~ msgstr "Шлях до послідовного пристрою"
-
-#~ msgid "Additional picocom command-line arguments"
-#~ msgstr "Додаткові арґументи командного рядка picocom"
-
-#~ msgid "Kubeconfig"
-#~ msgstr "Kubeconfig"
-
-#~ msgid "Path to kubeconfig file (default if empty)"
-#~ msgstr "Шлях до файлу kubeconfig (типовий, якщо порожній)"
-
-#~ msgid "Context"
-#~ msgstr "Контекст"
-
-#~ msgid "Kubernetes context (current-context if empty)"
-#~ msgstr "Контекст Kubernetes (поточний, якщо порожній)"
-
-#~ msgid "Namespace"
-#~ msgstr "Простір імен"
-
-#~ msgid "Target namespace (default if empty)"
-#~ msgstr "Цільовий простір імен (типовий, якщо порожній)"
-
-#~ msgid "Pod"
-#~ msgstr "Pod"
-
-#~ msgid "Pod name to exec into"
-#~ msgstr "Назва Pod для з'єднування"
-
-#~ msgid "Container"
-#~ msgstr "Контейнер"
-
-#~ msgid "Container name (optional for single-container)"
-#~ msgstr "Назва контейнера (необов'язково для одного контейнера)"
-
-#~ msgid "Image"
-#~ msgstr "Образ"
-
-#~ msgid "Container image for temporary pod"
-#~ msgstr "Образ контейнера для тимчасового Pod"
-
-#~ msgid "Additional kubectl arguments"
-#~ msgstr "Додаткові арґументи kubectl"
-
-#~ msgid "Application"
-#~ msgstr "Застосунок"
-
-#~ msgid "Navigation"
-#~ msgstr "Навігація"
-
-#~ msgid "Split View"
-#~ msgstr "Розділений вигляд"
-
-#~ msgid "View"
-#~ msgstr "Вигляд"
-
-#~ msgid "Import"
-#~ msgstr "Імпортуй"
-
-#~ msgid "Export"
-#~ msgstr "Експортуй"
-
-#~ msgid "Move to Group"
-#~ msgstr "Перенеси до групи"
-
-#~ msgid "Focus Sidebar"
-#~ msgstr "Фокусуй бічну панель"
-
-#~ msgid "Focus Terminal"
-#~ msgstr "Фокусуй термінал"
-
-#~ msgid "Command Palette (Commands)"
-#~ msgstr "Палітра команд (команди)"
-
-#~ msgid "Find in Terminal"
-#~ msgstr "Знайди в терміналі"
-
-#~ msgid "Next Tab"
-#~ msgstr "Наступна вкладинка"
-
-#~ msgid "Previous Tab"
-#~ msgstr "Попередня вкладинка"
-
-#~ msgid "Split Horizontal"
-#~ msgstr "Розділи горизонтально"
-
-#~ msgid "Split Vertical"
-#~ msgstr "Розділи вертикально"
-
-#~ msgid "Close Pane"
-#~ msgstr "Закрий панель"
-
-#~ msgid "Focus Next Pane"
-#~ msgstr "Фокусуй наступну панель"
-
-#~ msgid "Waypipe"
-#~ msgstr "Waypipe"
-
-#~ msgid "Wayland application forwarding via waypipe"
-#~ msgstr "Перенаправлення застосунків Wayland через waypipe"
-
-#~ msgid "Optional: Install waypipe package for Wayland forwarding"
-#~ msgstr "Необов'язково: встановіть пакет waypipe для перенаправлення Wayland"
-
-#~ msgid "External RDP client"
-#~ msgstr "Зовнішній RDP-клієнт"
-
-#~ msgid "External VNC client"
-#~ msgstr "Зовнішній VNC-клієнт"
-
-#~ msgid "Quality (RemoteFX)"
-#~ msgstr "Якість (RemoteFX)"
-
-#~ msgid "Balanced (Adaptive)"
-#~ msgstr "Збалансований (адаптивний)"
-
-#~ msgid "Speed (Legacy)"
-#~ msgstr "Швидкість (застарілий)"
-
-#~ msgid "Balanced"
-#~ msgstr "Збалансований"
-
-#~ msgid "Speed"
-#~ msgstr "Швидкість"
-
-#~ msgid "Auto (system)"
-#~ msgstr "Авто (системний)"
-
-#~ msgid "Odd"
-#~ msgstr "Непарна"
-
-#~ msgid "Even"
-#~ msgstr "Парна"
-
-#~ msgid "Hardware (RTS/CTS)"
-#~ msgstr "Апаратне (RTS/CTS)"
-
-#~ msgid "Software (XON/XOFF)"
-#~ msgstr "Програмне (XON/XOFF)"
-
-#~ msgid "Automatic"
-#~ msgstr "Автоматично"
-
-#~ msgid "Backspace (^H)"
-#~ msgstr "Backspace (^H)"
-
-#~ msgid "Delete (^?)"
-#~ msgstr "Delete (^?)"

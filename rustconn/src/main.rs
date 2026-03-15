@@ -134,7 +134,10 @@ fn parse_cli_args() -> Option<rustconn_core::config::StartupAction> {
             }
             _ => {
                 // Check if argument is an .rdp file path
-                if args[i].ends_with(".rdp") {
+                if std::path::Path::new(&args[i])
+                    .extension()
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("rdp"))
+                {
                     let path = std::path::PathBuf::from(&args[i]);
                     if path.exists() {
                         return Some(StartupAction::RdpFile(path));
