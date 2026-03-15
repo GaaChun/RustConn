@@ -24,22 +24,24 @@ RustConn is a modern connection manager designed for Linux with Wayland-first ap
     - [Wake-on-LAN](#wake-on-lan)
     - [Flatpak Components](#flatpak-components)
 12. [Settings](#settings)
-13. [Startup Action](#startup-action)
-14. [Command Palette](#command-palette)
-15. [Favorites](#favorites)
-16. [Tab Coloring](#tab-coloring)
-17. [Tab Grouping](#tab-grouping)
-18. [Custom Icons](#custom-icons)
-19. [Remote Monitoring](#remote-monitoring)
-20. [Custom Keybindings](#custom-keybindings)
-21. [Adaptive UI](#adaptive-ui)
-22. [Encrypted Documents](#encrypted-documents)
-23. [Keyboard Shortcuts](#keyboard-shortcuts)
-24. [CLI Usage](#cli-usage)
-25. [Frequently Asked Questions](#frequently-asked-questions)
-26. [Migration Guide](#migration-guide)
-27. [Troubleshooting](#troubleshooting)
-28. [Security Best Practices](#security-best-practices)
+13. [Backup & Restore](#backup--restore)
+14. [Startup Action](#startup-action)
+15. [Command Palette](#command-palette)
+16. [Favorites](#favorites)
+17. [Tab Coloring](#tab-coloring)
+18. [Tab Grouping](#tab-grouping)
+19. [Custom Icons](#custom-icons)
+20. [Remote Monitoring](#remote-monitoring)
+21. [Custom Keybindings](#custom-keybindings)
+22. [Adaptive UI](#adaptive-ui)
+23. [Encrypted Documents](#encrypted-documents)
+24. [RDP File Association](#rdp-file-association)
+25. [Keyboard Shortcuts](#keyboard-shortcuts)
+26. [CLI Usage](#cli-usage)
+27. [Frequently Asked Questions](#frequently-asked-questions)
+28. [Migration Guide](#migration-guide)
+29. [Troubleshooting](#troubleshooting)
+30. [Security Best Practices](#security-best-practices)
 
 ---
 
@@ -107,7 +109,7 @@ Shows integration status in sidebar toolbar:
 - **Highlighted** — Password manager enabled and configured
 - **Dimmed** — Disabled or not configured
 - Click to open appropriate password manager:
-  - KeePassXC/GNOME Secrets for KeePassXC backend
+  - KeePassXC/GNOME Secrets for KeePassXC backend (in Flatpak, launches KeePassXC on the host via `flatpak-spawn`)
   - Seahorse/GNOME Settings for libsecret backend
   - Bitwarden web vault for Bitwarden backend
   - 1Password app for 1Password backend
@@ -156,15 +158,10 @@ SSH connections support hardware security keys (YubiKey, SoloKey, etc.) via the 
 - The key file path configured in the connection's SSH key field
 
 **Advanced Tabs:**
-- **Advanced** — Window mode (Embedded/External/Fullscreen), remember window position, Wake-on-LAN configuration (MAC address, broadcast, port, wait time)
-- **Automation** — Expect rules for auto-responding to terminal patterns, pattern tester, pre-connect task, post-disconnect task (with conditions: first/last connection only)
+- **Advanced** — Window mode (Embedded/External/Fullscreen), remember window position, hide local cursor (embedded RDP/VNC/SPICE), Wake-on-LAN configuration (MAC address, broadcast, port, wait time), monitoring override (enable/disable/global, custom polling interval)
+- **Automation** — Expect rules for auto-responding to terminal patterns, pattern tester with built-in templates (Sudo, SSH Host Key, Login, etc.), pre-connect task, post-disconnect task (with conditions: first/last connection only)
 - **Data** — Local variables (connection-scoped, override global variables), custom properties (Text/URL/Protected metadata)
 - **Logging** — Session logging (enable/disable, log path template with variables, timestamp format, max file size, retention days, granular content options: log activity, log input, log output, add timestamps)
-- **WOL** — Wake-on-LAN MAC address
-- **Variables** — Local variables for automation
-- **Automation** — Expect rules for auto-login (see below)
-- **Tasks** — Pre/post connection commands (see below)
-- **Custom Properties** — Metadata key-value fields for organization
 
 ### Automation (Expect Rules)
 
@@ -338,7 +335,7 @@ RustConn/
 | Protocol | Session Type |
 |----------|--------------|
 | SSH | Embedded VTE terminal tab |
-| RDP | Embedded IronRDP or external FreeRDP |
+| RDP | Embedded IronRDP or external FreeRDP (bundled in Flatpak) |
 
 **RDP HiDPI Support:** On HiDPI/4K displays, the embedded IronRDP client automatically sends the correct scale factor to the Windows server (e.g. 200% on a 2× display), so remote UI elements render at the correct logical size. The Scale Override setting in the connection dialog allows manual adjustment if needed.
 
@@ -356,12 +353,17 @@ RustConn/
 | Services | Win+R → `services.msc` | Opens Services console via Run dialog |
 
 The Quick Actions menu is accessible via the dropdown button (arrow icon) on the RDP toolbar. All labels are translatable.
+
+**Hide Local Cursor:** Embedded RDP, VNC, and SPICE viewers support hiding the local OS cursor to eliminate the "double cursor" effect (local + remote cursor visible simultaneously). Toggle "Show Local Cursor" in the connection dialog's Features section. Enabled by default for backward compatibility.
 | VNC | Embedded vnc-rs or external TigerVNC |
 | SPICE | Embedded spice-client or external remote-viewer |
 | Telnet | Embedded VTE terminal tab (external `telnet` client) |
 | Serial | Embedded VTE terminal tab (external `picocom` client) |
 | Kubernetes | Embedded VTE terminal tab (external `kubectl exec`) |
 | ZeroTrust | Provider CLI in terminal |
+| Local Shell | Local VTE terminal tab (user's default shell) |
+
+**Local Shell:** Open a local terminal tab without connecting to any remote host. Useful as a quick terminal emulator or for running local commands alongside remote sessions. Start via Menu → File → Local Shell, the startup action (Settings → Interface → Startup → Local Shell), or `rustconn --shell`.
 
 ### Display Mode (Window Mode)
 
@@ -381,6 +383,7 @@ The **Display Mode** setting in the connection dialog (Advanced tab → Window M
 **Notes:**
 - Fullscreen mode maximizes the RustConn window, not the remote desktop. Use F11 to toggle true fullscreen of the entire application.
 - External Window mode for VNC requires an external VNC viewer installed (TigerVNC, vncviewer, gvncviewer, or similar). If no viewer is found, a toast notification shows the install hint.
+- External Window mode for RDP uses FreeRDP. In the Flatpak build, FreeRDP (SDL3 client) is bundled — no separate installation needed. On native installs, RustConn auto-detects available FreeRDP variants in priority order: `wlfreerdp3` > `wlfreerdp` > `sdl-freerdp3` > `sdl-freerdp` > `xfreerdp3` > `xfreerdp`.
 - The VNC protocol tab also has its own **Client Mode** (Embedded/External) setting. When Display Mode is set to External Window, it takes precedence over the protocol-level Client Mode.
 
 ### Tab Management
@@ -411,6 +414,15 @@ Enable in Settings → Interface page → Session Restore:
 - Restored on next startup
 - Optional prompt before restore
 - Configurable maximum age
+
+### Session Reconnect
+
+When a terminal session disconnects (SSH, Telnet, Serial, Kubernetes), a "Reconnect" banner appears at the top of the terminal tab. Click it to re-establish the connection in one click without opening the connection dialog.
+
+- The banner appears automatically when the VTE child process exits
+- Reconnect uses the same connection settings (host, credentials, protocol options)
+- If the connection fails again, the banner reappears
+- Close the tab normally with Ctrl+W to dismiss
 
 ### Session Logging
 
@@ -1113,6 +1125,7 @@ Deleting a cluster does not delete the underlying connections.
 - Royal TS (.rtsz XML)
 - MobaXterm sessions (.mxtsessions)
 - Remote Desktop Manager (JSON)
+- RDP files (.rdp — Microsoft Remote Desktop)
 - Virt-Viewer (.vv files — SPICE/VNC from libvirt, Proxmox VE)
 - Libvirt / GNOME Boxes (domain XML — VNC, SPICE, RDP from QEMU/KVM VMs)
 - RustConn Native (.rcn)
@@ -1139,6 +1152,7 @@ For large imports (10+ connections), a preview is shown before applying. You can
 | Royal TS | — | `.rtsz` file | All | Folder hierarchy → groups |
 | MobaXterm | — | `.mxtsessions` | SSH, RDP, VNC, Telnet, Serial | INI-based sessions |
 | Remote Desktop Manager | — | JSON file | SSH, RDP, VNC | Devolutions JSON export |
+| RDP File | — | `.rdp` file | RDP | Microsoft Remote Desktop format; address, credentials, gateway, resolution, audio, clipboard |
 | Virt-Viewer | — | `.vv` file | SPICE, VNC | From libvirt, Proxmox VE, oVirt |
 | Libvirt / GNOME Boxes | `/etc/libvirt/qemu/`, `~/.config/libvirt/qemu/` | XML file | VNC, SPICE, RDP | Domain XML `<graphics>` elements |
 | RustConn Native | — | `.rcn` file | All | Full-fidelity backup |
@@ -1500,6 +1514,42 @@ Searches PATH and user directories (`~/bin/`, `~/.local/bin/`, `~/.cargo/bin/`).
 - **Enable monitoring** — Global toggle for remote host metrics collection
 - **Polling interval** — Seconds between metric updates (1–60, default: 3)
 - **Visible Metrics** — Toggle individual metrics: CPU, Memory, Disk, Network, Load Average, System Info
+
+---
+
+## Backup & Restore
+
+Back up your entire RustConn configuration (connections, groups, snippets, clusters, templates, history, keybindings, variables, and settings) as a single ZIP archive.
+
+### Create a Backup
+
+1. Open **Settings** (Ctrl+,) → **Interface** page
+2. Scroll to **Backup & Restore** section
+3. Click **Backup**
+4. Choose a save location
+5. RustConn creates a ZIP containing all configuration files
+
+### Restore from Backup
+
+1. Open **Settings** → **Interface** page → **Backup & Restore**
+2. Click **Restore**
+3. Select a previously created backup ZIP
+4. Confirm the restore (overwrites current configuration)
+5. Restart RustConn for all changes to take effect
+
+### What's Included
+
+| Included | Not Included |
+|----------|-------------|
+| Connections and groups | Passwords (stored in secret backend) |
+| Templates and snippets | Encrypted documents |
+| Clusters | SSH keys |
+| Global variables (names only; secret values are in vault) | Session logs |
+| Keybindings | Flatpak-installed CLI tools |
+| Application settings | |
+| Connection history and statistics | |
+
+After restoring on a new machine, re-enter passwords or configure the same secret backend. See also the [Migration Guide](#migration-guide) for full machine-to-machine migration.
 
 ---
 
@@ -1900,6 +1950,53 @@ Store sensitive notes, certificates, and credentials in AES-256-GCM encrypted do
 
 ---
 
+## RDP File Association
+
+RustConn registers as a handler for `.rdp` files. Double-clicking an `.rdp` file in your file manager opens RustConn and connects automatically.
+
+### How It Works
+
+1. Double-click an `.rdp` file (or run `rustconn file.rdp` from the terminal)
+2. RustConn parses the file and creates a temporary connection with the extracted settings
+3. The connection starts immediately — no dialog is shown
+
+### Supported .rdp Fields
+
+| .rdp Field | RustConn Mapping |
+|------------|-----------------|
+| `full address:s:host:port` | Host and port |
+| `username:s:` | Username |
+| `domain:s:` | Domain |
+| `gatewayhostname:s:` | RDP Gateway host |
+| `gatewayusername:s:` | RDP Gateway username |
+| `gatewayaccesstoken:s:` | RDP Gateway port (parsed from token) |
+| `desktopwidth:i:` / `desktopheight:i:` | Resolution |
+| `session bpp:i:` | Color depth |
+| `audiomode:i:` | Audio redirection (0=local, 1=remote, 2=off) |
+| `redirectclipboard:i:` | Clipboard sharing |
+
+Fields not present in the `.rdp` file use RustConn defaults. Passwords are never stored in `.rdp` files — RustConn prompts for credentials if needed.
+
+### Desktop Integration
+
+The `.desktop` file registers the `application/x-rdp` MIME type. On most desktops, `.rdp` files will automatically associate with RustConn after installation. If not, set the association manually:
+
+```bash
+xdg-mime default io.github.totoshko88.RustConn.desktop application/x-rdp
+```
+
+### CLI Usage
+
+```bash
+# Open an .rdp file directly
+rustconn ~/Downloads/server.rdp
+
+# Works with absolute and relative paths
+rustconn /tmp/production-vm.rdp
+```
+
+---
+
 ## Keyboard Shortcuts
 
 Press **Ctrl+?** or **F1** for searchable shortcuts dialog.
@@ -2031,6 +2128,7 @@ rustconn-cli test all --timeout 5
 # Import/Export
 rustconn-cli import --format ssh-config ~/.ssh/config
 rustconn-cli import --format remmina ~/remmina/
+rustconn-cli import --format rdp ~/Downloads/server.rdp
 rustconn-cli export --format native --output backup.rcn
 rustconn-cli export --format ansible --output inventory.yml
 
@@ -2140,11 +2238,11 @@ Connection files themselves (in `~/.config/rustconn/connections/`) contain only 
 
 ### How do I migrate RustConn to another machine?
 
-The simplest approach is Settings Backup/Restore:
+The simplest approach is [Backup & Restore](#backup--restore):
 
-1. On the old machine: **Settings > Interface > Backup & Restore > Backup**
+1. On the old machine: **Settings → Interface → Backup & Restore → Backup**
 2. Copy the resulting ZIP file to the new machine
-3. On the new machine: **Settings > Interface > Backup & Restore > Restore**
+3. On the new machine: **Settings → Interface → Backup & Restore → Restore**
 4. Restart RustConn
 
 This exports connections, groups, snippets, clusters, templates, history, and settings. Passwords are not included in the backup since they live in your secret backend. You will need to re-enter credentials or configure the same secret backend on the new machine.
@@ -2350,6 +2448,7 @@ This means `bw` is not found in PATH. Flatpak users must install `bw` via Flatpa
 3. Configure KDBX path in Settings → Secrets
 4. Provide password/key file
 5. For password source, select "KeePass" in connection dialog
+6. **Flatpak users:** KeePassXC installed on the host system is detected and used automatically via `flatpak-spawn --host`. All KDBX operations (read, write, delete, verify, group management) work transparently inside the sandbox. No additional configuration needed.
 
 ### Pass (passwordstore.org) Not Working
 
@@ -2364,10 +2463,12 @@ This means `bw` is not found in PATH. Flatpak users must install `bw` via Flatpa
 
 1. Check IronRDP/vnc-rs features enabled
 2. For external: verify FreeRDP/TigerVNC installed
-3. Wayland vs X11 compatibility
-4. HiDPI/4K: IronRDP sends scale factor automatically; use Scale Override in connection dialog if remote UI is too small or too large
-5. FreeRDP passwords are passed via stdin (`/from-stdin`), not command-line arguments
-6. Clipboard not syncing: ensure "Clipboard" is enabled in RDP connection settings; text is synced automatically via CLIPRDR channel, Copy/Paste buttons are manual fallback
+3. **Flatpak:** FreeRDP (SDL3 client) is bundled in the Flatpak build — external RDP works out of the box without installing anything. TigerVNC can be installed via Flatpak Components.
+4. Wayland vs X11 compatibility
+5. HiDPI/4K: IronRDP sends scale factor automatically; use Scale Override in connection dialog if remote UI is too small or too large
+6. FreeRDP passwords are passed via stdin (`/from-stdin`), not command-line arguments
+7. Clipboard not syncing: ensure "Clipboard" is enabled in RDP connection settings; text is synced automatically via CLIPRDR channel, Copy/Paste buttons are manual fallback
+8. RDP Gateway: IronRDP does not support RD Gateway; connections with a gateway configured automatically fall back to external FreeRDP with a toast notification
 
 ### Session Restore Issues
 
@@ -2417,6 +2518,9 @@ If features are not working in the Flatpak build:
 3. **Serial devices:** Requires `--device=all` permission
 4. **CLI tools:** Host-installed binaries (bw, kubectl, pass, op) are NOT visible inside the sandbox. Use Menu → Flatpak Components to install them
 5. **Secret Service:** GNOME Keyring / KDE Wallet access works via D-Bus portal
+6. **KeePassXC:** Host-installed `keepassxc-cli` is detected and used automatically via `flatpak-spawn --host` — no manual configuration needed
+7. **Zero Trust / Kubernetes:** Cloud CLIs (`aws`, `gcloud`, `az`, `kubectl`) on the host are detected and executed via `flatpak-spawn --host`. Config directories (`~/.aws`, `~/.config/gcloud`, `~/.azure`, `~/.kube`) are mounted into the sandbox so credentials are shared
+8. **FreeRDP:** Bundled in the Flatpak build (SDL3 client). External RDP works out of the box on Wayland without `DISPLAY`
 
 ### Monitoring Issues
 
