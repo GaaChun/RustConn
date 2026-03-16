@@ -1,5 +1,14 @@
 rustconn (0.10.0-1) unstable; urgency=medium
 
+  * Note: Flatpak release will follow after March 18, 2026, when
+    GNOME 50 runtime is published on Flathub
+  * RDP file import in GUI — .rdp files can now be imported via Import dialog
+  * CLI import: 4 new formats — rdp, rdm, virt-viewer, libvirt
+  * Split view for Telnet, Serial, Kubernetes — all VTE-based protocols
+  * Statistics: Most Used connections and Protocol Distribution with progress bars
+  * 5 new customizable keybindings (31 total): Toggle Sidebar, Connection
+    History, Statistics, Password Generator, Wake On LAN
+  * Secret backend default changed from KeePassXc to LibSecret
   * RDP file association — double-click .rdp files to open and connect
   * FreeRDP 3.24.0 bundled in Flatpak — external RDP works out of the box
   * sdl-freerdp3 and unversioned FreeRDP binary detection
@@ -24,7 +33,7 @@ rustconn (0.10.0-1) unstable; urgency=medium
   * Codebase cleanup: removed unused CSS classes, consolidated futures-util,
     fixed metainfo.xml, removed dead code
 
- -- Anton Isaiev <totoshko88@gmail.com>  Sat, 14 Mar 2026 12:00:00 +0200
+ -- Anton Isaiev <totoshko88@gmail.com>  Mon, 16 Mar 2026 12:00:00 +0200
 
 rustconn (0.9.15-1) unstable; urgency=medium
 

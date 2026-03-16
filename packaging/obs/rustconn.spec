@@ -223,7 +223,16 @@ done
 %{_datadir}/locale/*/LC_MESSAGES/rustconn.mo
 
 %changelog
-* Sat Mar 14 2026 Anton Isaiev <totoshko88@gmail.com> - 0.10.0-0
+* Mon Mar 16 2026 Anton Isaiev <totoshko88@gmail.com> - 0.10.0-0
+- Note: Flatpak release will follow after March 18, 2026, when
+  GNOME 50 runtime is published on Flathub
+- RDP file import in GUI — .rdp files can now be imported via Import dialog
+- CLI import: 4 new formats — rdp, rdm, virt-viewer, libvirt
+- Split view for Telnet, Serial, Kubernetes — all VTE-based protocols
+- Statistics: Most Used connections and Protocol Distribution with progress bars
+- 5 new customizable keybindings (31 total): Toggle Sidebar, Connection
+  History, Statistics, Password Generator, Wake On LAN
+- Secret backend default changed from KeePassXc to LibSecret
 - RDP file association — double-click .rdp files to open and connect
 - FreeRDP 3.24.0 bundled in Flatpak — external RDP works out of the box
 - sdl-freerdp3 and unversioned FreeRDP binary detection

@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.10.0] - 2026-03-14
+## [0.10.0] - 2026-03-16
+
+> **Note:** Flatpak release will follow after March 18, 2026, when GNOME 50 runtime is published on Flathub.
 
 ### Added
 - **RDP file import in GUI** — `.rdp` files can now be imported via the Import dialog (Ctrl+I); previously only available through file association and CLI
