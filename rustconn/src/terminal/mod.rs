@@ -1009,9 +1009,7 @@ impl TerminalNotebook {
             // Prepend /app/share/terminfo so ncurses/slang finds the
             // custom entry; trailing colon preserves system defaults.
             if !env_vec.iter().any(|e| e.starts_with("TERMINFO_DIRS=")) {
-                env_vec.push(glib::GString::from(
-                    "TERMINFO_DIRS=/app/share/terminfo:",
-                ));
+                env_vec.push(glib::GString::from("TERMINFO_DIRS=/app/share/terminfo:"));
             }
         } else if !env_vec.iter().any(|e| e.starts_with("TERM=")) {
             env_vec.push(glib::GString::from("TERM=xterm-256color"));

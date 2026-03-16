@@ -259,12 +259,7 @@ pub fn default_keybindings() -> Vec<KeybindingDef> {
         ),
         // View
         KeybindingDef::new("win.toggle-fullscreen", "F11", "Toggle Fullscreen", View),
-        KeybindingDef::new(
-            "win.toggle-sidebar",
-            "F9",
-            "Toggle Sidebar",
-            View,
-        ),
+        KeybindingDef::new("win.toggle-sidebar", "F9", "Toggle Sidebar", View),
         // Application (additional)
         KeybindingDef::new(
             "win.show-history",

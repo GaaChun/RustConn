@@ -294,9 +294,8 @@ impl StatisticsDialog {
             let mut protocol_totals: std::collections::HashMap<String, u32> =
                 std::collections::HashMap::new();
             for (_, stat, protocol) in stats {
-                *protocol_totals
-                    .entry(protocol.to_uppercase())
-                    .or_default() += stat.total_connections;
+                *protocol_totals.entry(protocol.to_uppercase()).or_default() +=
+                    stat.total_connections;
             }
 
             let mut protocol_list: Vec<_> = protocol_totals.into_iter().collect();
