@@ -445,14 +445,10 @@ label.error {
 
 /* ============================================================
  * Accessibility: Reduced Motion
- * Respects user preference for reduced motion (GNOME/GTK setting)
+ * GTK4 CSS does not support @media (prefers-reduced-motion).
+ * The transitions used in this stylesheet are minimal (≤200ms)
+ * and do not cause accessibility issues.
  * ============================================================ */
-@media (prefers-reduced-motion: reduce) {
-    .status-icon,
-    .drop-target-highlight {
-        transition: none;
-    }
-}
 
 /* ============================================================
  * Playback Tab Styles

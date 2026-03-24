@@ -6,7 +6,7 @@
 #
 
 Name:           rustconn
-Version:        0.10.4
+Version:        0.10.5
 Release:        0
 Summary:        Modern connection manager for Linux (SSH, RDP, VNC, SPICE, Telnet, Serial, Kubernetes, Zero Trust)
 License:        GPL-3.0-or-later
@@ -226,6 +226,16 @@ done
 %{_datadir}/locale/*/LC_MESSAGES/rustconn.mo
 
 %changelog
+* Tue Mar 24 2026 Anton Isaiev <totoshko88@gmail.com> - 0.10.5-0
+- Fixed KeePassXC CLI integration — database password not passed (#68)
+- Fixed KeePassXC CLI silent error swallowing — added tracing warnings
+- Added -q flag to all keepassxc-cli show commands
+- Fixed GTK warnings on startup — suppressed deprecated
+  gtk-application-prefer-dark-theme on KDE/XFCE; removed unsupported
+  @media (prefers-reduced-motion) CSS media query
+- CI: replaced deprecated flatpak-builder@master (Node.js 20) with v6
+- Dependencies: deflate64 0.1.12, toml 1.1.0, zip 8.4.0
+
 * Sun Mar 22 2026 Anton Isaiev <totoshko88@gmail.com> - 0.10.4-0
 - Flatpak manifests: added missing FreeRDP and Waypipe modules
 - i18n: wrapped 5 untranslated UI strings, translated for 15 languages

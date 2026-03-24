@@ -1,9 +1,9 @@
 {
   "enabled": true,
   "name": "Sync Package Versions",
-  "description": "When Cargo.toml version is updated, automatically sync the version to all 13 packaging/docs files: debian, OBS (spec/dsc/changes), AppImage, Flatpak, Flathub, Snap, metainfo.xml, USER_GUIDE.md, ARCHITECTURE.md",
+  "description": "When Cargo.toml version changes, sync ONLY the version number to packaging files. Does NOT create changelog entries — those are handled by the agent following release.md steering.",
   "shortName": "sync-package-versions",
-  "version": "1",
+  "version": "2",
   "when": {
     "type": "fileEdited",
     "patterns": [
@@ -12,6 +12,6 @@
   },
   "then": {
     "type": "askAgent",
-    "prompt": "The Cargo.toml file was edited. Check if the version field in the workspace [package] section changed. If so, update the version in ALL of these files to match:\n\n1. debian/changelog - Add new entry at top: rustconn (X.Y.Z-1) unstable; urgency=medium\n2. packaging/obs/rustconn.spec - Update Version: field + add %changelog entry\n3. packaging/obs/rustconn.changes - Add new version entry at top\n4. packaging/obs/debian.changelog - Add new entry at top (same format as debian/changelog)\n5. packaging/obs/rustconn.dsc - Update Version: X.Y.Z-1 and Files: filenames\n6. packaging/obs/debian.dsc - Update Version: X.Y.Z-1 and DEBTRANSFORM-TAR: rustconn-X.Y.Z.tar.xz\n7. packaging/obs/AppImageBuilder.yml - Update version field\n8. packaging/flatpak/io.github.totoshko88.RustConn.yml - Update tag: vX.Y.Z\n9. packaging/flathub/io.github.totoshko88.RustConn.yml - Update tag: vX.Y.Z\n10. snap/snapcraft.yaml - Update version field\n11. rustconn/assets/io.github.totoshko88.RustConn.metainfo.xml - Add new <release> entry\n12. docs/USER_GUIDE.md - Update version line\n13. docs/ARCHITECTURE.md - Update version line\n\nDO NOT touch packaging/flatpak/io.github.totoshko88.RustConn.local.yml (uses local path).\nExtract the new version from the workspace Cargo.toml [package].version field and apply it consistently."
+    "prompt": "The Cargo.toml file was edited. Check if [workspace.package] version changed. If it did NOT change, do nothing.\n\nIf the version DID change, update ONLY the version NUMBER in these files (do NOT create changelog entries, release notes, or placeholder text — the agent will handle changelog content separately):\n\n1. packaging/obs/AppImageBuilder.yml — update `version:` field\n2. packaging/flatpak/io.github.totoshko88.RustConn.yml — update `tag: vX.Y.Z`\n3. packaging/flathub/io.github.totoshko88.RustConn.yml — update `tag: vX.Y.Z`\n4. packaging/obs/rustconn.dsc — update `Version: X.Y.Z-1` and filenames in `Files:` section\n5. packaging/obs/debian.dsc — update `Version: X.Y.Z-1` and `DEBTRANSFORM-TAR: rustconn-X.Y.Z.tar.xz`\n6. packaging/obs/rustconn.spec — update ONLY the `Version:` field in the header (NOT %changelog)\n7. docs/USER_GUIDE.md — update version in the first line after heading\n8. docs/ARCHITECTURE.md — update version in the first line after heading\n\nDO NOT touch these files (they need actual changelog content, not placeholders):\n- CHANGELOG.md\n- debian/changelog\n- packaging/obs/debian.changelog\n- packaging/obs/rustconn.changes\n- packaging/obs/rustconn.spec %changelog section\n- rustconn/assets/io.github.totoshko88.RustConn.metainfo.xml\n- packaging/flatpak/io.github.totoshko88.RustConn.local.yml"
   }
 }

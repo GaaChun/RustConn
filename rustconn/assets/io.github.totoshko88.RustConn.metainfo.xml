@@ -103,6 +103,18 @@
     <control>touch</control>
   </supports>
   <releases>
+    <release version="0.10.5" date="2026-03-24">
+      <url type="details">https://github.com/totoshko88/RustConn/blob/main/CHANGELOG.md#0105---2026-03-24</url>
+      <description>
+        <p>KeePassXC CLI integration fix:</p>
+        <ul>
+          <li>Fixed database password not passed to keepassxc-cli in vault operations (#68)</li>
+          <li>Fixed silent error swallowing in KeePass credential retrieval</li>
+          <li>Added -q flag to all keepassxc-cli show commands</li>
+          <li>Dependencies: deflate64 0.1.12, toml 1.1.0, zip 8.4.0</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.10.4" date="2026-03-22">
       <url type="details">https://github.com/totoshko88/RustConn/blob/main/CHANGELOG.md#0104---2026-03-22</url>
       <description>

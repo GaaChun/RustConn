@@ -67,15 +67,8 @@ pub fn create_application() -> adw::Application {
 
 /// Builds the main UI when the application is activated
 fn build_ui(app: &adw::Application, tray_manager: SharedTrayManager) {
-    // Load CSS styles for split view panes
-    load_css_styles();
-
-    // Force Adwaita icon theme on non-GNOME desktops (KDE, XFCE, etc.).
-    // Libadwaita already renders all widgets in Adwaita style, but icon lookups
-    // still go through the system icon theme. Many standard symbolic icons are
-    // missing in Breeze/other themes.
-    // GtkSettings::gtk-icon-theme-name controls the icon theme globally and
-    // unlike IconTheme::set_theme_name, works on the display singleton.
+    // Force Adwaita icon theme and suppress deprecated dark-theme property
+    // BEFORE loading CSS to prevent libadwaita warnings during theme parsing.
     if let Some(display) = gtk4::gdk::Display::default() {
         let settings = gtk4::Settings::for_display(&display);
         let current = settings.gtk_icon_theme_name().unwrap_or_default();
@@ -87,10 +80,8 @@ fn build_ui(app: &adw::Application, tray_manager: SharedTrayManager) {
             );
         }
 
-        // Suppress the libadwaita warning about gtk-application-prefer-dark-theme.
-        // Some desktop environments (KDE, XFCE) set this property globally.
-        // Libadwaita uses AdwStyleManager::color-scheme instead, so we clear
-        // the deprecated property to avoid the runtime warning.
+        // Safety net: clear the deprecated property again in case it was
+        // re-set between run() and activate (e.g. by a settings daemon).
         if settings.is_gtk_application_prefer_dark_theme() {
             settings.set_gtk_application_prefer_dark_theme(false);
             tracing::debug!(
@@ -98,6 +89,9 @@ fn build_ui(app: &adw::Application, tray_manager: SharedTrayManager) {
             );
         }
     }
+
+    // Load CSS styles for split view panes (after dark-theme suppression)
+    load_css_styles();
 
     // Create shared application state (fast — secret backends deferred)
     let state = match create_shared_state() {
@@ -696,7 +690,41 @@ fn show_error_dialog(app: &adw::Application, title: &str, message: &str) {
 /// Returns `glib::ExitCode::FAILURE` if libadwaita initialization fails,
 /// otherwise returns the application's exit code.
 pub fn run() -> glib::ExitCode {
-    // Initialize libadwaita before creating the application
+    // Initialize GTK first (creates the display and loads GtkSettings from
+    // the desktop environment). This must happen BEFORE adw::init() so we
+    // can clear the deprecated property before libadwaita sees it.
+    if let Err(e) = gtk4::init() {
+        tracing::error!(%e, "Failed to initialize GTK4");
+        return glib::ExitCode::FAILURE;
+    }
+
+    // Suppress the libadwaita warning about gtk-application-prefer-dark-theme.
+    // KDE/XFCE set this property globally via xsettings. We clear it before
+    // adw::init() so AdwStyleManager never sees it as true.
+    // We also connect a notify handler to catch the xsettings daemon re-setting
+    // the property after we clear it (race condition on KDE).
+    if let Some(display) = gtk4::gdk::Display::default() {
+        let settings = gtk4::Settings::for_display(&display);
+        if settings.is_gtk_application_prefer_dark_theme() {
+            settings.set_gtk_application_prefer_dark_theme(false);
+            tracing::debug!(
+                "Cleared deprecated gtk-application-prefer-dark-theme before adw::init()"
+            );
+        }
+
+        // Permanently suppress: if xsettings daemon re-sets the property,
+        // clear it again immediately before libadwaita can warn about it.
+        settings.connect_gtk_application_prefer_dark_theme_notify(|s| {
+            if s.is_gtk_application_prefer_dark_theme() {
+                s.set_gtk_application_prefer_dark_theme(false);
+                tracing::debug!(
+                    "Re-cleared deprecated gtk-application-prefer-dark-theme (xsettings race)"
+                );
+            }
+        });
+    }
+
+    // Now initialize libadwaita (gtk_init() is idempotent, safe to call again)
     if let Err(e) = adw::init() {
         tracing::error!(%e, "Failed to initialize libadwaita");
         return glib::ExitCode::FAILURE;

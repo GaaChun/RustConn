@@ -264,7 +264,7 @@ fn cmd_secret_get(
 
             let result = KeePassStatus::get_password_from_kdbx_with_key(
                 std::path::Path::new(kdbx_path),
-                None,
+                settings.secrets.kdbx_password.as_ref(),
                 key_file,
                 &keepass_key,
                 Some(connection.protocol.as_str()),
@@ -521,7 +521,7 @@ fn cmd_secret_set(
 
             KeePassStatus::save_password_to_kdbx(
                 std::path::Path::new(kdbx_path),
-                None,
+                settings.secrets.kdbx_password.as_ref(),
                 key_file,
                 &keepass_key,
                 &username_value,
@@ -716,7 +716,7 @@ fn cmd_secret_delete(
 
             KeePassStatus::delete_entry_from_kdbx(
                 std::path::Path::new(kdbx_path),
-                None,
+                settings.secrets.kdbx_password.as_ref(),
                 key_file,
                 &keepass_entry_path,
             )

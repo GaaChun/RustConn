@@ -1,3 +1,17 @@
+rustconn (0.10.5-1) unstable; urgency=medium
+
+  * Fixed KeePassXC CLI integration — database password not passed to
+    keepassxc-cli in vault write/rename/delete/copy operations (#68)
+  * Fixed KeePassXC CLI silent error swallowing — added tracing warnings
+  * Added -q flag to all keepassxc-cli show commands
+  * Fixed GTK warnings on startup — suppressed deprecated
+    gtk-application-prefer-dark-theme on KDE/XFCE; removed unsupported
+    @media (prefers-reduced-motion) CSS media query
+  * CI: replaced deprecated flatpak-builder@master (Node.js 20) with v6
+  * Dependencies: deflate64 0.1.12, toml 1.1.0, zip 8.4.0
+
+ -- Anton Isaiev <totoshko88@gmail.com>  Tue, 24 Mar 2026 12:00:00 +0200
+
 rustconn (0.10.4-1) unstable; urgency=medium
 
   * Flatpak: Zero Trust CLIs crash on read-only filesystem fixed

@@ -212,9 +212,10 @@ impl KeePassStatus {
         })?;
 
         // Use keepassxc-cli show command to get the password
-        // Format: keepassxc-cli show -s <database> <entry>
+        // Format: keepassxc-cli show -q -s -a Password <database> <entry>
         let mut child = Self::keepassxc_command(&cli_path)
             .arg("show")
+            .arg("-q") // Quiet mode — suppress password prompt
             .arg("-s") // Show password attribute
             .arg("-a")
             .arg("Password") // Get password attribute
@@ -259,7 +260,12 @@ impl KeePassStatus {
                     "Invalid database password".to_string(),
                 ))
             } else {
-                // Entry not found is not an error, just return None
+                tracing::warn!(
+                    entry_name,
+                    exit_code = ?output.status.code(),
+                    stderr = %stderr.trim(),
+                    "keepassxc-cli show failed with unexpected error"
+                );
                 Ok(None)
             }
         }
@@ -804,6 +810,7 @@ impl KeePassStatus {
         for entry_path in &entry_paths {
             let mut args = vec![
                 "show".to_string(),
+                "-q".to_string(),
                 "-s".to_string(),
                 "-a".to_string(),
                 "Password".to_string(),
@@ -860,6 +867,20 @@ impl KeePassStatus {
                     tracing::debug!("get_password: found password at '{entry_path}'");
                     return Ok(Some(SecretString::from(password)));
                 }
+            } else {
+                let stderr = String::from_utf8_lossy(&output.stderr);
+                // Propagate credential errors immediately instead of trying next path
+                if stderr.contains("Invalid credentials") || stderr.contains("wrong password") {
+                    return Err(SecretError::KeePassXC(
+                        "Invalid database password".to_string(),
+                    ));
+                }
+                tracing::debug!(
+                    "get_password: path '{}' failed: exit={:?}, stderr='{}'",
+                    entry_path,
+                    output.status.code(),
+                    stderr.trim()
+                );
             }
         }
 
@@ -987,6 +1008,7 @@ impl KeePassStatus {
 
         let mut args = vec![
             "show".to_string(),
+            "-q".to_string(),
             "-s".to_string(),
             "-a".to_string(),
             "UserName".to_string(),
@@ -1029,6 +1051,12 @@ impl KeePassStatus {
                 Some(username)
             }
         } else {
+            tracing::debug!(
+                entry_path,
+                exit_code = ?output.status.code(),
+                stderr = %String::from_utf8_lossy(&output.stderr).trim(),
+                "get_username_from_kdbx: keepassxc-cli show failed"
+            );
             None
         }
     }
@@ -1046,6 +1074,7 @@ impl KeePassStatus {
 
         let mut args = vec![
             "show".to_string(),
+            "-q".to_string(),
             "-s".to_string(),
             "-a".to_string(),
             "URL".to_string(),
@@ -1084,6 +1113,12 @@ impl KeePassStatus {
             let url = String::from_utf8_lossy(&output.stdout).trim().to_string();
             if url.is_empty() { None } else { Some(url) }
         } else {
+            tracing::debug!(
+                entry_path,
+                exit_code = ?output.status.code(),
+                stderr = %String::from_utf8_lossy(&output.stderr).trim(),
+                "get_url_from_kdbx: keepassxc-cli show failed"
+            );
             None
         }
     }
@@ -1135,7 +1170,7 @@ impl KeePassStatus {
         })?;
 
         // Build command arguments
-        let mut args = vec!["ls".to_string()];
+        let mut args = vec!["ls".to_string(), "-q".to_string()];
 
         // If using key file without password, add --no-password flag
         if password.is_none() && key_file.is_some() {

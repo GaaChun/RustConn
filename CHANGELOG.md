@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.5] - 2026-03-24
+
+### Fixed
+- **KeePassXC CLI integration not working** — all vault write/rename/delete/copy operations passed `None` as database password to `keepassxc-cli`, causing "Invalid credentials" errors when the KDBX file is password-protected; now correctly passes `kdbx_password` from settings in all 10 call sites across GUI (`vault_ops.rs`) and CLI (`secret.rs`) ([#68](https://github.com/totoshko88/RustConn/issues/68))
+- **KeePassXC CLI silent error swallowing** — `get_password_from_kdbx` silently returned `Ok(None)` for unrecognized errors; `get_password_from_kdbx_with_key` silently skipped failed path attempts; now logs warnings via `tracing::warn!`/`tracing::debug!` for all failure paths
+- **KeePassXC CLI missing `-q` flag** — added `-q` (quiet) flag to all `keepassxc-cli show` commands and `verify_kdbx_credentials` to suppress interactive password prompts in scripted usage
+- **GTK warnings on application startup** — suppressed `Adwaita-WARNING: gtk-application-prefer-dark-theme` on KDE/XFCE by clearing the deprecated property before `adw::init()`; removed unsupported `@media (prefers-reduced-motion)` CSS media query that caused GTK theme parser warning
+
+### CI
+- **GitHub Actions Node.js 20 deprecation** — replaced `flathub-infra/flatpak-github-actions/flatpak-builder@master` (Node.js 20) with `flatpak/flatpak-github-actions/flatpak-builder@v6` (Node.js 24)
+
+### Dependencies
+- **Updated**: deflate64 0.1.11→0.1.12, toml 1.0.7→1.1.0, zip 8.3.1→8.4.0
+
 ## [0.10.4] - 2026-03-22
 
 ### Fixed
