@@ -328,6 +328,10 @@ impl EmbeddedVncWidget {
                     }
 
                     // Fallback: old VncPixelBuffer path (to_vec copy)
+                    static WARN_ONCE: std::sync::Once = std::sync::Once::new();
+                    WARN_ONCE.call_once(|| {
+                        tracing::warn!("VNC: using fallback VncPixelBuffer with per-frame to_vec() copy — consider migrating to CairoBackedBuffer");
+                    });
                     let fb = pixel_buffer.borrow();
                     let fb_w = fb.width();
                     let fb_h = fb.height();

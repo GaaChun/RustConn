@@ -117,6 +117,16 @@ impl KdbxExporter {
         std::fs::write(path.as_ref(), xml)
             .map_err(|e| SecretError::KeePassXC(format!("Failed to write KDBX XML file: {e}")))?;
 
+        // Set restrictive permissions (owner-only) since file contains plaintext passwords
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let perms = std::fs::Permissions::from_mode(0o600);
+            std::fs::set_permissions(path.as_ref(), perms).map_err(|e| {
+                SecretError::KeePassXC(format!("Failed to set file permissions: {e}"))
+            })?;
+        }
+
         Ok(())
     }
 

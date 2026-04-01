@@ -230,7 +230,7 @@ impl Default for RdpClientConfig {
             clipboard_enabled: true,
             audio_enabled: false,
             timeout_secs: 30,
-            ignore_certificate: true,
+            ignore_certificate: false,
             nla_enabled: true,
             security_protocol: RdpSecurityProtocol::default(),
             shared_folders: Vec::new(),

@@ -651,6 +651,26 @@ pub static DOWNLOADABLE_COMPONENTS: &[DownloadableComponent] = &[
         pinned_version: Some("0.21.1"),
         works_in_sandbox: true,
     },
+    DownloadableComponent {
+        id: "hoop",
+        name: "Hoop.dev",
+        description: "For Hoop.dev access",
+        category: ComponentCategory::ZeroTrust,
+        install_method: InstallMethod::Download,
+        download_url: Some(
+            "https://releases.hoop.dev/release/latest/hoop_latest_linux_amd64.tar.gz",
+        ),
+        aarch64_url: Some(
+            "https://releases.hoop.dev/release/latest/hoop_latest_linux_arm64.tar.gz",
+        ),
+        checksum: ChecksumPolicy::SkipLatest,
+        pip_package: None,
+        size_hint: "~30 MB",
+        binary_name: "hoop",
+        install_subdir: "hoop",
+        pinned_version: None,
+        works_in_sandbox: true,
+    },
     // Password manager CLIs
     DownloadableComponent {
         id: "bw",
@@ -1813,9 +1833,54 @@ fn extract_tar(data: &[u8], dest: &Path) -> CliDownloadResult<()> {
     let cursor = Cursor::new(data);
     let mut archive = Archive::new(cursor);
 
-    archive
-        .unpack(dest)
-        .map_err(|e| CliDownloadError::ExtractionFailed(format!("tar unpack failed: {e}")))?;
+    // Defense-in-depth: iterate entries manually and validate paths
+    // instead of relying solely on tar crate's built-in protections.
+    safe_unpack_tar(&mut archive, dest)
+}
+
+/// Safely unpacks a tar archive with manual path traversal validation.
+///
+/// Each entry path is checked to ensure it resolves within `dest`,
+/// mirroring the `enclosed_name()` approach used for zip extraction.
+fn safe_unpack_tar<R: std::io::Read>(
+    archive: &mut tar::Archive<R>,
+    dest: &Path,
+) -> CliDownloadResult<()> {
+    let entries = archive
+        .entries()
+        .map_err(|e| CliDownloadError::ExtractionFailed(format!("failed to read tar: {e}")))?;
+
+    for entry in entries {
+        let mut entry =
+            entry.map_err(|e| CliDownloadError::ExtractionFailed(format!("bad entry: {e}")))?;
+
+        let path = entry
+            .path()
+            .map_err(|e| CliDownloadError::ExtractionFailed(format!("bad path: {e}")))?;
+
+        // Reject entries with ".." components or absolute paths
+        for component in path.components() {
+            match component {
+                std::path::Component::ParentDir => {
+                    return Err(CliDownloadError::ExtractionFailed(format!(
+                        "tar entry has unsafe path (..): {}",
+                        path.display()
+                    )));
+                }
+                std::path::Component::RootDir | std::path::Component::Prefix(_) => {
+                    return Err(CliDownloadError::ExtractionFailed(format!(
+                        "tar entry has absolute path: {}",
+                        path.display()
+                    )));
+                }
+                _ => {}
+            }
+        }
+
+        entry
+            .unpack_in(dest)
+            .map_err(|e| CliDownloadError::ExtractionFailed(format!("unpack failed: {e}")))?;
+    }
 
     Ok(())
 }
@@ -1922,10 +1987,8 @@ fn extract_tar_gz(data: &[u8], dest: &Path) -> CliDownloadResult<()> {
         }
     }
 
-    // Extract to destination
-    archive
-        .unpack(dest)
-        .map_err(|e| CliDownloadError::ExtractionFailed(format!("unpack failed: {e}")))?;
+    // Extract to destination with path traversal validation
+    safe_unpack_tar(&mut archive, dest)?;
 
     // If there's exactly one top-level directory, move its contents up
     if top_dirs.len() == 1 {
@@ -1976,9 +2039,7 @@ fn extract_tar_gz_preserve(data: &[u8], dest: &Path) -> CliDownloadResult<()> {
     let mut archive = Archive::new(decoder);
 
     // Simply extract to destination without modifying structure
-    archive
-        .unpack(dest)
-        .map_err(|e| CliDownloadError::ExtractionFailed(format!("unpack failed: {e}")))?;
+    safe_unpack_tar(&mut archive, dest)?;
 
     Ok(())
 }

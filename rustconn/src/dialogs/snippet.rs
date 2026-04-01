@@ -393,14 +393,14 @@ impl SnippetDialog {
     pub fn validate(&self) -> Result<(), String> {
         let name = self.name_entry.text();
         if name.trim().is_empty() {
-            return Err("Snippet name is required".to_string());
+            return Err(i18n("Snippet name is required"));
         }
 
         let buffer = self.command_view.buffer();
         let (start, end) = buffer.bounds();
         let command = buffer.text(&start, &end, false);
         if command.trim().is_empty() {
-            return Err("Command is required".to_string());
+            return Err(i18n("Command is required"));
         }
 
         Ok(())
@@ -495,7 +495,7 @@ impl SnippetDialog {
             if name.trim().is_empty() {
                 crate::toast::show_toast_on_window(
                     &window,
-                    "Snippet name is required",
+                    &i18n("Snippet name is required"),
                     crate::toast::ToastType::Warning,
                 );
                 return;
@@ -507,7 +507,7 @@ impl SnippetDialog {
             if command.trim().is_empty() {
                 crate::toast::show_toast_on_window(
                     &window,
-                    "Command is required",
+                    &i18n("Command is required"),
                     crate::toast::ToastType::Warning,
                 );
                 return;

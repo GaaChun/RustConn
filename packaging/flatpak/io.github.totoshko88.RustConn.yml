@@ -24,6 +24,8 @@ finish-args:
   - --filesystem=home/.config/gcloud:ro
   - --filesystem=home/.azure:ro
   - --filesystem=home/.kube:ro
+  # Hoop.dev CLI config and access tokens
+  - --filesystem=home/.hoop:ro
   # SSH agent
   - --socket=ssh-auth
   # Alternative SSH agent sockets (KeePassXC, Bitwarden, GPG agent)

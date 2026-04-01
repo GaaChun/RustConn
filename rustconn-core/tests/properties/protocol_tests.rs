@@ -1210,6 +1210,20 @@ fn arb_generic_command() -> impl Strategy<Value = String> {
     ]
 }
 
+/// Generator for Hoop.dev-style commands
+///
+/// Note: `CloudProvider` does not have a dedicated `HoopDev` variant, so
+/// hoop commands are detected as `Generic` by `detect_provider`.
+fn arb_hoop_command() -> impl Strategy<Value = String> {
+    prop_oneof![
+        Just("hoop connect my-db".to_string()),
+        Just("hoop connect my-database --api-url https://app.hoop.dev".to_string()),
+        Just("hoop connect prod-server --grpc-url grpc.hoop.dev:8443".to_string()),
+        Just("/usr/bin/hoop connect staging".to_string()),
+        Just("hoop connect dev --api-url https://gw.example.com --grpc-url grpc.example.com:443".to_string()),
+    ]
+}
+
 /// Generator for any CLI command with expected provider
 fn arb_command_with_provider() -> impl Strategy<Value = (String, CloudProvider)> {
     prop_oneof![
@@ -1221,6 +1235,7 @@ fn arb_command_with_provider() -> impl Strategy<Value = (String, CloudProvider)>
         arb_teleport_command().prop_map(|cmd| (cmd, CloudProvider::Teleport)),
         arb_tailscale_command().prop_map(|cmd| (cmd, CloudProvider::Tailscale)),
         arb_boundary_command().prop_map(|cmd| (cmd, CloudProvider::Boundary)),
+        arb_hoop_command().prop_map(|cmd| (cmd, CloudProvider::Generic)),
     ]
 }
 
@@ -1623,6 +1638,104 @@ proptest! {
                 args.contains(&"-C".to_string()),
                 "Compression enabled but -C missing from args: {:?}",
                 args
+            );
+        }
+    }
+}
+
+// ============================================================================
+// Hoop.dev ZeroTrust Provider — Property Tests
+// ============================================================================
+
+use rustconn_core::models::{
+    HoopDevConfig, ZeroTrustConfig, ZeroTrustProvider, ZeroTrustProviderConfig,
+};
+
+/// Strategy for generating arbitrary `HoopDevConfig` values (for command gen tests).
+fn arb_hoop_dev_config_for_cmd() -> impl Strategy<Value = HoopDevConfig> {
+    (
+        "[a-zA-Z0-9_-]{1,50}",
+        prop::option::of("https?://[a-z0-9.-]{1,30}(:[0-9]{2,5})?"),
+        prop::option::of("[a-z0-9.-]{1,30}:[0-9]{2,5}"),
+    )
+        .prop_map(|(connection_name, gateway_url, grpc_url)| HoopDevConfig {
+            connection_name,
+            gateway_url,
+            grpc_url,
+        })
+}
+
+proptest! {
+    #![proptest_config(ProptestConfig::with_cases(100))]
+
+    // **Feature: hoop-dev-zerotrust, Property 4: Command generation correctness**
+    // **Validates: Requirements 4.1, 4.2, 4.3, 4.4**
+    //
+    // For any valid HoopDevConfig, build_command() must return "hoop" as the
+    // program, with ["connect", connection_name] as the first arguments,
+    // followed by optional --api-url / --grpc-url flags, and custom_args last.
+    #[test]
+    fn prop_hoop_dev_command_generation(
+        config in arb_hoop_dev_config_for_cmd(),
+        custom_args in prop::collection::vec("[a-z0-9-]{1,15}", 0..3),
+    ) {
+        let zt = ZeroTrustConfig {
+            provider: ZeroTrustProvider::HoopDev,
+            provider_config: ZeroTrustProviderConfig::HoopDev(config.clone()),
+            custom_args: custom_args.clone(),
+            detected_provider: None,
+        };
+
+        let (program, args) = zt.build_command(None);
+
+        // Program must be "hoop"
+        prop_assert_eq!(&program, "hoop", "Program must be 'hoop'");
+
+        // First two args must be ["connect", connection_name]
+        prop_assert!(args.len() >= 2, "Must have at least 2 args");
+        prop_assert_eq!(&args[0], "connect", "First arg must be 'connect'");
+        prop_assert_eq!(&args[1], &config.connection_name, "Second arg must be connection_name");
+
+        // Check --api-url flag
+        if let Some(ref url) = config.gateway_url {
+            if !url.is_empty() {
+                let has_api_url = args.windows(2).any(|w| w[0] == "--api-url" && w[1] == *url);
+                prop_assert!(has_api_url, "Non-empty gateway_url must produce --api-url flag. Args: {args:?}");
+            }
+        }
+
+        // Check --grpc-url flag
+        if let Some(ref url) = config.grpc_url {
+            if !url.is_empty() {
+                let has_grpc_url = args.windows(2).any(|w| w[0] == "--grpc-url" && w[1] == *url);
+                prop_assert!(has_grpc_url, "Non-empty grpc_url must produce --grpc-url flag. Args: {args:?}");
+            }
+        }
+
+        // Custom args must appear at the end
+        if !custom_args.is_empty() {
+            let tail = &args[args.len() - custom_args.len()..];
+            prop_assert_eq!(tail, &custom_args[..], "Custom args must be at the end of the argument list");
+        }
+    }
+}
+
+// **Feature: hoop-dev-zerotrust, Property 5: Provider icon names are unique**
+// **Validates: Requirements 1.3, 12.4**
+//
+// For all pairs of distinct ZeroTrustProvider variants (including HoopDev),
+// icon_name() must return different values.
+#[test]
+fn prop_zerotrust_provider_icons_are_distinct() {
+    let providers = ZeroTrustProvider::all();
+
+    for (i, &a) in providers.iter().enumerate() {
+        for &b in &providers[i + 1..] {
+            assert_ne!(
+                a.icon_name(),
+                b.icon_name(),
+                "ZeroTrustProvider::{a:?} and ZeroTrustProvider::{b:?} must have distinct icons, but both have '{}'",
+                a.icon_name()
             );
         }
     }

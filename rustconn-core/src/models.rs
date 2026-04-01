@@ -26,7 +26,7 @@ pub use history::{ConnectionHistoryEntry, ConnectionStatistics, HistorySettings}
 pub use protocol::ProtocolType;
 pub use protocol::{
     AwsSsmConfig, AzureBastionConfig, AzureSshConfig, BoundaryConfig, CloudflareAccessConfig,
-    GcpIapConfig, GenericZeroTrustConfig, KubernetesConfig, MoshConfig, MoshPredictMode,
+    GcpIapConfig, GenericZeroTrustConfig, HoopDevConfig, KubernetesConfig, MoshConfig, MoshPredictMode,
     OciBastionConfig, PortForward, PortForwardDirection, ProtocolConfig, RdpClientMode, RdpConfig,
     RdpGateway, RdpPerformanceMode, Resolution, ScaleOverride, SerialBaudRate, SerialConfig,
     SerialDataBits, SerialFlowControl, SerialParity, SerialStopBits, SharedFolder, SpiceConfig,

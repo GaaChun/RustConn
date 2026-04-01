@@ -270,7 +270,20 @@ pub fn write_export_file(path: &Path, content: &str) -> Result<(), ExportError> 
     let mut writer = BufWriter::new(file);
     writer.write_all(content.as_bytes()).map_err(|e| {
         ExportError::WriteError(format!("Failed to write to {}: {}", path.display(), e))
-    })
+    })?;
+
+    // Set restrictive permissions (owner-only) — exports may contain
+    // sensitive connection details (hostnames, usernames, topology)
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let perms = std::fs::Permissions::from_mode(0o600);
+        std::fs::set_permissions(path, perms).map_err(|e| {
+            ExportError::WriteError(format!("Failed to set file permissions: {e}"))
+        })?;
+    }
+
+    Ok(())
 }
 
 /// Trait for export implementations.

@@ -345,14 +345,17 @@ impl BitwardenBackend {
     /// This ensures that backends created via `BitwardenBackend::new()` (which
     /// have no instance session key) still pick up a session established by
     /// [`auto_unlock`].
+    ///
+    /// The session key is passed via `BW_SESSION` environment variable instead
+    /// of `--session` CLI argument to avoid exposure in `/proc/PID/cmdline`.
     fn build_command(&self, args: &[&str]) -> Command {
         let mut cmd = Command::new(&self.bw_cmd);
         cmd.args(args);
 
         if let Some(ref session) = self.session_key {
-            cmd.arg("--session").arg(session.expose_secret());
+            cmd.env("BW_SESSION", session.expose_secret());
         } else if let Some(ref global_session) = get_session_key() {
-            cmd.arg("--session").arg(global_session.expose_secret());
+            cmd.env("BW_SESSION", global_session.expose_secret());
         }
 
         cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
@@ -883,6 +886,7 @@ fn extract_session_key(output: &str) -> Option<String> {
 /// Returns `SecretError` if the lock command fails
 pub async fn lock_vault() -> SecretResult<()> {
     clear_verified();
+    clear_session_key();
     let bw_cmd = get_bw_cmd();
     let output = Command::new(&bw_cmd)
         .arg("lock")

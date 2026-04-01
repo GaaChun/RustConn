@@ -426,7 +426,11 @@ impl FreeRdpThread {
 
         cmd.arg(format!("/w:{}", config.width));
         cmd.arg(format!("/h:{}", config.height));
-        cmd.arg("/cert:ignore");
+        if config.ignore_certificate {
+            cmd.arg("/cert:ignore");
+        } else {
+            cmd.arg("/cert:tofu");
+        }
         cmd.arg("/dynamic-resolution");
 
         if config.clipboard_enabled {

@@ -109,6 +109,24 @@ impl Protocol for VncProtocol {
                     tracing::warn!(arg = %arg, "Skipping suspicious VNC custom arg");
                     continue;
                 }
+                // Block dangerous VNC viewer arguments that could be
+                // exploited via imported connections or shared configs
+                let lower = arg.to_lowercase();
+                let dangerous_prefixes = [
+                    "-via",
+                    "-passwd",
+                    "-passwordfile",
+                    "-securitytypes",
+                    "-proxyserver",
+                    "-listen",
+                ];
+                if dangerous_prefixes
+                    .iter()
+                    .any(|p| lower.starts_with(p))
+                {
+                    tracing::warn!(arg = %arg, "Blocked dangerous VNC custom arg");
+                    continue;
+                }
                 args.push(arg.clone());
             }
         }

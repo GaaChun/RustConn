@@ -22,6 +22,7 @@ use rustconn_core::automation::{ConnectionTask, ExpectRule, TaskCondition, built
 use rustconn_core::models::{
     AwsSsmConfig, AzureBastionConfig, AzureSshConfig, BoundaryConfig, CloudflareAccessConfig,
     Connection, ConnectionThemeOverride, CustomProperty, GcpIapConfig, GenericZeroTrustConfig,
+    HoopDevConfig,
     HighlightRule, OciBastionConfig, PasswordSource, PropertyType, ProtocolConfig, RdpClientMode,
     RdpConfig, RdpPerformanceMode, Resolution, ScaleOverride, SharedFolder, SpiceConfig,
     SpiceImageCompression, SshAuthMethod, SshConfig, SshKeySource, TailscaleSshConfig,
@@ -228,6 +229,10 @@ pub struct ConnectionDialog {
     // Boundary fields
     zt_boundary_target_entry: adw::EntryRow,
     zt_boundary_addr_entry: adw::EntryRow,
+    // Hoop.dev fields
+    zt_hoop_connection_name_entry: adw::EntryRow,
+    zt_hoop_gateway_url_entry: adw::EntryRow,
+    zt_hoop_grpc_url_entry: adw::EntryRow,
     // Generic fields
     zt_generic_command_entry: adw::EntryRow,
     // Custom args for all providers
@@ -575,6 +580,9 @@ impl ConnectionDialog {
             zt_tailscale_host_entry,
             zt_boundary_target_entry,
             zt_boundary_addr_entry,
+            zt_hoop_connection_name_entry,
+            zt_hoop_gateway_url_entry,
+            zt_hoop_grpc_url_entry,
             zt_generic_command_entry,
             zt_custom_args_entry,
         ) = Self::create_zerotrust_options();
@@ -854,6 +862,9 @@ impl ConnectionDialog {
             &zt_tailscale_host_entry,
             &zt_boundary_target_entry,
             &zt_boundary_addr_entry,
+            &zt_hoop_connection_name_entry,
+            &zt_hoop_gateway_url_entry,
+            &zt_hoop_grpc_url_entry,
             &zt_generic_command_entry,
             &zt_custom_args_entry,
             &telnet_custom_args_entry,
@@ -1022,6 +1033,9 @@ impl ConnectionDialog {
             zt_tailscale_host_entry,
             zt_boundary_target_entry,
             zt_boundary_addr_entry,
+            zt_hoop_connection_name_entry,
+            zt_hoop_gateway_url_entry,
+            zt_hoop_grpc_url_entry,
             zt_generic_command_entry,
             zt_custom_args_entry,
             telnet_custom_args_entry,
@@ -1870,6 +1884,9 @@ impl ConnectionDialog {
         zt_tailscale_host_entry: &adw::EntryRow,
         zt_boundary_target_entry: &adw::EntryRow,
         zt_boundary_addr_entry: &adw::EntryRow,
+        zt_hoop_connection_name_entry: &adw::EntryRow,
+        zt_hoop_gateway_url_entry: &adw::EntryRow,
+        zt_hoop_grpc_url_entry: &adw::EntryRow,
         zt_generic_command_entry: &adw::EntryRow,
         zt_custom_args_entry: &Entry,
         telnet_custom_args_entry: &Entry,
@@ -2015,6 +2032,9 @@ impl ConnectionDialog {
         let zt_tailscale_host_entry = zt_tailscale_host_entry.clone();
         let zt_boundary_target_entry = zt_boundary_target_entry.clone();
         let zt_boundary_addr_entry = zt_boundary_addr_entry.clone();
+        let zt_hoop_connection_name_entry = zt_hoop_connection_name_entry.clone();
+        let zt_hoop_gateway_url_entry = zt_hoop_gateway_url_entry.clone();
+        let zt_hoop_grpc_url_entry = zt_hoop_grpc_url_entry.clone();
         let zt_generic_command_entry = zt_generic_command_entry.clone();
         let zt_custom_args_entry = zt_custom_args_entry.clone();
         let telnet_custom_args_entry = telnet_custom_args_entry.clone();
@@ -2171,6 +2191,9 @@ impl ConnectionDialog {
                 zt_tailscale_host_entry: &zt_tailscale_host_entry,
                 zt_boundary_target_entry: &zt_boundary_target_entry,
                 zt_boundary_addr_entry: &zt_boundary_addr_entry,
+                zt_hoop_connection_name_entry: &zt_hoop_connection_name_entry,
+                zt_hoop_gateway_url_entry: &zt_hoop_gateway_url_entry,
+                zt_hoop_grpc_url_entry: &zt_hoop_grpc_url_entry,
                 zt_generic_command_entry: &zt_generic_command_entry,
                 zt_custom_args_entry: &zt_custom_args_entry,
                 telnet_custom_args_entry: &telnet_custom_args_entry,
@@ -3350,6 +3373,9 @@ impl ConnectionDialog {
         adw::EntryRow,
         adw::EntryRow,
         adw::EntryRow,
+        adw::EntryRow, // hoop_connection_name
+        adw::EntryRow, // hoop_gateway_url
+        adw::EntryRow, // hoop_grpc_url
         adw::EntryRow,
         Entry,
     ) {
@@ -3385,6 +3411,7 @@ impl ConnectionDialog {
             i18n("Teleport"),
             i18n("Tailscale SSH"),
             i18n("HashiCorp Boundary"),
+            i18n("Hoop.dev"),
             i18n("Generic Command"),
         ];
         let zt_strs: Vec<&str> = zt_items.iter().map(String::as_str).collect();
@@ -3444,6 +3471,11 @@ impl ConnectionDialog {
         let (boundary_box, boundary_target, boundary_addr) = Self::create_boundary_fields_adw();
         provider_stack.add_named(&boundary_box, Some("boundary"));
 
+        // Hoop.dev options
+        let (hoop_box, hoop_connection_name, hoop_gateway_url, hoop_grpc_url) =
+            Self::create_hoop_dev_fields_adw();
+        provider_stack.add_named(&hoop_box, Some("hoop_dev"));
+
         // Generic command options
         let (generic_box, generic_command) = Self::create_generic_zt_fields_adw();
         provider_stack.add_named(&generic_box, Some("generic"));
@@ -3466,6 +3498,7 @@ impl ConnectionDialog {
                 "teleport",
                 "tailscale",
                 "boundary",
+                "hoop_dev",
                 "generic",
             ];
             let selected = dropdown.selected() as usize;
@@ -3526,6 +3559,9 @@ impl ConnectionDialog {
             tailscale_host,
             boundary_target,
             boundary_addr,
+            hoop_connection_name,
+            hoop_gateway_url,
+            hoop_grpc_url,
             generic_command,
             custom_args_entry,
         )
@@ -3749,6 +3785,34 @@ impl ConnectionDialog {
         vbox.append(&group);
 
         (vbox, target_row, addr_row)
+    }
+
+    /// Creates Hoop.dev provider fields using libadwaita
+    fn create_hoop_dev_fields_adw() -> (GtkBox, adw::EntryRow, adw::EntryRow, adw::EntryRow) {
+        let group = adw::PreferencesGroup::builder()
+            .title(i18n("Hoop.dev"))
+            .description(i18n("Connect via Hoop.dev zero-trust gateway"))
+            .build();
+
+        let connection_name_row = adw::EntryRow::builder()
+            .title(i18n("Connection Name"))
+            .build();
+        group.add(&connection_name_row);
+
+        let gateway_url_row = adw::EntryRow::builder()
+            .title(i18n("Gateway URL"))
+            .build();
+        group.add(&gateway_url_row);
+
+        let grpc_url_row = adw::EntryRow::builder()
+            .title(i18n("gRPC URL"))
+            .build();
+        group.add(&grpc_url_row);
+
+        let vbox = GtkBox::new(Orientation::Vertical, 0);
+        vbox.append(&group);
+
+        (vbox, connection_name_row, gateway_url_row, grpc_url_row)
     }
 
     /// Creates Generic Zero Trust provider fields using libadwaita
@@ -5797,7 +5861,8 @@ impl ConnectionDialog {
             ZeroTrustProvider::Teleport => 6,
             ZeroTrustProvider::TailscaleSsh => 7,
             ZeroTrustProvider::Boundary => 8,
-            ZeroTrustProvider::Generic => 9,
+            ZeroTrustProvider::HoopDev => 9,
+            ZeroTrustProvider::Generic => 10,
         };
         self.zt_provider_dropdown.set_selected(provider_idx);
 
@@ -5812,6 +5877,7 @@ impl ConnectionDialog {
             ZeroTrustProvider::Teleport => "teleport",
             ZeroTrustProvider::TailscaleSsh => "tailscale",
             ZeroTrustProvider::Boundary => "boundary",
+            ZeroTrustProvider::HoopDev => "hoop_dev",
             ZeroTrustProvider::Generic => "generic",
         };
         self.zt_provider_stack.set_visible_child_name(stack_name);
@@ -5868,6 +5934,15 @@ impl ConnectionDialog {
                 self.zt_boundary_target_entry.set_text(&cfg.target);
                 if let Some(ref addr) = cfg.addr {
                     self.zt_boundary_addr_entry.set_text(addr);
+                }
+            }
+            ZeroTrustProviderConfig::HoopDev(cfg) => {
+                self.zt_hoop_connection_name_entry.set_text(&cfg.connection_name);
+                if let Some(ref url) = cfg.gateway_url {
+                    self.zt_hoop_gateway_url_entry.set_text(url);
+                }
+                if let Some(ref url) = cfg.grpc_url {
+                    self.zt_hoop_grpc_url_entry.set_text(url);
                 }
             }
             ZeroTrustProviderConfig::Generic(cfg) => {
@@ -6587,6 +6662,9 @@ struct ConnectionDialogData<'a> {
     zt_tailscale_host_entry: &'a adw::EntryRow,
     zt_boundary_target_entry: &'a adw::EntryRow,
     zt_boundary_addr_entry: &'a adw::EntryRow,
+    zt_hoop_connection_name_entry: &'a adw::EntryRow,
+    zt_hoop_gateway_url_entry: &'a adw::EntryRow,
+    zt_hoop_grpc_url_entry: &'a adw::EntryRow,
     zt_generic_command_entry: &'a adw::EntryRow,
     zt_custom_args_entry: &'a Entry,
     // Telnet fields
@@ -7048,6 +7126,7 @@ impl ConnectionDialogData<'_> {
             6 => ZeroTrustProvider::Teleport,
             7 => ZeroTrustProvider::TailscaleSsh,
             8 => ZeroTrustProvider::Boundary,
+            9 => ZeroTrustProvider::HoopDev,
             _ => ZeroTrustProvider::Generic,
         };
 
@@ -7143,6 +7222,25 @@ impl ConnectionDialogData<'_> {
                 target: self.zt_boundary_target_entry.text().trim().to_string(),
                 addr: {
                     let text = self.zt_boundary_addr_entry.text();
+                    if text.trim().is_empty() {
+                        None
+                    } else {
+                        Some(text.trim().to_string())
+                    }
+                },
+            }),
+            ZeroTrustProvider::HoopDev => ZeroTrustProviderConfig::HoopDev(HoopDevConfig {
+                connection_name: self.zt_hoop_connection_name_entry.text().trim().to_string(),
+                gateway_url: {
+                    let text = self.zt_hoop_gateway_url_entry.text();
+                    if text.trim().is_empty() {
+                        None
+                    } else {
+                        Some(text.trim().to_string())
+                    }
+                },
+                grpc_url: {
+                    let text = self.zt_hoop_grpc_url_entry.text();
                     if text.trim().is_empty() {
                         None
                     } else {

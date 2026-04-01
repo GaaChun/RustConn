@@ -22,9 +22,9 @@ mod vnc;
 pub use cli::{format_command_message, format_connection_message};
 pub use detection::{
     ClientDetectionResult, ClientInfo, ZeroTrustDetectionResult, detect_aws_cli, detect_azure_cli,
-    detect_boundary, detect_cloudflared, detect_gcloud_cli, detect_kubectl, detect_mosh,
-    detect_oci_cli, detect_picocom, detect_rdp_client, detect_spice_client, detect_ssh_client,
-    detect_tailscale, detect_teleport, detect_telnet_client, detect_vnc_client,
+    detect_boundary, detect_cloudflared, detect_gcloud_cli, detect_hoop, detect_kubectl,
+    detect_mosh, detect_oci_cli, detect_picocom, detect_rdp_client, detect_spice_client,
+    detect_ssh_client, detect_tailscale, detect_teleport, detect_telnet_client, detect_vnc_client,
     detect_vnc_viewer_name, detect_vnc_viewer_path, detect_waypipe,
 };
 pub use freerdp::{

@@ -447,8 +447,8 @@ impl RdpLauncher {
             cmd.arg("/h:1080");
         }
 
-        // Security settings - ignore certificate warnings
-        cmd.arg("/cert:ignore");
+        // Security settings — use TOFU by default (trust-on-first-use)
+        cmd.arg("/cert:tofu");
         // Enable dynamic resolution for better display
         cmd.arg("/dynamic-resolution");
 

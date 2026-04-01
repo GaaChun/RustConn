@@ -683,10 +683,10 @@ fn show_error_dialog(app: &adw::Application, title: &str, message: &str) {
     dialog.add_response("ok", "OK");
     dialog.set_default_response(Some("ok"));
 
-    // Create a temporary window to show the dialog
-    let window = adw::ApplicationWindow::builder().application(app).build();
-
-    dialog.present(Some(&window));
+    // Present without a parent window — avoids creating an orphaned
+    // ApplicationWindow that lingers after the dialog is dismissed.
+    let parent = app.active_window();
+    dialog.present(parent.as_ref());
 }
 
 /// Runs the GTK4 application

@@ -226,6 +226,11 @@ done
 %{_datadir}/locale/*/LC_MESSAGES/rustconn.mo
 
 %changelog
+* Mon Mar 31 2026 Anton Isaiev <totoshko88@gmail.com> - 0.10.9-0
+- See CHANGELOG.md for full release notes
+- Corrected: v0.9.11 incorrectly stated Flatpak uses --device=serial;
+  the actual permission is --device=all (required for serial port access)
+
 * Thu Mar 27 2026 Anton Isaiev <totoshko88@gmail.com> - 0.10.8-0
 - See CHANGELOG.md for full release notes
 
