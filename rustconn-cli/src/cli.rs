@@ -114,6 +114,30 @@ pub enum Commands {
         /// "starred-symbolic")
         #[arg(long)]
         icon: Option<String>,
+
+        /// Custom SSH agent socket path (overrides global and auto-detected socket)
+        #[arg(long, value_name = "PATH")]
+        ssh_agent_socket: Option<String>,
+
+        /// Zero Trust provider (for zerotrust/zt protocol)
+        #[arg(
+            long,
+            value_name = "PROVIDER",
+            value_parser = ["aws_ssm", "gcp_iap", "azure_bastion", "azure_ssh", "cloudflare_access", "teleport", "tailscale_ssh", "oci_bastion", "boundary", "hoop_dev", "generic"]
+        )]
+        provider: Option<String>,
+
+        /// Hoop.dev connection name (required for --provider hoop_dev)
+        #[arg(long, value_name = "NAME")]
+        hoop_connection_name: Option<String>,
+
+        /// Hoop.dev gateway URL (optional, for --provider hoop_dev)
+        #[arg(long, value_name = "URL")]
+        hoop_gateway_url: Option<String>,
+
+        /// Hoop.dev gRPC URL (optional, for --provider hoop_dev)
+        #[arg(long, value_name = "URL")]
+        hoop_grpc_url: Option<String>,
     },
 
     /// Export connections to external format
@@ -211,6 +235,30 @@ pub enum Commands {
         /// "starred-symbolic")
         #[arg(long)]
         icon: Option<String>,
+
+        /// Custom SSH agent socket path (overrides global and auto-detected socket)
+        #[arg(long, value_name = "PATH")]
+        ssh_agent_socket: Option<String>,
+
+        /// Zero Trust provider (for zerotrust/zt protocol)
+        #[arg(
+            long,
+            value_name = "PROVIDER",
+            value_parser = ["aws_ssm", "gcp_iap", "azure_bastion", "azure_ssh", "cloudflare_access", "teleport", "tailscale_ssh", "oci_bastion", "boundary", "hoop_dev", "generic"]
+        )]
+        provider: Option<String>,
+
+        /// Hoop.dev connection name (for --provider hoop_dev)
+        #[arg(long, value_name = "NAME")]
+        hoop_connection_name: Option<String>,
+
+        /// Hoop.dev gateway URL (optional, for --provider hoop_dev)
+        #[arg(long, value_name = "URL")]
+        hoop_gateway_url: Option<String>,
+
+        /// Hoop.dev gRPC URL (optional, for --provider hoop_dev)
+        #[arg(long, value_name = "URL")]
+        hoop_grpc_url: Option<String>,
     },
 
     /// Send Wake-on-LAN magic packet

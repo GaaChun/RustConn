@@ -46,6 +46,9 @@ pub type ZeroTrustOptionsWidgets = (
     adw::EntryRow, // tailscale_host
     adw::EntryRow, // boundary_target
     adw::EntryRow, // boundary_addr
+    adw::EntryRow, // hoop_connection_name
+    adw::EntryRow, // hoop_gateway_url
+    adw::EntryRow, // hoop_grpc_url
     adw::EntryRow, // generic_command
     Entry,         // custom_args_entry
 );
@@ -101,6 +104,11 @@ pub fn create_zerotrust_options() -> ZeroTrustOptionsWidgets {
     let (boundary_box, boundary_target, boundary_addr) = create_boundary_fields();
     provider_stack.add_named(&boundary_box, Some("boundary"));
 
+    // Hoop.dev options
+    let (hoop_box, hoop_connection_name, hoop_gateway_url, hoop_grpc_url) =
+        create_hoop_dev_fields();
+    provider_stack.add_named(&hoop_box, Some("hoop_dev"));
+
     // Generic command options
     let (generic_box, generic_command) = create_generic_fields();
     provider_stack.add_named(&generic_box, Some("generic"));
@@ -134,6 +142,7 @@ pub fn create_zerotrust_options() -> ZeroTrustOptionsWidgets {
         "tsh",
         "tailscale",
         "boundary",
+        "hoop",
         "",
     ];
     let initial_cli = cli_commands[0];
@@ -162,6 +171,7 @@ pub fn create_zerotrust_options() -> ZeroTrustOptionsWidgets {
             "teleport",
             "tailscale",
             "boundary",
+            "hoop_dev",
             "generic",
         ];
         let selected = dropdown.selected() as usize;
@@ -215,6 +225,9 @@ pub fn create_zerotrust_options() -> ZeroTrustOptionsWidgets {
         tailscale_host,
         boundary_target,
         boundary_addr,
+        hoop_connection_name,
+        hoop_gateway_url,
+        hoop_grpc_url,
         generic_command,
         custom_args_entry,
     )
@@ -236,6 +249,7 @@ fn create_provider_selection() -> (adw::PreferencesGroup, DropDown) {
         &i18n("Teleport"),
         &i18n("Tailscale SSH"),
         &i18n("HashiCorp Boundary"),
+        &i18n("Hoop.dev"),
         &i18n("Generic Command"),
     ]);
     let provider_dropdown = DropDown::new(Some(provider_list), gtk4::Expression::NONE);
@@ -511,6 +525,36 @@ fn create_boundary_fields() -> (GtkBox, adw::EntryRow, adw::EntryRow) {
     vbox.append(&group);
 
     (vbox, target_row, addr_row)
+}
+
+/// Creates Hoop.dev provider fields
+fn create_hoop_dev_fields() -> (GtkBox, adw::EntryRow, adw::EntryRow, adw::EntryRow) {
+    let group = adw::PreferencesGroup::builder()
+        .title(i18n("Hoop.dev"))
+        .description(i18n("Connect via Hoop.dev zero-trust gateway"))
+        .build();
+
+    let connection_name_row = adw::EntryRow::builder()
+        .title(i18n("Connection Name"))
+        .build();
+    connection_name_row.set_text("");
+    connection_name_row.set_property("placeholder-text", &i18n("e.g., my-database"));
+    group.add(&connection_name_row);
+
+    let gateway_url_row = adw::EntryRow::builder().title(i18n("Gateway URL")).build();
+    gateway_url_row.set_text("");
+    gateway_url_row.set_property("placeholder-text", &i18n("e.g., https://app.hoop.dev"));
+    group.add(&gateway_url_row);
+
+    let grpc_url_row = adw::EntryRow::builder().title(i18n("gRPC URL")).build();
+    grpc_url_row.set_text("");
+    grpc_url_row.set_property("placeholder-text", &i18n("e.g., grpc.hoop.dev:8443"));
+    group.add(&grpc_url_row);
+
+    let vbox = GtkBox::new(Orientation::Vertical, 0);
+    vbox.append(&group);
+
+    (vbox, connection_name_row, gateway_url_row, grpc_url_row)
 }
 
 /// Creates Generic Zero Trust provider fields

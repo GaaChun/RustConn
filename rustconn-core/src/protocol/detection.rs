@@ -157,6 +157,8 @@ pub struct ZeroTrustDetectionResult {
     pub tailscale: ClientInfo,
     /// Boundary CLI
     pub boundary: ClientInfo,
+    /// Hoop.dev CLI
+    pub hoop: ClientInfo,
 }
 
 impl ZeroTrustDetectionResult {
@@ -172,6 +174,7 @@ impl ZeroTrustDetectionResult {
             teleport: detect_teleport(),
             tailscale: detect_tailscale(),
             boundary: detect_boundary(),
+            hoop: detect_hoop(),
         }
     }
 
@@ -187,6 +190,7 @@ impl ZeroTrustDetectionResult {
             &self.teleport,
             &self.tailscale,
             &self.boundary,
+            &self.hoop,
         ]
     }
 }
@@ -425,6 +429,15 @@ pub fn detect_boundary() -> ClientInfo {
         return info;
     }
     ClientInfo::not_installed("Boundary CLI", "Install boundary package")
+}
+
+/// Detects Hoop.dev CLI
+#[must_use]
+pub fn detect_hoop() -> ClientInfo {
+    if let Some(info) = try_detect_client("Hoop.dev", "hoop", &["version"]) {
+        return info;
+    }
+    ClientInfo::not_installed("Hoop.dev", "Install: https://hoop.dev/docs/installing")
 }
 
 /// Detects kubectl (Kubernetes CLI)

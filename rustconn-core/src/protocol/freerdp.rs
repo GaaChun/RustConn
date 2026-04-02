@@ -51,6 +51,8 @@ pub struct FreeRdpConfig {
     pub window_geometry: Option<WindowGeometry>,
     /// Whether to remember window position
     pub remember_window_position: bool,
+    /// Whether to ignore certificate errors (skip verification)
+    pub ignore_certificate: bool,
 }
 
 impl FreeRdpConfig {
@@ -70,6 +72,7 @@ impl FreeRdpConfig {
             extra_args: Vec::new(),
             window_geometry: None,
             remember_window_position: true,
+            ignore_certificate: false,
         }
     }
 
@@ -196,8 +199,13 @@ pub fn build_freerdp_args(config: &FreeRdpConfig) -> Vec<String> {
     args.push(format!("/w:{}", config.width));
     args.push(format!("/h:{}", config.height));
 
-    // Certificate handling
-    args.push("/cert:ignore".to_string());
+    // Certificate handling — conditional based on connection settings.
+    // Default is TOFU (trust-on-first-use), matching SSH known_hosts behavior.
+    if config.ignore_certificate {
+        args.push("/cert:ignore".to_string());
+    } else {
+        args.push("/cert:tofu".to_string());
+    }
 
     // Dynamic resolution
     args.push("/dynamic-resolution".to_string());
@@ -230,8 +238,14 @@ pub fn build_freerdp_args(config: &FreeRdpConfig) -> Vec<String> {
         }
     }
 
-    // Extra arguments
+    // Extra arguments — filter dangerous prefixes matching rdp.rs custom_args
+    let dangerous_prefixes = ["/p:", "/password:", "/shell:", "/proxy:"];
     for arg in &config.extra_args {
+        let lower = arg.to_lowercase();
+        if dangerous_prefixes.iter().any(|p| lower.starts_with(p)) {
+            tracing::warn!(arg = %arg, "Blocked dangerous FreeRDP extra arg");
+            continue;
+        }
         args.push(arg.clone());
     }
 

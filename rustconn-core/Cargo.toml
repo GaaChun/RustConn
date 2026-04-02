@@ -40,7 +40,8 @@ tar = { workspace = true }
 ar = "0.9"  # For extracting .deb packages (AWS SSM Plugin)
 # File system notifications for RDPDR directory change monitoring
 # Linux-only application, no macOS features needed
-notify = { version = "8.2", default-features = false }
+# macos_fsevent is needed for macOS dev builds (fsevent_sys dependency)
+notify = { version = "8.2", default-features = false, features = ["macos_fsevent"] }
 # Tracing for structured logging and performance profiling
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }

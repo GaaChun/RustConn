@@ -801,6 +801,10 @@ pub struct SshConfig {
     /// Wraps the SSH command with `waypipe ssh` for Wayland display forwarding
     #[serde(default)]
     pub waypipe: bool,
+    /// Custom SSH agent socket path override for this connection.
+    /// When set, overrides both the global setting and auto-detected socket.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ssh_agent_socket: Option<String>,
 }
 
 fn default_true() -> bool {
@@ -1567,6 +1571,9 @@ pub enum ZeroTrustProvider {
     TailscaleSsh,
     /// `HashiCorp` Boundary
     Boundary,
+    /// Hoop.dev zero-trust access gateway
+    #[serde(rename = "hoop_dev")]
+    HoopDev,
     /// Generic custom command
     Generic,
 }
@@ -1585,6 +1592,7 @@ impl ZeroTrustProvider {
             Self::Teleport => "Teleport",
             Self::TailscaleSsh => "Tailscale SSH",
             Self::Boundary => "HashiCorp Boundary",
+            Self::HoopDev => "Hoop.dev",
             Self::Generic => "Generic Command",
         }
     }
@@ -1607,6 +1615,7 @@ impl ZeroTrustProvider {
             Self::Teleport => "preferences-system-symbolic", // Teleport - system/gear
             Self::TailscaleSsh => "network-vpn-symbolic", // Tailscale - VPN
             Self::Boundary => "dialog-password-symbolic", // Boundary - password/lock
+            Self::HoopDev => "network-transmit-symbolic", // Hoop.dev - network transmit
             Self::Generic => "system-run-symbolic",       // Generic - run command
         }
     }
@@ -1623,6 +1632,7 @@ impl ZeroTrustProvider {
             Self::Teleport => "tsh",
             Self::TailscaleSsh => "tailscale",
             Self::Boundary => "boundary",
+            Self::HoopDev => "hoop",
             Self::Generic => "",
         }
     }
@@ -1640,6 +1650,7 @@ impl ZeroTrustProvider {
             Self::Teleport,
             Self::TailscaleSsh,
             Self::Boundary,
+            Self::HoopDev,
             Self::Generic,
         ]
     }
@@ -1783,6 +1794,13 @@ impl ZeroTrustConfig {
                 if cfg.target.trim().is_empty() {
                     return Err(ProtocolError::InvalidConfig(
                         "Boundary target cannot be empty".into(),
+                    ));
+                }
+            }
+            ZeroTrustProviderConfig::HoopDev(cfg) => {
+                if cfg.connection_name.trim().is_empty() {
+                    return Err(ProtocolError::InvalidConfig(
+                        "Hoop.dev connection name cannot be empty".into(),
                     ));
                 }
             }
@@ -1968,6 +1986,22 @@ impl ZeroTrustConfig {
                 }
                 ("boundary".to_string(), a)
             }
+            ZeroTrustProviderConfig::HoopDev(cfg) => {
+                let mut a = vec!["connect".to_string(), cfg.connection_name.clone()];
+                if let Some(ref url) = cfg.gateway_url
+                    && !url.is_empty()
+                {
+                    a.push("--api-url".to_string());
+                    a.push(url.clone());
+                }
+                if let Some(ref url) = cfg.grpc_url
+                    && !url.is_empty()
+                {
+                    a.push("--grpc-url".to_string());
+                    a.push(url.clone());
+                }
+                ("hoop".to_string(), a)
+            }
             ZeroTrustProviderConfig::Generic(cfg) => {
                 // Parse the command template
                 let mut cmd = cfg.command_template.clone();
@@ -2015,6 +2049,8 @@ pub enum ZeroTrustProviderConfig {
     TailscaleSsh(TailscaleSshConfig),
     /// `HashiCorp` Boundary configuration
     Boundary(BoundaryConfig),
+    /// Hoop.dev zero-trust access gateway configuration
+    HoopDev(HoopDevConfig),
     /// Generic custom command configuration
     Generic(GenericZeroTrustConfig),
 }
@@ -2134,6 +2170,19 @@ pub struct BoundaryConfig {
     /// Boundary address (optional, uses `BOUNDARY_ADDR` env if not set)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub addr: Option<String>,
+}
+
+/// Hoop.dev zero-trust access gateway configuration
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct HoopDevConfig {
+    /// Connection name identifier in Hoop.dev (passed as `hoop connect <connection_name>`)
+    pub connection_name: String,
+    /// Gateway API URL (optional, passed as `--api-url`)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gateway_url: Option<String>,
+    /// gRPC server URL (optional, passed as `--grpc-url`)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub grpc_url: Option<String>,
 }
 
 /// Generic Zero Trust command configuration
@@ -2368,5 +2417,157 @@ mod zerotrust_tests {
         assert_eq!(ZeroTrustProvider::GcpIap.cli_command(), "gcloud");
         assert_eq!(ZeroTrustProvider::Teleport.cli_command(), "tsh");
         assert_eq!(ZeroTrustProvider::Generic.cli_command(), "");
+    }
+
+    // ====================================================================
+    // HoopDev unit tests
+    // ====================================================================
+
+    #[test]
+    fn test_hoop_dev_serde_rename() {
+        let json = serde_json::to_string(&ZeroTrustProvider::HoopDev)
+            .expect("serialize ZeroTrustProvider::HoopDev");
+        assert!(
+            json.contains("hoop_dev"),
+            "HoopDev serde rename must be 'hoop_dev', got: {json}"
+        );
+    }
+
+    #[test]
+    fn test_hoop_dev_display_name() {
+        assert_eq!(ZeroTrustProvider::HoopDev.display_name(), "Hoop.dev");
+    }
+
+    #[test]
+    fn test_hoop_dev_cli_command() {
+        assert_eq!(ZeroTrustProvider::HoopDev.cli_command(), "hoop");
+    }
+
+    #[test]
+    fn test_hoop_dev_in_all() {
+        let all = ZeroTrustProvider::all();
+        let hoop_pos = all.iter().position(|p| *p == ZeroTrustProvider::HoopDev);
+        let generic_pos = all.iter().position(|p| *p == ZeroTrustProvider::Generic);
+        assert!(hoop_pos.is_some(), "HoopDev must be in all()");
+        assert!(generic_pos.is_some(), "Generic must be in all()");
+        assert!(
+            hoop_pos.expect("checked") < generic_pos.expect("checked"),
+            "HoopDev must appear before Generic in all()"
+        );
+    }
+
+    #[test]
+    fn test_hoop_dev_validate_empty_name() {
+        let config = ZeroTrustConfig {
+            provider: ZeroTrustProvider::HoopDev,
+            provider_config: ZeroTrustProviderConfig::HoopDev(HoopDevConfig {
+                connection_name: String::new(),
+                gateway_url: None,
+                grpc_url: None,
+            }),
+            custom_args: vec![],
+            detected_provider: None,
+        };
+        assert!(
+            config.validate().is_err(),
+            "Empty connection_name must be rejected"
+        );
+    }
+
+    #[test]
+    fn test_hoop_dev_validate_whitespace_name() {
+        let config = ZeroTrustConfig {
+            provider: ZeroTrustProvider::HoopDev,
+            provider_config: ZeroTrustProviderConfig::HoopDev(HoopDevConfig {
+                connection_name: "   ".to_string(),
+                gateway_url: None,
+                grpc_url: None,
+            }),
+            custom_args: vec![],
+            detected_provider: None,
+        };
+        assert!(
+            config.validate().is_err(),
+            "Whitespace-only connection_name must be rejected"
+        );
+    }
+
+    #[test]
+    fn test_hoop_dev_validate_valid() {
+        let config = ZeroTrustConfig {
+            provider: ZeroTrustProvider::HoopDev,
+            provider_config: ZeroTrustProviderConfig::HoopDev(HoopDevConfig {
+                connection_name: "my-database".to_string(),
+                gateway_url: Some("https://app.hoop.dev".to_string()),
+                grpc_url: Some("grpc.hoop.dev:8443".to_string()),
+            }),
+            custom_args: vec![],
+            detected_provider: None,
+        };
+        assert!(
+            config.validate().is_ok(),
+            "Valid HoopDevConfig must pass validation"
+        );
+    }
+
+    #[test]
+    fn test_hoop_dev_build_command_basic() {
+        let config = ZeroTrustConfig {
+            provider: ZeroTrustProvider::HoopDev,
+            provider_config: ZeroTrustProviderConfig::HoopDev(HoopDevConfig {
+                connection_name: "my-db".to_string(),
+                gateway_url: None,
+                grpc_url: None,
+            }),
+            custom_args: vec![],
+            detected_provider: None,
+        };
+        let (program, args) = config.build_command(None);
+        assert_eq!(program, "hoop");
+        assert_eq!(args, vec!["connect", "my-db"]);
+    }
+
+    #[test]
+    fn test_hoop_dev_build_command_with_urls() {
+        let config = ZeroTrustConfig {
+            provider: ZeroTrustProvider::HoopDev,
+            provider_config: ZeroTrustProviderConfig::HoopDev(HoopDevConfig {
+                connection_name: "prod-server".to_string(),
+                gateway_url: Some("https://app.hoop.dev".to_string()),
+                grpc_url: Some("grpc.hoop.dev:8443".to_string()),
+            }),
+            custom_args: vec![],
+            detected_provider: None,
+        };
+        let (program, args) = config.build_command(None);
+        assert_eq!(program, "hoop");
+        assert_eq!(
+            args,
+            vec![
+                "connect",
+                "prod-server",
+                "--api-url",
+                "https://app.hoop.dev",
+                "--grpc-url",
+                "grpc.hoop.dev:8443"
+            ]
+        );
+    }
+
+    #[test]
+    fn test_hoop_dev_build_command_with_custom_args() {
+        let config = ZeroTrustConfig {
+            provider: ZeroTrustProvider::HoopDev,
+            provider_config: ZeroTrustProviderConfig::HoopDev(HoopDevConfig {
+                connection_name: "staging".to_string(),
+                gateway_url: None,
+                grpc_url: None,
+            }),
+            custom_args: vec!["--debug".to_string(), "--verbose".to_string()],
+            detected_provider: None,
+        };
+        let (program, args) = config.build_command(None);
+        assert_eq!(program, "hoop");
+        assert_eq!(args, vec!["connect", "staging", "--debug", "--verbose"]);
     }
 }

@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.9] - 2026-04-02
+
+### Added
+- **Hoop.dev Zero Trust provider** — added Hoop.dev as the 11th Zero Trust provider; supports `hoop connect <connection-name>` with optional `--api-url` and `--grpc-url` flags; includes data model (`HoopDevConfig`), CLI detection (`detect_hoop()`), Flatpak CLI download component, GUI fields in connection dialog, CLI support (`--provider hoop_dev --hoop-connection-name`), Flatpak `~/.hoop:ro` permission, serialization round-trip, i18n, and property-based tests
+- **Custom SSH agent socket override** — users can now specify a custom `SSH_AUTH_SOCK` path at two levels: a global setting in Settings → SSH Agent tab (applies to all connections) and a per-connection override in Connection Dialog → SSH tab (overrides global and auto-detected socket); resolves the Flatpak limitation where `--socket=ssh-auth` hard-overwrites `SSH_AUTH_SOCK`, preventing use of alternative agents like KeePassXC or Bitwarden SSH agent ([#71](https://github.com/totoshko88/RustConn/issues/71))
+- **CLI `--ssh-agent-socket`** — `rustconn-cli add` and `update` commands accept `--ssh-agent-socket <PATH>` to set per-connection SSH agent socket; `show` command displays the value when set
+- **Socket path validation** — real-time feedback in both Settings and Connection dialogs: green for valid socket, yellow for path not found (non-blocking), red for non-absolute path
+- **Flatpak: alternative SSH agent socket access** — added `--filesystem` permissions for GPG agent (`xdg-run/gnupg`), Bitwarden SSH agent (`home/.var/app/com.bitwarden.desktop/data`), and custom sockets (`xdg-run/ssh-agent`) in Flatpak and Flathub manifests
+
+### Fixed
+- **Orphaned subgroups on group delete** — deleting a group containing only empty subgroups (0 connections) via the GUI now cascade-deletes all descendant subgroups instead of reparenting them to root; CLI `group delete` now delegates to `ConnectionManager` instead of manual `groups.retain()`, fixing dangling `parent_id` references on child groups
+- **Startup error dialog orphaned window** — `show_error_dialog` no longer creates a temporary `ApplicationWindow` that lingers after dismissal; now presents via `app.active_window()` parent
+
+### Security
+- **Tar archive path traversal (defense-in-depth)** — CLI component downloads now validate each tar entry path against `..` traversal and absolute paths before extraction, matching the existing `enclosed_name()` protection for zip archives; pinned `tar >= 0.4.45` (CVE-2026-33056)
+- **RDP certificate validation** — changed default `ignore_certificate` from `true` to `false`; FreeRDP now uses `/cert:tofu` (trust-on-first-use) by default instead of unconditional `/cert:ignore`; applies to all RDP paths (external FreeRDP, embedded launcher, embedded thread)
+- **Bitwarden session key no longer exposed in process list** — session key is now passed via `BW_SESSION` environment variable instead of `--session` CLI argument, preventing exposure in `/proc/PID/cmdline`
+- **1Password credentials no longer exposed in process list** — password field values are now piped via stdin instead of passed as CLI arguments to `op item create/edit`
+- **Export file permissions hardened** — KDBX XML exports and all connection export files now set `0600` (owner-only) permissions on Unix, preventing world-readable credential/topology data
+- **Bitwarden session key cleared on vault lock** — `lock_vault()` now calls `clear_session_key()` alongside `clear_verified()`, ensuring the session key does not persist in memory after lock
+- **VNC custom args blocklist** — dangerous VNC viewer arguments (`-via`, `-passwd`, `-passwordfile`, `-securitytypes`, `-proxyserver`, `-listen`) are now blocked, matching the existing RDP custom args blocklist
+- **FreeRDP extra args blocklist** — `extra_args` in FreeRDP external mode now filtered through the same dangerous-prefix blocklist (`/p:`, `/password:`, `/shell:`, `/proxy:`) as RDP `custom_args`
+- **Pass backend path traversal prevention** — `build_pass_path()` now sanitizes `connection_id` and `field` by replacing `/`, `\`, `.` with `_`, preventing directory traversal in the password store
+- **Log sanitization expanded** — added `passphrase:`, `client_secret:`, `authorization:` to sensitive prompt patterns; added GitHub (`ghp_*`), GitLab (`glpat-*`), and JWT (`eyJ*`) token detection to value patterns
+
+### Corrected
+- **Flatpak `--device=all` clarification** — v0.9.11 release notes incorrectly stated Flatpak permissions were "scoped to `--device=serial`"; Flatpak has no granular `--device=serial` option — the actual permission is `--device=all`, which is required for serial port access via picocom
+
+### Improved
+- **Asbru import regex cached** — `convert_asbru_variables()` now uses `LazyLock<Regex>` instead of compiling the regex on every call, matching the pattern used throughout the rest of the codebase
+- **Snippet validation strings translated** — "Snippet name is required" and "Command is required" wrapped in `i18n()` for localization
+- **Framebuffer fallback warning** — RDP, VNC, and SPICE embedded viewers now log `tracing::warn!` (once per session) when the legacy `to_vec()` pixel buffer copy path is activated instead of `CairoBackedBuffer`
+- **Clippy suppressions scoped to GUI crate** — 8 GTK-specific clippy suppressions (`redundant_clone`, `needless_borrow`, `needless_pass_by_value`, `unused_self`, `wildcard_imports`, `needless_borrows_for_generic_args`, `redundant_closure_for_method_calls`, `redundant_closure`) moved from workspace `Cargo.toml` to `rustconn/Cargo.toml`; `rustconn-core` now linted under stricter rules
+
+### Dependencies
+- **Updated**: aws-lc-sys 0.39.0→0.39.1, cc 1.2.57→1.2.58, cmake 0.1.57→0.1.58, hybrid-array 0.4.8→0.4.10, hyper 1.8.1→1.9.0, libc 0.2.183→0.2.184, mio 1.1.1→1.2.0, simd-adler32 0.3.8→0.3.9, system-deps 7.0.7→7.0.8, toml_edit 0.25.8→0.25.10, uuid 1.22.0→1.23.0, winnow 1.0.0→1.0.1, zerocopy 0.8.47→0.8.48, zip 8.4.0→8.5.0, zune-jpeg 0.5.14→0.5.15
+- **CLI downloads** — Tailscale 1.96.2→1.96.4
+
 ## [0.10.8] - 2026-03-27
 
 ### Fixed

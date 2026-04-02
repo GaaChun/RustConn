@@ -174,6 +174,50 @@ impl OnePasswordBackend {
         Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
     }
 
+    /// Runs an op command with a field value piped via stdin.
+    ///
+    /// This avoids exposing sensitive values in `/proc/PID/cmdline`.
+    /// The `field_name` is appended as `field_name={{.stdin}}` assignment
+    /// using the `op` CLI's stdin template support.
+    async fn run_command_with_stdin(
+        &self,
+        args: &[&str],
+        stdin_value: &str,
+        field_name: &str,
+    ) -> SecretResult<String> {
+        use tokio::io::AsyncWriteExt;
+
+        // Build the field assignment that reads from stdin
+        let stdin_assignment = format!("{field_name}={{{{.stdin}}}}");
+        let mut all_args: Vec<&str> = args.to_vec();
+        all_args.push(&stdin_assignment);
+
+        let mut child = self
+            .build_command(&all_args)
+            .stdin(Stdio::piped())
+            .spawn()
+            .map_err(|e| SecretError::ConnectionFailed(format!("Failed to run op: {e}")))?;
+
+        if let Some(mut stdin) = child.stdin.take() {
+            let _ = stdin.write_all(stdin_value.as_bytes()).await;
+            drop(stdin);
+        }
+
+        let output = child
+            .wait_with_output()
+            .await
+            .map_err(|e| SecretError::ConnectionFailed(format!("Failed to wait for op: {e}")))?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(SecretError::ConnectionFailed(format!(
+                "op command failed: {stderr}"
+            )));
+        }
+
+        Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
+    }
+
     /// Gets the current account status
     ///
     /// # Errors
@@ -297,41 +341,45 @@ impl SecretBackend for OnePasswordBackend {
 
         // Check if item already exists
         if let Some(existing) = self.find_item(connection_id).await? {
-            // Update existing item using op item edit with assignment statements
-            // Format: op item edit <id> field=value
+            // Update existing item — pass password via stdin to avoid
+            // exposure in /proc/PID/cmdline
             let username_assignment = format!("username={username}");
-            let password_assignment = format!("password={password}");
 
-            self.run_command(&[
-                "item",
-                "edit",
-                &existing.id,
-                "--vault",
-                &self.vault_name,
-                &username_assignment,
-                &password_assignment,
-            ])
+            self.run_command_with_stdin(
+                &[
+                    "item",
+                    "edit",
+                    &existing.id,
+                    "--vault",
+                    &self.vault_name,
+                    &username_assignment,
+                ],
+                &password,
+                "password",
+            )
             .await?;
         } else {
-            // Create new item using op item create with assignment statements
-            // Format: op item create --category login --title "..." --vault "..." --tags "..."
+            // Create new item — pass password via stdin to avoid
+            // exposure in /proc/PID/cmdline
             let username_assignment = format!("username={username}");
-            let password_assignment = format!("password={password}");
 
-            self.run_command(&[
-                "item",
-                "create",
-                "--category",
-                "login",
-                "--title",
-                &title,
-                "--vault",
-                &vault_id,
-                "--tags",
-                "rustconn",
-                &username_assignment,
-                &password_assignment,
-            ])
+            self.run_command_with_stdin(
+                &[
+                    "item",
+                    "create",
+                    "--category",
+                    "login",
+                    "--title",
+                    &title,
+                    "--vault",
+                    &vault_id,
+                    "--tags",
+                    "rustconn",
+                    &username_assignment,
+                ],
+                &password,
+                "password",
+            )
             .await?;
         }
 

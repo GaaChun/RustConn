@@ -120,6 +120,10 @@ impl super::EmbeddedRdpWidget {
                 } else if should_render_fallback {
                     // Fallback path: old PixelBuffer with data.to_vec() copy
                     // Used when CairoBackedBuffer is not populated (e.g. FreeRDP path)
+                    static WARN_ONCE: std::sync::Once = std::sync::Once::new();
+                    WARN_ONCE.call_once(|| {
+                        tracing::warn!("RDP: using fallback PixelBuffer with per-frame to_vec() copy — consider migrating to CairoBackedBuffer");
+                    });
                     let buffer = pixel_buffer.borrow();
                     let buf_width = buffer.width();
                     let buf_height = buffer.height();

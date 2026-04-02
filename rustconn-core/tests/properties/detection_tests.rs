@@ -658,13 +658,14 @@ proptest! {
     /// Test that all provider types persist correctly
     #[test]
     fn prop_provider_persistence_all_providers(
-        provider_idx in 0usize..9usize,
+        provider_idx in 0usize..10usize,
         target in "[a-z][a-z0-9-]{0,20}",
     ) {
         use rustconn_core::models::{
             AwsSsmConfig, GcpIapConfig, AzureBastionConfig, AzureSshConfig,
             OciBastionConfig, CloudflareAccessConfig, TeleportConfig,
             TailscaleSshConfig, BoundaryConfig, GenericZeroTrustConfig,
+            HoopDevConfig,
             ZeroTrustConfig, ZeroTrustProvider, ZeroTrustProviderConfig,
         };
 
@@ -678,6 +679,7 @@ proptest! {
             ("teleport-symbolic", ZeroTrustProvider::Teleport),
             ("tailscale-symbolic", ZeroTrustProvider::TailscaleSsh),
             ("boundary-symbolic", ZeroTrustProvider::Boundary),
+            ("hoop-dev-symbolic", ZeroTrustProvider::HoopDev),
         ];
 
         let (icon_name, provider) = &providers[provider_idx];
@@ -726,6 +728,11 @@ proptest! {
             ZeroTrustProvider::Boundary => ZeroTrustProviderConfig::Boundary(BoundaryConfig {
                 target: target.clone(),
                 addr: None,
+            }),
+            ZeroTrustProvider::HoopDev => ZeroTrustProviderConfig::HoopDev(HoopDevConfig {
+                connection_name: target.clone(),
+                gateway_url: None,
+                grpc_url: None,
             }),
             ZeroTrustProvider::Generic => ZeroTrustProviderConfig::Generic(GenericZeroTrustConfig {
                 command_template: format!("ssh {target}"),
@@ -921,5 +928,172 @@ mod provider_persistence_unit_tests {
             detect_provider("unknown command").icon_name(),
             "system-run-symbolic"
         );
+    }
+}
+
+// ============================================================================
+// Hoop.dev ZeroTrust Provider — Strategies and Property Tests
+// ============================================================================
+
+/// Strategy for generating arbitrary `HoopDevConfig` values.
+///
+/// - `connection_name`: non-empty string matching `[a-zA-Z0-9_-]{1,50}`
+/// - `gateway_url`: `None` or a URL-like string
+/// - `grpc_url`: `None` or a host:port string
+fn arb_hoop_dev_config() -> impl Strategy<Value = rustconn_core::models::HoopDevConfig> {
+    (
+        "[a-zA-Z0-9_-]{1,50}",                                       // connection_name
+        prop::option::of("https?://[a-z0-9.-]{1,30}(:[0-9]{2,5})?"), // gateway_url
+        prop::option::of("[a-z0-9.-]{1,30}:[0-9]{2,5}"),             // grpc_url
+    )
+        .prop_map(|(connection_name, gateway_url, grpc_url)| {
+            rustconn_core::models::HoopDevConfig {
+                connection_name,
+                gateway_url,
+                grpc_url,
+            }
+        })
+}
+
+proptest! {
+    #![proptest_config(ProptestConfig::with_cases(100))]
+
+    // **Feature: hoop-dev-zerotrust, Property 1: HoopDevConfig serialization round-trip**
+    // **Validates: Requirements 2.4, 10.1, 10.2, 10.3, 12.3**
+    //
+    // For any valid HoopDevConfig, serializing to JSON then deserializing
+    // must produce an equivalent HoopDevConfig.
+    #[test]
+    fn prop_hoop_dev_config_roundtrip(config in arb_hoop_dev_config()) {
+        let json = serde_json::to_string(&config)
+            .map_err(|e| proptest::test_runner::TestCaseError::fail(format!("serialize: {e}")))?;
+        let parsed: rustconn_core::models::HoopDevConfig = serde_json::from_str(&json)
+            .map_err(|e| proptest::test_runner::TestCaseError::fail(format!("deserialize: {e}")))?;
+        prop_assert_eq!(config, parsed, "Round-trip must preserve HoopDevConfig");
+    }
+
+    // **Feature: hoop-dev-zerotrust, Property 2: None fields omitted from serialized JSON**
+    // **Validates: Requirements 2.5**
+    //
+    // When gateway_url or grpc_url is None, the serialized JSON must not
+    // contain the corresponding key.
+    #[test]
+    fn prop_hoop_dev_none_fields_omitted(config in arb_hoop_dev_config()) {
+        let json = serde_json::to_string(&config)
+            .map_err(|e| proptest::test_runner::TestCaseError::fail(format!("serialize: {e}")))?;
+
+        if config.gateway_url.is_none() {
+            prop_assert!(
+                !json.contains("gateway_url"),
+                "JSON should not contain 'gateway_url' when it is None. Got: {json}"
+            );
+        }
+        if config.grpc_url.is_none() {
+            prop_assert!(
+                !json.contains("grpc_url"),
+                "JSON should not contain 'grpc_url' when it is None. Got: {json}"
+            );
+        }
+    }
+
+    // **Feature: hoop-dev-zerotrust, Property 3: Validation accepts valid configs and rejects empty connection_name**
+    // **Validates: Requirements 3.1, 3.2**
+    //
+    // ZeroTrustConfig::validate() returns Ok(()) iff connection_name.trim()
+    // is non-empty. Empty or whitespace-only names must be rejected.
+    #[test]
+    fn prop_hoop_dev_validation_correctness(config in arb_hoop_dev_config()) {
+        use rustconn_core::models::{ZeroTrustConfig, ZeroTrustProvider, ZeroTrustProviderConfig};
+
+        let zt = ZeroTrustConfig {
+            provider: ZeroTrustProvider::HoopDev,
+            provider_config: ZeroTrustProviderConfig::HoopDev(config.clone()),
+            custom_args: vec![],
+            detected_provider: None,
+        };
+
+        let result = zt.validate();
+        // The arb_hoop_dev_config strategy always produces non-empty connection_name
+        prop_assert!(
+            result.is_ok(),
+            "Valid HoopDevConfig should pass validation: {result:?}"
+        );
+    }
+
+    // Companion: empty / whitespace connection_name must be rejected
+    #[test]
+    fn prop_hoop_dev_validation_rejects_empty(
+        whitespace in "[ \\t]{0,10}",
+        gateway_url in prop::option::of("https?://[a-z0-9.-]{1,20}"),
+        grpc_url in prop::option::of("[a-z0-9.-]{1,20}:[0-9]{2,5}"),
+    ) {
+        use rustconn_core::models::{ZeroTrustConfig, ZeroTrustProvider, ZeroTrustProviderConfig};
+
+        let cfg = rustconn_core::models::HoopDevConfig {
+            connection_name: whitespace,
+            gateway_url,
+            grpc_url,
+        };
+        let zt = ZeroTrustConfig {
+            provider: ZeroTrustProvider::HoopDev,
+            provider_config: ZeroTrustProviderConfig::HoopDev(cfg),
+            custom_args: vec![],
+            detected_provider: None,
+        };
+
+        let result = zt.validate();
+        prop_assert!(
+            result.is_err(),
+            "Empty/whitespace connection_name must be rejected"
+        );
+    }
+}
+
+// ============================================================================
+// Hoop.dev Unit Tests for Detection and Flatpak Component
+// ============================================================================
+
+#[cfg(test)]
+mod hoop_dev_tests {
+    use rustconn_core::protocol::detect_hoop;
+
+    #[test]
+    fn test_hoop_detection_returns_valid_info() {
+        let info = detect_hoop();
+        // Name should always be set regardless of installation status
+        assert!(
+            !info.name.is_empty(),
+            "Hoop.dev client name must not be empty"
+        );
+
+        if info.installed {
+            assert!(info.path.is_some(), "Installed hoop must have a path");
+        } else {
+            assert!(
+                info.install_hint.is_some(),
+                "Not-installed hoop must have an install hint"
+            );
+        }
+    }
+
+    #[test]
+    fn test_hoop_downloadable_component() {
+        let component = rustconn_core::cli_download::get_component("hoop");
+        assert!(
+            component.is_some(),
+            "hoop component must exist in DOWNLOADABLE_COMPONENTS"
+        );
+
+        let c = component.expect("checked above");
+        assert_eq!(c.id, "hoop");
+        assert_eq!(c.name, "Hoop.dev");
+        assert_eq!(c.binary_name, "hoop");
+        assert_eq!(c.install_subdir, "hoop");
+        assert_eq!(
+            c.category,
+            rustconn_core::cli_download::ComponentCategory::ZeroTrust
+        );
+        assert!(c.works_in_sandbox, "hoop should work in sandbox");
+        assert!(c.download_url.is_some(), "hoop must have a download URL");
     }
 }

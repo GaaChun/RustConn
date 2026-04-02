@@ -73,7 +73,10 @@ impl PassBackend {
     /// Structure: rustconn/<connection_id>/<field>
     /// Where field is one of: username, password, key_passphrase, domain
     fn build_pass_path(&self, connection_id: &str, field: &str) -> String {
-        format!("rustconn/{connection_id}/{field}")
+        // Sanitize connection_id to prevent path traversal (e.g. "../../other")
+        let safe_id = connection_id.replace(['/', '\\', '.'], "_");
+        let safe_field = field.replace(['/', '\\', '.'], "_");
+        format!("rustconn/{safe_id}/{safe_field}")
     }
 
     /// Sets up the Command with optional PASSWORD_STORE_DIR

@@ -164,7 +164,11 @@ impl SafeFreeRdpLauncher {
 
         cmd.arg(format!("/w:{}", config.width));
         cmd.arg(format!("/h:{}", config.height));
-        cmd.arg("/cert:ignore");
+        if config.ignore_certificate {
+            cmd.arg("/cert:ignore");
+        } else {
+            cmd.arg("/cert:tofu");
+        }
         cmd.arg("/dynamic-resolution");
 
         // Add decorations flag for window controls (Requirement 6.1)

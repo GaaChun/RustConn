@@ -403,6 +403,10 @@ impl EmbeddedSpiceWidget {
                 }
 
                 // Fallback: old SpicePixelBuffer path (to_vec copy)
+                static WARN_ONCE: std::sync::Once = std::sync::Once::new();
+                WARN_ONCE.call_once(|| {
+                    tracing::warn!("SPICE: using fallback SpicePixelBuffer with per-frame to_vec() copy — consider migrating to CairoBackedBuffer");
+                });
                 let fb = pixel_buffer.borrow();
                 let fb_w = crate::utils::dimension_to_i32(fb.width());
                 let fb_h = crate::utils::dimension_to_i32(fb.height());

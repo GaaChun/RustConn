@@ -3,7 +3,10 @@
 use std::path::Path;
 
 use rustconn_core::config::ConfigManager;
-use rustconn_core::models::{Connection, ProtocolType, SshAuthMethod};
+use rustconn_core::models::{
+    Connection, HoopDevConfig, ProtocolConfig, ProtocolType, SshAuthMethod, ZeroTrustConfig,
+    ZeroTrustProvider, ZeroTrustProviderConfig,
+};
 
 use crate::error::CliError;
 use crate::util::{create_config_manager, default_port_for_protocol, parse_protocol_type};
@@ -20,6 +23,11 @@ pub struct AddParams<'a> {
     pub device: Option<&'a str>,
     pub baud_rate: Option<u32>,
     pub icon: Option<&'a str>,
+    pub ssh_agent_socket: Option<&'a str>,
+    pub provider: Option<&'a str>,
+    pub hoop_connection_name: Option<&'a str>,
+    pub hoop_gateway_url: Option<&'a str>,
+    pub hoop_grpc_url: Option<&'a str>,
 }
 
 /// Add connection command handler
@@ -36,14 +44,18 @@ pub fn cmd_add(config_path: Option<&Path>, params: AddParams<'_>) -> Result<(), 
         params.host
     };
 
-    let mut connection = create_connection(
-        params.name,
-        effective_host,
-        port,
-        protocol_type,
-        params.key,
-        ssh_auth,
-    )?;
+    let mut connection = if protocol_type == ProtocolType::ZeroTrust {
+        create_zerotrust_connection(params.name, &params)?
+    } else {
+        create_connection(
+            params.name,
+            effective_host,
+            port,
+            protocol_type,
+            params.key,
+            ssh_auth,
+        )?
+    };
 
     // Apply serial-specific settings
     if protocol_type == ProtocolType::Serial
@@ -60,6 +72,21 @@ pub fn cmd_add(config_path: Option<&Path>, params: AddParams<'_>) -> Result<(), 
 
     if let Some(icon) = params.icon {
         connection.icon = Some(icon.to_string());
+    }
+
+    // Apply SSH agent socket for SSH/SFTP connections
+    if let Some(socket) = params.ssh_agent_socket {
+        match connection.protocol_config {
+            rustconn_core::models::ProtocolConfig::Ssh(ref mut cfg) => {
+                cfg.ssh_agent_socket = Some(socket.to_string());
+            }
+            rustconn_core::models::ProtocolConfig::Sftp(ref mut cfg) => {
+                cfg.ssh_agent_socket = Some(socket.to_string());
+            }
+            _ => {
+                tracing::warn!("--ssh-agent-socket is only applicable to SSH/SFTP connections");
+            }
+        }
     }
 
     let config_manager = create_config_manager(config_path)?;
@@ -169,10 +196,11 @@ fn create_connection(
             Connection::new_spice(name.to_string(), host.to_string(), port)
         }
         ProtocolType::ZeroTrust => {
-            tracing::error!("Zero Trust connections cannot be created via CLI quick-connect");
-            tracing::info!("Use the GUI to configure Zero Trust connections");
+            // ZeroTrust connections are handled by create_zerotrust_connection()
+            // before this function is called
             return Err(CliError::Config(
-                "Zero Trust connections cannot be created via CLI. Use the GUI.".into(),
+                "Zero Trust connections require --provider. Use --protocol zt --provider hoop_dev"
+                    .into(),
             ));
         }
         ProtocolType::Telnet => {
@@ -229,4 +257,44 @@ fn create_connection(
         }
     };
     Ok(conn)
+}
+
+/// Create a Zero Trust connection from CLI parameters
+fn create_zerotrust_connection(name: &str, params: &AddParams<'_>) -> Result<Connection, CliError> {
+    let provider_str = params.provider.ok_or_else(|| {
+        CliError::Config(
+            "Zero Trust connections require --provider. Use --provider hoop_dev".into(),
+        )
+    })?;
+
+    match provider_str {
+        "hoop_dev" => {
+            let connection_name = params.hoop_connection_name.ok_or_else(|| {
+                CliError::Config(
+                    "--hoop-connection-name is required for --provider hoop_dev".into(),
+                )
+            })?;
+
+            let zt_config = ZeroTrustConfig {
+                provider: ZeroTrustProvider::HoopDev,
+                provider_config: ZeroTrustProviderConfig::HoopDev(HoopDevConfig {
+                    connection_name: connection_name.to_string(),
+                    gateway_url: params.hoop_gateway_url.map(String::from),
+                    grpc_url: params.hoop_grpc_url.map(String::from),
+                }),
+                custom_args: Vec::new(),
+                detected_provider: None,
+            };
+
+            Ok(Connection::new(
+                name.to_string(),
+                params.host.to_string(),
+                params.port.unwrap_or(22),
+                ProtocolConfig::ZeroTrust(zt_config),
+            ))
+        }
+        other => Err(CliError::Config(format!(
+            "CLI creation for provider '{other}' is not yet supported. Use the GUI."
+        ))),
+    }
 }

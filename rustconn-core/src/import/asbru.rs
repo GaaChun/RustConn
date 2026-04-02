@@ -216,12 +216,15 @@ impl AsbruImporter {
     /// - `<GV:dp_SSH_username>` → `${dp_SSH_username}`
     /// - `admin` → `admin` (unchanged)
     fn convert_asbru_variables(s: &str) -> String {
+        use std::sync::LazyLock;
         // Match <GV:variable_name> pattern and replace with ${variable_name}
         // Variable names can contain letters, numbers, and underscores
-        let re = regex::Regex::new(r"<GV:([a-zA-Z_][a-zA-Z0-9_]*)>")
-            .expect("ASBRU_GV_REGEX is a valid regex pattern");
+        static ASBRU_GV_REGEX: LazyLock<regex::Regex> = LazyLock::new(|| {
+            regex::Regex::new(r"<GV:([a-zA-Z_][a-zA-Z0-9_]*)>")
+                .expect("ASBRU_GV_REGEX is a valid regex pattern")
+        });
         // Use $$ to escape the literal $ in the replacement string
-        re.replace_all(s, "$${$1}").into_owned()
+        ASBRU_GV_REGEX.replace_all(s, "$${$1}").into_owned()
     }
 
     /// Checks if a string contains dynamic variable syntax (${VAR} or $VAR)
@@ -466,6 +469,7 @@ impl AsbruImporter {
                         sftp_enabled: false,
                         port_forwards: Vec::new(),
                         waypipe: false,
+                        ssh_agent_socket: None,
                     }),
                     22u16,
                 )
@@ -563,8 +567,7 @@ impl AsbruImporter {
         // Check environments first
         if let Some(environments) = raw_config.get("environments")
             && let Some(env_map) = environments.as_mapping()
-            && let Some(entry_value) =
-                env_map.get(&serde_yaml::Value::String(entry_key.to_string()))
+            && let Some(entry_value) = env_map.get(serde_yaml::Value::String(entry_key.to_string()))
             && let Ok(entry) = serde_yaml::from_value::<AsbruEntry>(entry_value.clone())
         {
             return entry.pass.or(entry.password).filter(|p| !p.is_empty());

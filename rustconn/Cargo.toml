@@ -59,5 +59,42 @@ adw-1-7 = ["adw-1-6", "libadwaita/v1_7"]
 # Requires libadwaita >= 1.8 at build time (GNOME 49+ Flatpak runtime or Fedora 42+)
 adw-1-8 = ["adw-1-7", "libadwaita/v1_8"]
 
-[lints]
-workspace = true
+# Inherit workspace lints as base, then add GTK-specific suppressions.
+# Note: Cargo requires that workspace = true stands alone in [lints];
+# crate-specific overrides go into [lints.rust] / [lints.clippy] without
+# repeating workspace = true — so we spell out the full lint set here.
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+missing_const_for_fn = "allow"
+doc_markdown = "allow"
+cast_precision_loss = "allow"
+cast_possible_truncation = "allow"
+cast_possible_wrap = "allow"
+cast_sign_loss = "allow"
+option_if_let_else = "allow"
+must_use_candidate = "allow"
+match_same_arms = "allow"
+uninlined_format_args = "allow"
+manual_let_else = "allow"
+no_effect_underscore_binding = "allow"
+cloned_instead_of_copied = "allow"
+unnecessary_wraps = "allow"
+branches_sharing_code = "allow"
+map_unwrap_or = "allow"
+manual_map = "allow"
+assigning_clones = "allow"
+# GTK-specific clippy suppressions — scoped to the GUI crate only,
+# so rustconn-core stays under stricter linting.
+redundant_clone = "allow"
+needless_borrow = "allow"
+needless_pass_by_value = "allow"
+unused_self = "allow"
+wildcard_imports = "allow"
+needless_borrows_for_generic_args = "allow"
+redundant_closure_for_method_calls = "allow"
+redundant_closure = "allow"

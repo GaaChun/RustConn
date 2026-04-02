@@ -717,6 +717,7 @@ fn sanitize_filename(name: &str) -> String {
 const SENSITIVE_PATTERNS: &[&str] = &[
     "password:",
     "pass:",
+    "passphrase:",
     "secret:",
     "token:",
     "api_key:",
@@ -729,6 +730,8 @@ const SENSITIVE_PATTERNS: &[&str] = &[
     "otp:",
     "2fa:",
     "mfa:",
+    "client_secret:",
+    "authorization:",
 ];
 
 /// Regex patterns for detecting sensitive data values
@@ -749,6 +752,12 @@ const SENSITIVE_VALUE_PATTERNS: &[&str] = &[
     r"-----BEGIN\s+OPENSSH\s+PRIVATE\s+KEY-----",
     // SSH key fingerprints (not sensitive but may indicate key operations)
     r"SHA256:[a-zA-Z0-9+/]{43}",
+    // GitHub personal access tokens
+    r"ghp_[a-zA-Z0-9]{36}",
+    // GitLab personal access tokens
+    r"glpat-[a-zA-Z0-9\-_]{20,}",
+    // JWT tokens (header.payload.signature)
+    r"eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}",
 ];
 
 /// Pre-compiled regexes for `SENSITIVE_VALUE_PATTERNS` — compiled once via `LazyLock`.

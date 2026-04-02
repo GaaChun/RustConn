@@ -1,6 +1,6 @@
 # RustConn User Guide
 
-**Version 0.10.8** | GTK4/libadwaita Connection Manager for Linux
+**Version 0.10.9** | GTK4/libadwaita Connection Manager for Linux
 
 RustConn is a modern connection manager designed for Linux with Wayland-first approach. It supports SSH, RDP, VNC, SPICE, MOSH, SFTP, Telnet, Serial, Kubernetes protocols and Zero Trust integrations through a native GTK4/libadwaita interface.
 
@@ -159,7 +159,7 @@ Shows integration status in sidebar toolbar:
 | Telnet | Custom arguments, backspace key behavior, delete key behavior |
 | Serial | Device path, baud rate, data bits, stop bits, parity, flow control, custom picocom arguments |
 | Kubernetes | Kubeconfig path, context, namespace, pod, container, shell, busybox mode, busybox image, custom kubectl arguments |
-| ZeroTrust | Provider-specific (AWS SSM, GCP IAP, Azure Bastion, Azure SSH, OCI Bastion, Cloudflare Access, Teleport, Tailscale SSH, HashiCorp Boundary, Generic Command), custom CLI arguments |
+| ZeroTrust | Provider-specific (AWS SSM, GCP IAP, Azure Bastion, Azure SSH, OCI Bastion, Cloudflare Access, Teleport, Tailscale SSH, HashiCorp Boundary, Hoop.dev, Generic Command), custom CLI arguments |
 
 **Security Key / FIDO2 Authentication (SSH):**
 SSH connections support hardware security keys (YubiKey, SoloKey, etc.) via the `security-key` auth method. Requirements:
@@ -960,7 +960,59 @@ Connects via HashiCorp Boundary proxy.
 
 **Prerequisites:** `boundary` CLI, authenticated (`boundary authenticate`).
 
-**Flatpak:** Boundary stores authentication tokens in the system keyring via D-Bus (`org.freedesktop.secrets`), which works natively in Flatpak. No config directory redirection is needed.
+**Flatpak:** Boundary uses system keyring via D-Bus for credential storage, which works natively in the Flatpak sandbox. Install Boundary via Flatpak Components.
+
+#### Hoop.dev
+
+Connects via Hoop.dev zero-trust access gateway using `hoop connect`. Hoop.dev is an access gateway for databases and servers that provides secure, auditable access with SSO authentication and data masking capabilities.
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| Connection Name | Hoop.dev connection identifier (required) | `my-database` |
+| Gateway URL | API gateway URL (optional, for self-hosted) | `https://app.hoop.dev` |
+| gRPC URL | gRPC server URL (optional, for self-hosted) | `grpcs://app.hoop.dev:8443` |
+
+**Generated command:** `hoop connect <connection-name> [--api-url <url>] [--grpc-url <url>]`
+
+**Prerequisites:**
+
+1. Install the `hoop` CLI:
+   ```bash
+   curl -s -L https://releases.hoop.dev/release/install-cli.sh | sh
+   ```
+   Or via Homebrew: `brew tap hoophq/brew https://github.com/hoophq/brew.git && brew install hoop`
+
+2. Configure the gateway (once per machine):
+   - Managed instance: `hoop login` (gateway URL defaults to `https://use.hoop.dev`)
+   - Self-hosted: `hoop config create --api-url https://your-gateway.tld` then `hoop login`
+
+3. Authenticate: `hoop login` opens your browser for SSO. The access token is stored in `$HOME/.hoop/config.toml`.
+
+**Environment variables (alternative to config file):**
+
+| Variable | Description |
+|----------|-------------|
+| `HOOP_APIURL` | Gateway API URL (e.g., `https://use.hoop.dev`) |
+| `HOOP_GRPCURL` | gRPC URL (e.g., `grpcs://use.hoop.dev:8443`) |
+| `HOOP_TOKEN` | Access token or API key |
+| `HOOP_TLSCA` | TLS CA certificate path (for self-signed certs) |
+
+**CLI usage:**
+
+```bash
+# GUI: create a ZeroTrust connection with provider "Hoop.dev"
+# CLI:
+rustconn-cli add --name "Production DB" --host localhost --protocol zt \
+  --provider hoop_dev --hoop-connection-name my-database
+
+# With self-hosted gateway:
+rustconn-cli add --name "Staging DB" --host localhost --protocol zt \
+  --provider hoop_dev --hoop-connection-name staging-db \
+  --hoop-gateway-url https://hoop.internal.company.com \
+  --hoop-grpc-url grpcs://hoop.internal.company.com:8443
+```
+
+**Flatpak:** The host `~/.hoop/` directory is mounted as read-only to share authentication tokens and configuration. Install `hoop` via Flatpak Components if not available on the host.
 
 #### Generic Command
 
@@ -1517,6 +1569,7 @@ Download and install additional CLI tools directly within the Flatpak sandbox:
 - Teleport, Tailscale
 - Cloudflare Tunnel
 - HashiCorp Boundary
+- Hoop.dev
 
 **Password Manager CLIs:**
 - Bitwarden CLI
@@ -1663,7 +1716,7 @@ Auto-detected CLI tools with versions:
 
 Protocol Clients: SSH, RDP (FreeRDP), VNC (TigerVNC), SPICE (remote-viewer), Telnet, Serial (picocom), Kubernetes (kubectl)
 
-Zero Trust: AWS, GCP, Azure, OCI, Cloudflare, Teleport, Tailscale, Boundary
+Zero Trust: AWS, GCP, Azure, OCI, Cloudflare, Teleport, Tailscale, Boundary, Hoop.dev
 
 Searches PATH and user directories (`~/bin/`, `~/.local/bin/`, `~/.cargo/bin/`).
 
@@ -1705,6 +1758,8 @@ Back up your entire RustConn configuration (connections, groups, snippets, clust
 | Keybindings | Flatpak-installed CLI tools |
 | Application settings | |
 | Connection history and statistics | |
+
+> **Important:** The `.machine-key` file (`~/.local/share/rustconn/.machine-key`) is **not** included in backups. This key is used to encrypt credentials stored locally (AES-256-GCM). If you restore a backup on a different machine, locally encrypted credentials cannot be decrypted without the original `.machine-key`. To migrate encrypted credentials: copy `.machine-key` from the old machine to the same path on the new machine **before** restoring the backup, or re-enter passwords after restore.
 
 After restoring on a new machine, re-enter passwords or configure the same secret backend. See also the [Migration Guide](#migration-guide) for full machine-to-machine migration.
 
@@ -3324,7 +3379,11 @@ RUST_LOG=rustconn_core::secret=debug rustconn
 If features are not working in the Flatpak build:
 
 1. **File access:** Flatpak has limited filesystem access. Use `flatpak override --user --filesystem=home io.github.totoshko88.RustConn` for broader access
-2. **SSH agent:** The Flatpak build forwards `SSH_AUTH_SOCK` from the host. Ensure your SSH agent is running before launching RustConn
+2. **SSH agent:** The Flatpak build forwards `SSH_AUTH_SOCK` from the host via `--socket=ssh-auth`. However, this hard-overwrites `SSH_AUTH_SOCK` inside the sandbox, which means:
+   - Custom socket paths set in Settings → SSH Agent are limited to paths accessible inside the sandbox (`~/.var/app/...`, `$XDG_RUNTIME_DIR/...`)
+   - 1Password SSH agent socket (`~/.1password/agent.sock`) is **not** mounted by default — add it via `flatpak override --user --filesystem=home/.1password:ro io.github.totoshko88.RustConn`
+   - A sandbox-internal `ssh-agent` is not accessible to host processes (e.g., file managers launched via `xdg-open`)
+   - KeePassXC agent socket (`$XDG_RUNTIME_DIR/ssh-agent/`) and Bitwarden agent socket (`~/.var/app/com.bitwarden.desktop/data/`) are pre-configured in the Flatpak manifest
 3. **Serial devices:** Requires `--device=all` permission
 4. **CLI tools:** Host-installed binaries (bw, kubectl, pass, op) are NOT visible inside the sandbox. Use Menu → Flatpak Components to install them
 5. **Secret Service:** GNOME Keyring / KDE Wallet access works via D-Bus portal

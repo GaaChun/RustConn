@@ -54,6 +54,9 @@ pub fn cmd_show(config_path: Option<&Path>, name: &str) -> Result<(), CliError> 
             if let Some(ref jump) = config.proxy_jump {
                 println!("  Proxy Jump: {jump}");
             }
+            if let Some(ref socket) = config.ssh_agent_socket {
+                println!("  SSH Agent Socket: {socket}");
+            }
         }
         rustconn_core::models::ProtocolConfig::Rdp(ref config) => {
             if let Some(ref domain) = connection.domain {
@@ -86,6 +89,28 @@ pub fn cmd_show(config_path: Option<&Path>, name: &str) -> Result<(), CliError> 
                 },
                 config.flow_control.display_name(),
             );
+        }
+        rustconn_core::models::ProtocolConfig::Sftp(ref config) => {
+            if let Some(ref socket) = config.ssh_agent_socket {
+                println!("  SSH Agent Socket: {socket}");
+            }
+        }
+        rustconn_core::models::ProtocolConfig::ZeroTrust(ref zt_config) => {
+            println!("  Provider: {}", zt_config.provider);
+            if let rustconn_core::models::ZeroTrustProviderConfig::HoopDev(ref cfg) =
+                zt_config.provider_config
+            {
+                println!("  Connection Name: {}", cfg.connection_name);
+                if let Some(ref url) = cfg.gateway_url {
+                    println!("  Gateway URL: {url}");
+                }
+                if let Some(ref url) = cfg.grpc_url {
+                    println!("  gRPC URL: {url}");
+                }
+            }
+            if !zt_config.custom_args.is_empty() {
+                println!("  Custom Args: {}", zt_config.custom_args.join(" "));
+            }
         }
         _ => {}
     }

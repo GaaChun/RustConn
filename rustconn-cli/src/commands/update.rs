@@ -20,6 +20,11 @@ pub struct UpdateParams<'a> {
     pub device: Option<&'a str>,
     pub baud_rate: Option<u32>,
     pub icon: Option<&'a str>,
+    pub ssh_agent_socket: Option<&'a str>,
+    pub provider: Option<&'a str>,
+    pub hoop_connection_name: Option<&'a str>,
+    pub hoop_gateway_url: Option<&'a str>,
+    pub hoop_grpc_url: Option<&'a str>,
 }
 
 /// Update connection command handler
@@ -89,6 +94,54 @@ pub fn cmd_update(config_path: Option<&Path>, params: UpdateParams<'_>) -> Resul
             if params.baud_rate.is_some() {
                 tracing::warn!("--baud-rate is only applicable to Serial connections");
             }
+        }
+    }
+
+    // Update SSH agent socket for SSH/SFTP connections
+    if let Some(socket) = params.ssh_agent_socket {
+        match connection.protocol_config {
+            rustconn_core::models::ProtocolConfig::Ssh(ref mut cfg) => {
+                cfg.ssh_agent_socket = Some(socket.to_string());
+            }
+            rustconn_core::models::ProtocolConfig::Sftp(ref mut cfg) => {
+                cfg.ssh_agent_socket = Some(socket.to_string());
+            }
+            _ => {
+                tracing::warn!("--ssh-agent-socket is only applicable to SSH/SFTP connections");
+            }
+        }
+    }
+
+    // Update ZeroTrust HoopDev-specific fields
+    if params.hoop_connection_name.is_some()
+        || params.hoop_gateway_url.is_some()
+        || params.hoop_grpc_url.is_some()
+    {
+        if let Some(provider) = params.provider {
+            tracing::debug!("ZeroTrust provider hint: {provider}");
+        }
+        if let rustconn_core::models::ProtocolConfig::ZeroTrust(ref mut zt_config) =
+            connection.protocol_config
+        {
+            if let rustconn_core::models::ZeroTrustProviderConfig::HoopDev(ref mut cfg) =
+                zt_config.provider_config
+            {
+                if let Some(conn_name) = params.hoop_connection_name {
+                    cfg.connection_name = conn_name.to_string();
+                }
+                if let Some(url) = params.hoop_gateway_url {
+                    cfg.gateway_url = Some(url.to_string());
+                }
+                if let Some(url) = params.hoop_grpc_url {
+                    cfg.grpc_url = Some(url.to_string());
+                }
+            } else {
+                tracing::warn!(
+                    "--hoop-* options are only applicable to HoopDev ZeroTrust connections"
+                );
+            }
+        } else {
+            tracing::warn!("--hoop-* options are only applicable to ZeroTrust connections");
         }
     }
 

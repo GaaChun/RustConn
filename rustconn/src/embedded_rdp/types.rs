@@ -135,6 +135,9 @@ pub struct RdpConfig {
     pub gateway_port: u16,
     /// Gateway username (if different from connection username)
     pub gateway_username: Option<String>,
+    /// Whether to ignore TLS certificate validation (default: false).
+    /// When false, uses TOFU (trust-on-first-use) like SSH known_hosts.
+    pub ignore_certificate: bool,
 }
 
 impl Default for RdpConfig {
@@ -160,6 +163,7 @@ impl Default for RdpConfig {
             gateway_hostname: None,
             gateway_port: 443,
             gateway_username: None,
+            ignore_certificate: false,
         }
     }
 }
