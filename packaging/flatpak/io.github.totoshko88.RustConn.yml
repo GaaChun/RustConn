@@ -6,6 +6,19 @@ sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
 command: rustconn
 
+cleanup:
+  - /include
+  - /lib/cmake
+  - /lib/pkgconfig
+  - /lib64/pkgconfig
+  - /share/cmake
+  - /share/doc
+  - /share/info
+  - /share/man
+  - /share/pkgconfig
+  - '*.la'
+  - '*.a'
+
 finish-args:
   # Library path for VTE (installed to lib64)
   - --env=LD_LIBRARY_PATH=/app/lib64:/app/lib
