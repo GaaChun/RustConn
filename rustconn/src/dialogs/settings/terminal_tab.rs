@@ -27,6 +27,7 @@ pub fn create_terminal_page() -> (
     CheckButton,
     CheckButton,
     CheckButton, // sftp_use_mc
+    CheckButton, // copy_on_select
 ) {
     let page = adw::PreferencesPage::builder()
         .title(i18n("Terminal"))
@@ -251,6 +252,16 @@ pub fn create_terminal_page() -> (
     sftp_use_mc_row.add_prefix(&sftp_use_mc_check);
     behavior_group.add(&sftp_use_mc_row);
 
+    // Copy on select (X11-style)
+    let copy_on_select_check = CheckButton::builder().valign(gtk4::Align::Center).build();
+    let copy_on_select_row = adw::ActionRow::builder()
+        .title(i18n("Copy on select"))
+        .subtitle(i18n("Automatically copy selected text to clipboard"))
+        .activatable_widget(&copy_on_select_check)
+        .build();
+    copy_on_select_row.add_prefix(&copy_on_select_check);
+    behavior_group.add(&copy_on_select_row);
+
     page.add(&behavior_group);
 
     (
@@ -267,6 +278,7 @@ pub fn create_terminal_page() -> (
         mouse_autohide_check,
         audible_bell_check,
         sftp_use_mc_check,
+        copy_on_select_check,
     )
 }
 
@@ -285,6 +297,7 @@ pub fn load_terminal_settings(
     mouse_autohide_check: &CheckButton,
     audible_bell_check: &CheckButton,
     sftp_use_mc_check: &CheckButton,
+    copy_on_select_check: &CheckButton,
     settings: &TerminalSettings,
 ) {
     font_family_entry.set_text(&settings.font_family);
@@ -328,6 +341,7 @@ pub fn load_terminal_settings(
     mouse_autohide_check.set_active(settings.mouse_autohide);
     audible_bell_check.set_active(settings.audible_bell);
     sftp_use_mc_check.set_active(settings.sftp_use_mc);
+    copy_on_select_check.set_active(settings.copy_on_select);
 }
 
 /// Gets the toggle button at a specific index in a button box
@@ -375,6 +389,7 @@ pub fn collect_terminal_settings(
     mouse_autohide_check: &CheckButton,
     audible_bell_check: &CheckButton,
     sftp_use_mc_check: &CheckButton,
+    copy_on_select_check: &CheckButton,
     log_timestamps: bool,
 ) -> TerminalSettings {
     let theme_names = TerminalTheme::theme_names();
@@ -410,5 +425,6 @@ pub fn collect_terminal_settings(
         audible_bell: audible_bell_check.is_active(),
         log_timestamps,
         sftp_use_mc: sftp_use_mc_check.is_active(),
+        copy_on_select: copy_on_select_check.is_active(),
     }
 }

@@ -43,8 +43,14 @@ pub fn configure_terminal_with_settings(terminal: &Terminal, settings: &Terminal
     // Bell
     terminal.set_audible_bell(settings.audible_bell);
 
-    // Keyboard shortcuts (Copy/Paste)
+    // Copy on select (X11-style auto-copy)
+    if settings.copy_on_select {
+        setup_copy_on_select(terminal);
+    }
+
+    // Keyboard shortcuts (Copy/Paste + font zoom)
     setup_keyboard_shortcuts(terminal);
+    setup_font_zoom(terminal);
 
     // Context menu (Right click) — attached to the container, NOT the
     // terminal, to avoid interfering with VTE's internal mouse handling.
@@ -54,6 +60,17 @@ pub fn configure_terminal_with_settings(terminal: &Terminal, settings: &Terminal
     // Colors and font
     setup_colors_with_theme(terminal, &settings.color_theme);
     setup_font_with_settings(terminal, settings);
+}
+
+/// Automatically copies selected text to the clipboard when the user
+/// finishes a selection (X11-style "copy on select").
+fn setup_copy_on_select(terminal: &Terminal) {
+    let term = terminal.clone();
+    terminal.connect_selection_changed(move |_| {
+        if term.has_selection() {
+            term.copy_clipboard_format(vte4::Format::Text);
+        }
+    });
 }
 
 /// Sets up keyboard shortcuts for copy/paste
@@ -164,6 +181,74 @@ fn setup_colors_with_theme(terminal: &Terminal, theme_name: &str) {
     let palette_rgba: Vec<gdk::RGBA> = theme.palette.iter().map(color_to_rgba).collect();
     let palette_refs: Vec<&gdk::RGBA> = palette_rgba.iter().collect();
     terminal.set_colors(Some(&fg_color), Some(&bg_color), &palette_refs);
+}
+
+/// Minimum font scale factor (roughly 50% of base size)
+const FONT_SCALE_MIN: f64 = 0.5;
+/// Maximum font scale factor (roughly 400% of base size)
+const FONT_SCALE_MAX: f64 = 4.0;
+/// Step for each zoom increment/decrement
+const FONT_SCALE_STEP: f64 = 0.1;
+
+/// Sets up font zoom via Ctrl+Scroll, Ctrl+Plus/Minus, and Ctrl+0 to reset.
+///
+/// Uses VTE's built-in `set_font_scale()` which scales the configured font
+/// without changing the underlying `FontDescription`. This means the zoom
+/// level is per-terminal and resets when a new session is created.
+fn setup_font_zoom(terminal: &Terminal) {
+    // Ctrl+Scroll wheel zoom
+    let scroll_controller =
+        gtk4::EventControllerScroll::new(gtk4::EventControllerScrollFlags::VERTICAL);
+    let term_scroll = terminal.clone();
+    scroll_controller.connect_scroll(move |_, _, dy| {
+        let state = gdk::Display::default()
+            .and_then(|d| d.default_seat())
+            .and_then(|s| s.keyboard())
+            .map(|k| k.modifier_state())
+            .unwrap_or_else(gdk::ModifierType::empty);
+
+        if !state.contains(gdk::ModifierType::CONTROL_MASK) {
+            return glib::Propagation::Proceed;
+        }
+
+        let current = term_scroll.font_scale();
+        let new_scale = if dy < 0.0 {
+            (current + FONT_SCALE_STEP).min(FONT_SCALE_MAX)
+        } else {
+            (current - FONT_SCALE_STEP).max(FONT_SCALE_MIN)
+        };
+        term_scroll.set_font_scale(new_scale);
+        glib::Propagation::Stop
+    });
+    terminal.add_controller(scroll_controller);
+
+    // Ctrl+Plus / Ctrl+Minus / Ctrl+0 keyboard zoom
+    let key_controller = gtk4::EventControllerKey::new();
+    let term_key = terminal.clone();
+    key_controller.connect_key_pressed(move |_, key, _, state| {
+        if !state.contains(gdk::ModifierType::CONTROL_MASK) {
+            return glib::Propagation::Proceed;
+        }
+
+        match key.name().as_deref() {
+            Some("plus" | "equal" | "KP_Add") => {
+                let s = (term_key.font_scale() + FONT_SCALE_STEP).min(FONT_SCALE_MAX);
+                term_key.set_font_scale(s);
+                glib::Propagation::Stop
+            }
+            Some("minus" | "KP_Subtract") => {
+                let s = (term_key.font_scale() - FONT_SCALE_STEP).max(FONT_SCALE_MIN);
+                term_key.set_font_scale(s);
+                glib::Propagation::Stop
+            }
+            Some("0" | "KP_0") => {
+                term_key.set_font_scale(1.0);
+                glib::Propagation::Stop
+            }
+            _ => glib::Propagation::Proceed,
+        }
+    });
+    terminal.add_controller(key_controller);
 }
 
 /// Sets up terminal font with settings

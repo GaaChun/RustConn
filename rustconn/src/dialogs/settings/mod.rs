@@ -84,6 +84,7 @@ pub struct SettingsDialog {
     mouse_autohide_check: CheckButton,
     audible_bell_check: CheckButton,
     sftp_use_mc_check: CheckButton,
+    copy_on_select_check: CheckButton,
     // Logging settings
     logging_enabled_row: adw::SwitchRow,
     log_dir_entry: Entry,
@@ -160,6 +161,7 @@ impl SettingsDialog {
             mouse_autohide_check,
             audible_bell_check,
             sftp_use_mc_check,
+            copy_on_select_check,
         ) = create_terminal_page();
 
         let (
@@ -472,6 +474,7 @@ impl SettingsDialog {
             mouse_autohide_check,
             audible_bell_check,
             sftp_use_mc_check,
+            copy_on_select_check,
             logging_enabled_row,
             log_dir_entry,
             retention_spin,
@@ -657,6 +660,7 @@ impl SettingsDialog {
             &self.mouse_autohide_check,
             &self.audible_bell_check,
             &self.sftp_use_mc_check,
+            &self.copy_on_select_check,
             &settings.terminal,
         );
 
@@ -755,6 +759,7 @@ impl SettingsDialog {
         let mouse_autohide_check_clone = self.mouse_autohide_check.clone();
         let audible_bell_check_clone = self.audible_bell_check.clone();
         let sftp_use_mc_check_clone = self.sftp_use_mc_check.clone();
+        let copy_on_select_check_clone = self.copy_on_select_check.clone();
 
         // Logging controls
         let logging_enabled_row_clone = self.logging_enabled_row.clone();
@@ -829,6 +834,7 @@ impl SettingsDialog {
                 &mouse_autohide_check_clone,
                 &audible_bell_check_clone,
                 &sftp_use_mc_check_clone,
+                &copy_on_select_check_clone,
                 log_timestamps_check_clone.is_active(),
             );
 

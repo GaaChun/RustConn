@@ -185,18 +185,24 @@ impl ImportDialog {
             .css_classes(["boxed-list"])
             .build();
 
-        // Add import sources
+        // Add import sources — Native (.rcn) first, then alphabetically
         let sources: Vec<(&str, String, String, bool)> = vec![
             (
-                "ssh_config",
-                i18n("SSH Config"),
-                i18n("Import from ~/.ssh/config"),
-                SshConfigImporter::new().is_available(),
+                "native_file",
+                i18n("RustConn Native (.rcn)"),
+                i18n("Import from a RustConn native export file"),
+                true,
             ),
             (
-                "ssh_config_file",
-                i18n("SSH Config File"),
-                i18n("Import from a specific SSH config file"),
+                "ansible",
+                i18n("Ansible Inventory"),
+                i18n("Import from Ansible inventory files"),
+                AnsibleInventoryImporter::new().is_available(),
+            ),
+            (
+                "ansible_file",
+                i18n("Ansible Inventory File"),
+                i18n("Import from a specific Ansible inventory file"),
                 true,
             ),
             (
@@ -212,51 +218,9 @@ impl ImportDialog {
                 true,
             ),
             (
-                "remmina",
-                i18n("Remmina"),
-                i18n("Import from Remmina connection files"),
-                RemminaImporter::new().is_available(),
-            ),
-            (
-                "ansible",
-                i18n("Ansible Inventory"),
-                i18n("Import from Ansible inventory files"),
-                AnsibleInventoryImporter::new().is_available(),
-            ),
-            (
-                "ansible_file",
-                i18n("Ansible Inventory File"),
-                i18n("Import from a specific Ansible inventory file"),
-                true,
-            ),
-            (
-                "native_file",
-                i18n("RustConn Native (.rcn)"),
-                i18n("Import from a RustConn native export file"),
-                true,
-            ),
-            (
-                "royalts_file",
-                i18n("Royal TS (.rtsz)"),
-                i18n("Import from a Royal TS export file"),
-                true,
-            ),
-            (
-                "rdm_file",
-                i18n("Remote Desktop Manager (JSON)"),
-                i18n("Import from a Remote Desktop Manager JSON export file"),
-                true,
-            ),
-            (
-                "mobaxterm_file",
-                i18n("MobaXterm (.mxtsessions)"),
-                i18n("Import from a MobaXterm session export file"),
-                true,
-            ),
-            (
-                "vv_file",
-                i18n("Virt-Viewer (.vv)"),
-                i18n("Import SPICE/VNC connection from a virt-viewer file"),
+                "csv_file",
+                i18n("CSV"),
+                i18n("Import connections from a CSV file"),
                 true,
             ),
             (
@@ -266,16 +230,22 @@ impl ImportDialog {
                 LibvirtXmlImporter::new().is_available(),
             ),
             (
+                "libvirt_daemon",
+                i18n("Libvirt Daemon (virsh)"),
+                i18n("Query running libvirtd for VMs (requires virsh)"),
+                LibvirtDaemonImporter::is_virsh_available(),
+            ),
+            (
                 "libvirt_file",
                 i18n("Libvirt XML File"),
                 i18n("Import from a libvirt domain XML or virsh dumpxml output"),
                 true,
             ),
             (
-                "libvirt_daemon",
-                i18n("Libvirt Daemon (virsh)"),
-                i18n("Query running libvirtd for VMs (requires virsh)"),
-                LibvirtDaemonImporter::is_virsh_available(),
+                "mobaxterm_file",
+                i18n("MobaXterm (.mxtsessions)"),
+                i18n("Import from a MobaXterm session export file"),
+                true,
             ),
             (
                 "rdp_file",
@@ -284,9 +254,39 @@ impl ImportDialog {
                 true,
             ),
             (
-                "csv_file",
-                i18n("CSV"),
-                i18n("Import connections from a CSV file"),
+                "rdm_file",
+                i18n("Remote Desktop Manager (JSON)"),
+                i18n("Import from a Remote Desktop Manager JSON export file"),
+                true,
+            ),
+            (
+                "remmina",
+                i18n("Remmina"),
+                i18n("Import from Remmina connection files"),
+                RemminaImporter::new().is_available(),
+            ),
+            (
+                "royalts_file",
+                i18n("Royal TS (.rtsz)"),
+                i18n("Import from a Royal TS export file"),
+                true,
+            ),
+            (
+                "ssh_config",
+                i18n("SSH Config"),
+                i18n("Import from ~/.ssh/config"),
+                SshConfigImporter::new().is_available(),
+            ),
+            (
+                "ssh_config_file",
+                i18n("SSH Config File"),
+                i18n("Import from a specific SSH config file"),
+                true,
+            ),
+            (
+                "vv_file",
+                i18n("Virt-Viewer (.vv)"),
+                i18n("Import SPICE/VNC connection from a virt-viewer file"),
                 true,
             ),
         ];

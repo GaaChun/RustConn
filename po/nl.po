@@ -4577,6 +4577,14 @@ msgstr "SFTP via mc"
 msgid "Open SFTP in Midnight Commander (local shell tab)"
 msgstr "SFTP openen in Midnight Commander (lokaal shell-tabblad)"
 
+#: rustconn/src/dialogs/settings/terminal_tab.rs:255
+msgid "Copy on select"
+msgstr "Kopiëren bij selectie"
+
+#: rustconn/src/dialogs/settings/terminal_tab.rs:256
+msgid "Automatically copy selected text to clipboard"
+msgstr "Geselecteerde tekst automatisch naar klembord kopiëren"
+
 #: rustconn/src/dialogs/settings/ui_tab.rs:28
 msgid "Interface"
 msgstr "Interface"

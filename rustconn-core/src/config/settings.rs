@@ -103,6 +103,9 @@ pub struct TerminalSettings {
     /// the sandbox/host SSH-agent mismatch with external file managers).
     #[serde(default = "default_sftp_use_mc")]
     pub sftp_use_mc: bool,
+    /// Automatically copy selected text to clipboard (X11-style)
+    #[serde(default)]
+    pub copy_on_select: bool,
 }
 
 fn default_font_family() -> String {
@@ -174,6 +177,7 @@ impl Default for TerminalSettings {
             audible_bell: default_audible_bell(),
             log_timestamps: false,
             sftp_use_mc: default_sftp_use_mc(),
+            copy_on_select: false,
         }
     }
 }

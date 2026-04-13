@@ -5,6 +5,27 @@ All notable changes to RustConn will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.18] - 2026-04-13
+
+### Added
+- **Terminal font zoom** — dynamically scale terminal font size using Ctrl+Scroll wheel, Ctrl+Plus/Minus keyboard shortcuts, and Ctrl+0 to reset; uses VTE's native `font_scale` for per-session zoom (0.5×–4.0×) ([#77](https://github.com/totoshko88/RustConn/issues/77))
+- **Copy on select** — optional X11-style auto-copy: selected text is automatically copied to the clipboard; enable in Settings → Terminal → Behavior ([#78](https://github.com/totoshko88/RustConn/issues/78))
+
+### Improved
+- **Export group filter** — export dialog now includes a group selector to export only connections from a specific group and its subgroups; defaults to "All connections"
+- **Import/Export format ordering** — RustConn Native (.rcn) is now the default format in both import and export dialogs; remaining formats sorted alphabetically
+
+### Dependencies
+- gio 0.22.4 → 0.22.5
+- glib 0.22.4 → 0.22.5
+- hyper-rustls 0.27.7 → 0.27.8
+- libc 0.2.184 → 0.2.185
+- openssl 0.10.76 → 0.10.77
+- openssl-sys 0.9.112 → 0.9.113
+- pkg-config 0.3.32 → 0.3.33
+- rtoolbox 0.0.3 → 0.0.4
+- rustls 0.23.37 → 0.23.38
+
 ## [0.10.17] - 2026-04-12
 
 ### Fixed

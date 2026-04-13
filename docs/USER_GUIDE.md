@@ -1,6 +1,6 @@
 # RustConn User Guide
 
-**Version 0.10.17** | GTK4/libadwaita Connection Manager for Linux
+**Version 0.10.18** | GTK4/libadwaita Connection Manager for Linux
 
 RustConn is a modern connection manager designed for Linux with Wayland-first approach. It supports SSH, RDP, VNC, SPICE, MOSH, SFTP, Telnet, Serial, Kubernetes protocols and Zero Trust integrations through a native GTK4/libadwaita interface.
 
@@ -1673,7 +1673,7 @@ The settings dialog uses `adw::PreferencesDialog` with built-in search. Settings
 - **Scrollback** — History buffer lines
 - **Color Theme** — Dark, Light, Solarized, Monokai, Dracula
 - **Cursor** — Shape (Block/IBeam/Underline) and blink mode
-- **Behavior** — Scroll on output/keystroke, hyperlinks, mouse autohide, bell, SFTP via mc
+- **Behavior** — Scroll on output/keystroke, hyperlinks, mouse autohide, bell, SFTP via mc, copy on select
 
 **Logging group:**
 - **Enable Logging** — Global toggle
@@ -2366,6 +2366,9 @@ Note: Sidebar-scoped shortcuts (F2, Delete, Ctrl+E, Ctrl+D, Ctrl+C, Ctrl+V, Ctrl
 | Ctrl+Tab / Ctrl+PageDown | Next Tab |
 | Ctrl+Shift+Tab / Ctrl+PageUp | Previous Tab |
 | Ctrl+Shift+T | Local Shell |
+| Ctrl+Scroll | Zoom in/out (font size) |
+| Ctrl+Plus / Ctrl+Minus | Zoom in/out (font size) |
+| Ctrl+0 | Reset zoom |
 
 ### Terminal Keybinding Modes
 

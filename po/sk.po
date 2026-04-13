@@ -4566,6 +4566,14 @@ msgstr "SFTP cez mc"
 msgid "Open SFTP in Midnight Commander (local shell tab)"
 msgstr "Otvoriť SFTP v Midnight Commander (karta lokálneho shellu)"
 
+#: rustconn/src/dialogs/settings/terminal_tab.rs:255
+msgid "Copy on select"
+msgstr "Kopírovať pri výbere"
+
+#: rustconn/src/dialogs/settings/terminal_tab.rs:256
+msgid "Automatically copy selected text to clipboard"
+msgstr "Automaticky kopírovať vybraný text do schránky"
+
 #: rustconn/src/dialogs/settings/ui_tab.rs:28
 msgid "Interface"
 msgstr "Rozhranie"

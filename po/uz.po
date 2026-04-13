@@ -4576,6 +4576,14 @@ msgstr "mc orqali SFTP"
 msgid "Open SFTP in Midnight Commander (local shell tab)"
 msgstr "Midnight Commander da SFTP ochish (mahalliy qobiq tabi)"
 
+#: rustconn/src/dialogs/settings/terminal_tab.rs:255
+msgid "Copy on select"
+msgstr "Tanlashda nusxalash"
+
+#: rustconn/src/dialogs/settings/terminal_tab.rs:256
+msgid "Automatically copy selected text to clipboard"
+msgstr "Tanlangan matnni avtomatik ravishda vaqtinchalik xotiraga nusxalash"
+
 #: rustconn/src/dialogs/settings/ui_tab.rs:28
 msgid "Interface"
 msgstr "Interfeys"

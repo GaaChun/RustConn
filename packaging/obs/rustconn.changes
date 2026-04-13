@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Sun Apr 13 2026 Anton Isaiev <totoshko88@gmail.com> - 0.10.18
+
+- Update to version 0.10.18
+- [Added] Terminal font zoom — Ctrl+Scroll wheel, Ctrl+Plus/Minus, and
+  Ctrl+0 to reset; uses VTE native font_scale for per-session zoom (#77)
+- [Added] Copy on select — optional X11-style auto-copy; selected text is
+  automatically copied to clipboard; enable in Settings → Terminal (#78)
+
+-------------------------------------------------------------------
 Sun Apr 12 2026 Anton Isaiev <totoshko88@gmail.com> - 0.10.17
 
 - Update to version 0.10.17

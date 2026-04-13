@@ -103,6 +103,16 @@
     <control>touch</control>
   </supports>
   <releases>
+    <release version="0.10.18" date="2026-04-13">
+      <url type="details">https://github.com/totoshko88/RustConn/blob/main/CHANGELOG.md#01018---2026-04-13</url>
+      <description>
+        <p>Terminal font zoom and copy-on-select for VTE-based sessions.</p>
+        <ul>
+          <li>Added terminal font zoom — Ctrl+Scroll wheel to increase/decrease, Ctrl+Plus/Minus keyboard shortcuts, and Ctrl+0 to reset; per-session zoom using VTE native font_scale (#77)</li>
+          <li>Added copy on select — optional X11-style auto-copy; selected text is automatically copied to clipboard; enable in Settings → Terminal → Behavior (#78)</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.10.17" date="2026-04-12">
       <url type="details">https://github.com/totoshko88/RustConn/blob/main/CHANGELOG.md#01017---2026-04-12</url>
       <description>

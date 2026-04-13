@@ -6,7 +6,7 @@
 #
 
 Name:           rustconn
-Version:        0.10.17
+Version:        0.10.18
 Release:        0
 Summary:        Modern connection manager for Linux (SSH, RDP, VNC, SPICE, Telnet, Serial, Kubernetes, Zero Trust)
 License:        GPL-3.0-or-later
@@ -226,6 +226,12 @@ done
 %{_datadir}/locale/*/LC_MESSAGES/rustconn.mo
 
 %changelog
+* Sun Apr 13 2026 Anton Isaiev <totoshko88@gmail.com> - 0.10.18-1
+- [Added] Terminal font zoom — Ctrl+Scroll wheel, Ctrl+Plus/Minus, and
+  Ctrl+0 to reset; uses VTE native font_scale for per-session zoom (#77)
+- [Added] Copy on select — optional X11-style auto-copy; selected text is
+  automatically copied to clipboard; enable in Settings → Terminal (#78)
+
 * Sun Apr 12 2026 Anton Isaiev <totoshko88@gmail.com> - 0.10.17-1
 - [Fixed] clear command not working in Flatpak SSH sessions — forces
   TERM=xterm-256color for all remote commands in Flatpak (#25)

@@ -61,6 +61,11 @@ pub struct ExportDialog {
     csv_field_group: adw::SwitchRow,
     csv_field_tags: adw::SwitchRow,
     csv_field_description: adw::SwitchRow,
+    // Group filter
+    group_filter_dropdown: DropDown,
+    /// Flat list of (group_id, display_name) for the filter dropdown.
+    /// Index 0 is always `(None, "All connections")`.
+    groups_filter_data: Rc<RefCell<Vec<(Option<uuid::Uuid>, String)>>>,
     // Buttons
     export_button: Button,
     // State
@@ -134,6 +139,7 @@ impl ExportDialog {
             csv_field_group,
             csv_field_tags,
             csv_field_description,
+            group_filter_dropdown,
         ) = Self::create_options_page();
         stack.add_named(&options_page, Some("options"));
 
@@ -187,6 +193,8 @@ impl ExportDialog {
             csv_field_group,
             csv_field_tags,
             csv_field_description,
+            group_filter_dropdown,
+            groups_filter_data: Rc::new(RefCell::new(vec![(None, i18n("All connections"))])),
             export_button,
             connections: Rc::new(RefCell::new(Vec::new())),
             groups: Rc::new(RefCell::new(Vec::new())),
@@ -215,6 +223,7 @@ impl ExportDialog {
         adw::SwitchRow,
         adw::SwitchRow,
         adw::SwitchRow,
+        DropDown,
     ) {
         let scrolled = ScrolledWindow::builder()
             .hscrollbar_policy(gtk4::PolicyType::Never)
@@ -240,15 +249,16 @@ impl ExportDialog {
             .build();
 
         // Create format dropdown with all available formats
+        // Native (.rcn) is the default; remaining formats sorted alphabetically
         let format_list = StringList::new(&[
-            &i18n("Ansible Inventory"),
-            &i18n("SSH Config"),
-            &i18n("Remmina"),
-            &i18n("Asbru-CM"),
             &i18n("RustConn Native (.rcn)"),
-            &i18n("Royal TS (.rtsz)"),
-            &i18n("MobaXterm (.mxtsessions)"),
+            &i18n("Ansible Inventory"),
+            &i18n("Asbru-CM"),
             &i18n("CSV (*.csv)"),
+            &i18n("MobaXterm (.mxtsessions)"),
+            &i18n("Remmina"),
+            &i18n("Royal TS (.rtsz)"),
+            &i18n("SSH Config"),
         ]);
         let format_dropdown = DropDown::new(Some(format_list), gtk4::Expression::NONE);
         format_dropdown.set_selected(0);
@@ -262,6 +272,26 @@ impl ExportDialog {
         format_group.add(&format_row);
 
         main_vbox.append(&format_group);
+
+        // Group filter section — select which group subtree to export
+        let scope_group = adw::PreferencesGroup::builder()
+            .title(i18n("Export Scope"))
+            .description(i18n("Choose which connections to export"))
+            .build();
+
+        let group_filter_list = StringList::new(&[&i18n("All connections")]);
+        let group_filter_dropdown = DropDown::new(Some(group_filter_list), gtk4::Expression::NONE);
+        group_filter_dropdown.set_selected(0);
+        group_filter_dropdown.set_valign(gtk4::Align::Center);
+
+        let scope_row = adw::ActionRow::builder()
+            .title(i18n("Group"))
+            .subtitle(i18n("Export all or a specific group"))
+            .build();
+        scope_row.add_suffix(&group_filter_dropdown);
+        scope_group.add(&scope_row);
+
+        main_vbox.append(&scope_group);
 
         // Output path section using PreferencesGroup
         let output_group = adw::PreferencesGroup::builder()
@@ -411,6 +441,7 @@ impl ExportDialog {
             csv_field_group,
             csv_field_tags,
             csv_field_description,
+            group_filter_dropdown,
         )
     }
 
@@ -492,17 +523,7 @@ impl ExportDialog {
     /// Gets the selected export format
     #[must_use]
     pub fn get_selected_format(&self) -> ExportFormat {
-        match self.format_dropdown.selected() {
-            0 => ExportFormat::Ansible,
-            1 => ExportFormat::SshConfig,
-            2 => ExportFormat::Remmina,
-            3 => ExportFormat::Asbru,
-            4 => ExportFormat::Native,
-            5 => ExportFormat::RoyalTs,
-            6 => ExportFormat::MobaXterm,
-            7 => ExportFormat::Csv,
-            _ => ExportFormat::Ansible,
-        }
+        Self::format_from_index(self.format_dropdown.selected())
     }
 
     /// Gets the output path
@@ -530,8 +551,42 @@ impl ExportDialog {
         *self.connections.borrow_mut() = connections;
     }
 
-    /// Sets the groups for export
+    /// Sets the groups for export and populates the group filter dropdown
     pub fn set_groups(&self, groups: Vec<ConnectionGroup>) {
+        // Build hierarchical group list for the filter dropdown
+        let mut filter_data: Vec<(Option<uuid::Uuid>, String)> =
+            vec![(None, i18n("All connections"))];
+
+        #[allow(clippy::items_after_statements)]
+        fn add_group_recursive(
+            group: &ConnectionGroup,
+            all_groups: &[ConnectionGroup],
+            filter_data: &mut Vec<(Option<uuid::Uuid>, String)>,
+            depth: usize,
+        ) {
+            let indent = "  ".repeat(depth);
+            filter_data.push((Some(group.id), format!("{}{}", indent, group.name)));
+            let children: Vec<_> = all_groups
+                .iter()
+                .filter(|g| g.parent_id == Some(group.id))
+                .collect();
+            for child in children {
+                add_group_recursive(child, all_groups, filter_data, depth + 1);
+            }
+        }
+
+        let root_groups: Vec<_> = groups.iter().filter(|g| g.parent_id.is_none()).collect();
+        for group in root_groups {
+            add_group_recursive(group, &groups, &mut filter_data, 0);
+        }
+
+        // Update dropdown model
+        let names: Vec<&str> = filter_data.iter().map(|(_, name)| name.as_str()).collect();
+        let string_list = StringList::new(&names);
+        self.group_filter_dropdown.set_model(Some(&string_list));
+        self.group_filter_dropdown.set_selected(0);
+
+        *self.groups_filter_data.borrow_mut() = filter_data;
         *self.groups.borrow_mut() = groups;
     }
 
@@ -543,15 +598,15 @@ impl ExportDialog {
     /// Maps a format dropdown index to an `ExportFormat`
     fn format_from_index(index: u32) -> ExportFormat {
         match index {
-            0 => ExportFormat::Ansible,
-            1 => ExportFormat::SshConfig,
-            2 => ExportFormat::Remmina,
-            3 => ExportFormat::Asbru,
-            4 => ExportFormat::Native,
-            5 => ExportFormat::RoyalTs,
-            6 => ExportFormat::MobaXterm,
-            7 => ExportFormat::Csv,
-            _ => ExportFormat::Ansible,
+            0 => ExportFormat::Native,
+            1 => ExportFormat::Ansible,
+            2 => ExportFormat::Asbru,
+            3 => ExportFormat::Csv,
+            4 => ExportFormat::MobaXterm,
+            5 => ExportFormat::Remmina,
+            6 => ExportFormat::RoyalTs,
+            7 => ExportFormat::SshConfig,
+            _ => ExportFormat::Native,
         }
     }
 
@@ -866,6 +921,8 @@ impl ExportDialog {
         let csv_field_group = self.csv_field_group.clone();
         let csv_field_tags = self.csv_field_tags.clone();
         let csv_field_description = self.csv_field_description.clone();
+        let group_filter_dropdown = self.group_filter_dropdown.clone();
+        let groups_filter_data = self.groups_filter_data.clone();
 
         export_button.connect_clicked(move |btn| {
             let current_page = stack.visible_child_name();
@@ -946,9 +1003,45 @@ impl ExportDialog {
             progress_label.set_text(&i18n_f("Exporting to {}...", &[format.display_name()]));
 
             // Perform export on a background thread to avoid blocking the UI
-            let conns = connections.borrow().clone();
+            let all_conns = connections.borrow().clone();
             let grps = groups.borrow().clone();
             let snips = snippets.borrow().clone();
+
+            // Filter connections by selected group (and its descendants)
+            let conns = {
+                let filter_idx = group_filter_dropdown.selected() as usize;
+                let filter_data = groups_filter_data.borrow();
+                if filter_idx == 0 || filter_idx >= filter_data.len() {
+                    // "All connections" — no filtering
+                    all_conns
+                } else if let Some(root_group_id) = filter_data[filter_idx].0 {
+                    // Collect the selected group and all its descendants
+                    let mut matching_group_ids = std::collections::HashSet::new();
+                    matching_group_ids.insert(root_group_id);
+                    // Iteratively expand children
+                    let mut changed = true;
+                    while changed {
+                        changed = false;
+                        for g in &grps {
+                            if let Some(pid) = g.parent_id
+                                && matching_group_ids.contains(&pid)
+                                && matching_group_ids.insert(g.id)
+                            {
+                                changed = true;
+                            }
+                        }
+                    }
+                    all_conns
+                        .into_iter()
+                        .filter(|c| {
+                            c.group_id
+                                .is_some_and(|gid| matching_group_ids.contains(&gid))
+                        })
+                        .collect()
+                } else {
+                    all_conns
+                }
+            };
 
             progress_bar.set_fraction(0.3);
             progress_label.set_text(&i18n("Writing output files..."));
