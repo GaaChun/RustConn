@@ -593,16 +593,17 @@ pub static DOWNLOADABLE_COMPONENTS: &[DownloadableComponent] = &[
         description: "For Tailscale SSH",
         category: ComponentCategory::ZeroTrust,
         install_method: InstallMethod::Download,
-        download_url: Some("https://pkgs.tailscale.com/stable/tailscale_1.96.5_amd64.tgz"),
-        aarch64_url: Some("https://pkgs.tailscale.com/stable/tailscale_1.96.5_arm64.tgz"),
-        checksum: ChecksumPolicy::Static(
-            "7515bf959b73b956ceb967351c7e299cbb3668a53d35f9c770eb72e00d93ced6",
-        ),
+        download_url: Some("https://pkgs.tailscale.com/stable/tailscale_1.96.4_amd64.tgz"),
+        aarch64_url: Some("https://pkgs.tailscale.com/stable/tailscale_1.96.4_arm64.tgz"),
+        // Tailscale publishes platform-specific patches (e.g. macOS-only),
+        // so a pinned version may not exist for Linux. Use SkipLatest to
+        // avoid 404 errors when the pinned version is macOS-only (#81).
+        checksum: ChecksumPolicy::SkipLatest,
         pip_package: None,
         size_hint: "~25 MB",
         binary_name: "tailscale",
         install_subdir: "tailscale",
-        pinned_version: Some("1.96.5"),
+        pinned_version: Some("1.96.4"),
         works_in_sandbox: true,
     },
     DownloadableComponent {

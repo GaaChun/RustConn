@@ -103,9 +103,9 @@
     <control>touch</control>
   </supports>
   <releases>
-    <release version="0.10.19" date="2026-04-14">
+    <release version="0.10.20" date="2026-04-15">
       <description>
-        <p>Tab group improvements and dependency updates:</p>
+        <p>Bug fixes for RDP shared folders, Tailscale CLI download, and SSH port forwarding UI:</p>
         <ul>
           <li>Tab group chooser dialog with existing group selection</li>
           <li>Close All in Group context menu action</li>

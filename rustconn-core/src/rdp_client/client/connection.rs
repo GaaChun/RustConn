@@ -115,10 +115,18 @@ pub async fn establish_connection(
             })
             .collect();
 
-        // Create backend for the first shared folder
-        if let Some(folder) = config.shared_folders.first() {
-            let base_path = folder.path.to_string_lossy().into_owned();
-            let rdpdr_backend = RustConnRdpdrBackend::new(base_path);
+        // Create backend for shared folders with per-drive path mapping
+        if !config.shared_folders.is_empty() {
+            let drive_paths: std::collections::HashMap<u32, String> = config
+                .shared_folders
+                .iter()
+                .enumerate()
+                .map(|(idx, folder)| {
+                    let device_id = idx as u32 + 1;
+                    (device_id, folder.path.to_string_lossy().into_owned())
+                })
+                .collect();
+            let rdpdr_backend = RustConnRdpdrBackend::new(drive_paths);
             let rdpdr = Rdpdr::new(Box::new(rdpdr_backend), computer_name)
                 .with_drives(Some(initial_drives));
             connector.static_channels.insert(rdpdr);

@@ -1,4 +1,4 @@
-rustconn (0.10.19-1) unstable; urgency=medium
+rustconn (0.10.20-1) unstable; urgency=medium
 
   * Tab group chooser dialog with existing group selection
   * Close All in Group context menu action

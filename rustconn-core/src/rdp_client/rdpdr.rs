@@ -42,14 +42,18 @@ use tracing::{debug, trace, warn};
 /// RDPDR backend for Linux/Unix shared folders
 #[derive(Debug)]
 pub struct RustConnRdpdrBackend {
-    /// Base path for the shared folder
-    base_path: String,
+    /// Map of device IDs to their base paths (supports multiple shared folders)
+    drive_paths: HashMap<u32, String>,
+    /// Fallback base path (first shared folder, used when device_id is unknown)
+    default_base_path: String,
     /// Next file ID to assign
     next_file_id: u32,
     /// Map of file IDs to open file handles
     file_handles: HashMap<u32, File>,
     /// Map of file IDs to their paths
     file_paths: HashMap<u32, String>,
+    /// Map of file IDs to the device_id they belong to
+    file_device_map: HashMap<u32, u32>,
     /// Map of file IDs to directory iterators
     dir_entries: HashMap<u32, Vec<String>>,
     /// Map of file IDs to pending directory change notifications
@@ -73,15 +77,23 @@ struct PendingNotification {
 impl_as_any!(RustConnRdpdrBackend);
 
 impl RustConnRdpdrBackend {
-    /// Creates a new RDPDR backend with the given base path
+    /// Creates a new RDPDR backend with drive paths mapped by device ID
     #[must_use]
-    pub fn new(base_path: String) -> Self {
-        // Ensure path ends with /
-        let base_path = if base_path.ends_with('/') {
-            base_path
-        } else {
-            format!("{base_path}/")
-        };
+    pub fn new(drive_paths: HashMap<u32, String>) -> Self {
+        // Ensure all paths end with /
+        let drive_paths: HashMap<u32, String> = drive_paths
+            .into_iter()
+            .map(|(id, p)| {
+                let p = if p.ends_with('/') { p } else { format!("{p}/") };
+                (id, p)
+            })
+            .collect();
+
+        let default_base_path = drive_paths
+            .values()
+            .next()
+            .cloned()
+            .unwrap_or_else(|| "/tmp/".to_string());
 
         // Try to create directory watcher
         let dir_watcher = match DirectoryWatcher::new() {
@@ -99,10 +111,12 @@ impl RustConnRdpdrBackend {
         };
 
         Self {
-            base_path,
+            drive_paths,
+            default_base_path,
             next_file_id: 1,
             file_handles: HashMap::new(),
             file_paths: HashMap::new(),
+            file_device_map: HashMap::new(),
             dir_entries: HashMap::new(),
             pending_notifications: HashMap::new(),
             dir_watcher,
@@ -116,10 +130,18 @@ impl RustConnRdpdrBackend {
         id
     }
 
-    /// Converts a Windows-style path to Unix path
-    fn to_unix_path(&self, windows_path: &str) -> String {
+    /// Returns the base path for a given device ID, falling back to the default
+    fn base_path_for_device(&self, device_id: u32) -> &str {
+        self.drive_paths
+            .get(&device_id)
+            .map_or(self.default_base_path.as_str(), String::as_str)
+    }
+
+    /// Converts a Windows-style path to Unix path using the correct drive base path
+    fn to_unix_path(&self, device_id: u32, windows_path: &str) -> String {
+        let base = self.base_path_for_device(device_id);
         let unix_path = windows_path.replace('\\', "/");
-        format!("{}{}", self.base_path, unix_path.trim_start_matches('/'))
+        format!("{}{}", base, unix_path.trim_start_matches('/'))
     }
 
     /// Polls the directory watcher for pending change notifications
@@ -266,10 +288,12 @@ impl RustConnRdpdrBackend {
     #[allow(clippy::unnecessary_wraps)]
     fn handle_create(&mut self, req: DeviceCreateRequest) -> PduResult<Vec<SvcMessage>> {
         let file_id = self.alloc_file_id();
-        let path = self.to_unix_path(&req.path);
+        let device_id = req.device_io_request.device_id;
+        let path = self.to_unix_path(device_id, &req.path);
         tracing::trace!(
-            "RDPDR create: file_id={}, path='{}', disposition={:?}",
+            "RDPDR create: file_id={}, device_id={}, path='{}', disposition={:?}",
             file_id,
+            device_id,
             path,
             req.create_disposition
         );
@@ -288,6 +312,7 @@ impl RustConnRdpdrBackend {
                     if let Ok(file) = OpenOptions::new().read(true).open(&path) {
                         self.file_handles.insert(file_id, file);
                         self.file_paths.insert(file_id, path);
+                        self.file_device_map.insert(file_id, device_id);
                         return Ok(vec![SvcMessage::from(RdpdrPdu::DeviceCreateResponse(
                             DeviceCreateResponse {
                                 device_io_reply: DeviceIoResponse::new(
@@ -322,6 +347,7 @@ impl RustConnRdpdrBackend {
                     {
                         self.file_handles.insert(file_id, file);
                         self.file_paths.insert(file_id, path);
+                        self.file_device_map.insert(file_id, device_id);
                         return Ok(vec![SvcMessage::from(RdpdrPdu::DeviceCreateResponse(
                             DeviceCreateResponse {
                                 device_io_reply: DeviceIoResponse::new(
@@ -368,6 +394,7 @@ impl RustConnRdpdrBackend {
             Ok(file) => {
                 self.file_handles.insert(file_id, file);
                 self.file_paths.insert(file_id, path);
+                self.file_device_map.insert(file_id, device_id);
                 let info = match req.create_disposition {
                     CreateDisposition::FILE_CREATE => Information::FILE_SUPERSEDED,
                     CreateDisposition::FILE_OVERWRITE | CreateDisposition::FILE_OVERWRITE_IF => {
@@ -407,6 +434,7 @@ impl RustConnRdpdrBackend {
         let file_id = req.device_io_request.file_id;
         self.file_handles.remove(&file_id);
         self.file_paths.remove(&file_id);
+        self.file_device_map.remove(&file_id);
         self.dir_entries.remove(&file_id);
         self.pending_notifications.remove(&file_id);
 
@@ -577,6 +605,8 @@ impl RustConnRdpdrBackend {
         &mut self,
         req: ServerDriveQueryVolumeInformationRequest,
     ) -> PduResult<Vec<SvcMessage>> {
+        let device_id = req.device_io_request.device_id;
+        let base = self.base_path_for_device(device_id).to_owned();
         let buffer = match req.fs_info_class_lvl {
             FileSystemInformationClassLevel::FILE_FS_ATTRIBUTE_INFORMATION => {
                 Some(FileSystemInformationClass::FileFsAttributeInformation(
@@ -598,7 +628,7 @@ impl RustConnRdpdrBackend {
                 }),
             ),
             FileSystemInformationClassLevel::FILE_FS_SIZE_INFORMATION => {
-                let (total_units, avail_units) = get_disk_stats(&self.base_path);
+                let (total_units, avail_units) = get_disk_stats(&base);
                 Some(FileSystemInformationClass::FileFsSizeInformation(
                     FileFsSizeInformation {
                         total_alloc_units: total_units,
@@ -609,7 +639,7 @@ impl RustConnRdpdrBackend {
                 ))
             }
             FileSystemInformationClassLevel::FILE_FS_FULL_SIZE_INFORMATION => {
-                let (total_units, avail_units) = get_disk_stats(&self.base_path);
+                let (total_units, avail_units) = get_disk_stats(&base);
                 Some(FileSystemInformationClass::FileFsFullSizeInformation(
                     FileFsFullSizeInformation {
                         total_alloc_units: total_units,

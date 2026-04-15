@@ -6,7 +6,7 @@
 #
 
 Name:           rustconn
-Version:        0.10.19
+Version:        0.10.20
 Release:        0
 Summary:        Modern connection manager for Linux (SSH, RDP, VNC, SPICE, Telnet, Serial, Kubernetes, Zero Trust)
 License:        GPL-3.0-or-later
@@ -226,7 +226,7 @@ done
 %{_datadir}/locale/*/LC_MESSAGES/rustconn.mo
 
 %changelog
-* Tue Apr 14 2026 Anton Isaiev <totoshko88@gmail.com> - 0.10.19-0
+* Tue Apr 14 2026 Anton Isaiev <totoshko88@gmail.com> - 0.10.20-0
 - Tab group chooser dialog with existing group selection
 - Close All in Group context menu action
 - Group name as tab title prefix

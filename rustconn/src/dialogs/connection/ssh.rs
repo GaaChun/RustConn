@@ -38,6 +38,7 @@ use rustconn_core::sftp::{SocketPathValidation, validate_socket_path};
 #[allow(clippy::type_complexity)]
 pub type SshOptionsWidgets = (
     GtkBox,
+    GtkBox,                // content box (for appending additional groups)
     DropDown,              // auth_dropdown
     DropDown,              // key_source_dropdown
     Entry,                 // key_entry
@@ -132,6 +133,7 @@ pub fn create_ssh_options() -> SshOptionsWidgets {
 
     (
         container,
+        content,
         auth_dropdown,
         key_source_dropdown,
         key_entry,

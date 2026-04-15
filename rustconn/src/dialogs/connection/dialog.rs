@@ -464,6 +464,7 @@ impl ConnectionDialog {
         // SSH options
         let (
             ssh_box,
+            ssh_content_box,
             ssh_auth_dropdown,
             ssh_key_source_dropdown,
             ssh_key_entry,
@@ -487,17 +488,10 @@ impl ConnectionDialog {
         ) = ssh::create_ssh_options();
 
         // Add port forwarding group to SSH options panel
-        // Navigate: ssh_box → ScrolledWindow → Clamp → content Box
-        if let Some(scrolled) = ssh_box.first_child()
-            && let Some(scrolled_win) = scrolled.downcast_ref::<ScrolledWindow>()
-            && let Some(clamp) = scrolled_win.child()
-            && let Some(adw_clamp) = clamp.downcast_ref::<adw::Clamp>()
-            && let Some(content) = adw_clamp.child()
-            && let Some(content_box) = content.downcast_ref::<GtkBox>()
         {
             let pf_group =
                 ssh::create_port_forwarding_group(&ssh_port_forwards_list, &ssh_port_forwards);
-            content_box.append(&pf_group);
+            ssh_content_box.append(&pf_group);
         }
 
         protocol_stack.add_named(&ssh_box, Some("ssh"));

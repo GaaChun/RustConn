@@ -5,13 +5,23 @@ All notable changes to RustConn will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.20] - 2026-04-15
+
+### Fixed
+- **RDP shared folders only used first folder path** — RDPDR backend now maps each drive to its own base path via `device_id`, so multiple shared folders work correctly in embedded IronRDP mode ([#82](https://github.com/totoshko88/RustConn/issues/82))
+- **Tailscale CLI download broken by macOS-only release** — pinned version 1.96.5 only existed for macOS; downgraded to 1.96.4 (latest Linux build) and switched from static checksum to `SkipLatest` policy to prevent future platform-specific release breakage ([#81](https://github.com/totoshko88/RustConn/issues/81))
+- **SSH Port Forwarding section missing from connection dialog** — the Port Forwarding group was silently not added because fragile widget tree navigation (`first_child → downcast → child → ...`) failed; now uses the content box directly from `create_ssh_options()` return value ([#80](https://github.com/totoshko88/RustConn/issues/80))
+
+### Docs
+- **Flatpak shared folders troubleshooting** — added "RDP Shared Folders in Flatpak" section to User Guide with `flatpak override` commands for granting filesystem access ([#82](https://github.com/totoshko88/RustConn/issues/82))
+
 ## [0.10.19] - 2026-04-15
 
 ### Added
 - **Shell button in header bar** — moved the Local Shell button from the sidebar filter bar to the main header bar as a prominent accent-colored pill button with icon and label; always visible even when sidebar is hidden ([#76](https://github.com/totoshko88/RustConn/issues/76))
 - **Optional protocol filter bar** — protocol filters can now be toggled on/off via a button in the search bar or in Settings → Interface → "Show protocol filters"; state is persisted across sessions; hidden by default for a cleaner interface ([#76](https://github.com/totoshko88/RustConn/issues/76))
 - **Toggle protocol filters action** — `win.toggle-protocol-filters` window action with sidebar toggle button that persists visibility state to config
-- **Tab group chooser dialog** — "Set Group..." dialog now shows existing groups as clickable pill buttons for quick selection, with a text field for creating new groups; no more manual retyping of group names
+- **Tab group chooser dialog** — "Set Group..." dialog now shows existing groups as clickable pill buttons for quick selection, with a text field for creating new groups; no  manual retyping of group names
 - **Close All in Group** — new context menu action on grouped tabs; shows a confirmation dialog with tab count and group name, then closes all tabs belonging to that group
 - **Group name in tab tooltip** — hovering over a grouped tab now shows `[GroupName]` in the tooltip, visible even when split view colors are active
 - **Group name as tab title prefix** — tab groups now display as a `[GroupName]` prefix in the tab title instead of a colored indicator icon; this separates group identity from split view / protocol color indicators, so both are visible simultaneously

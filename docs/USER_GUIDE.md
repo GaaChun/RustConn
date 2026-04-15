@@ -1,6 +1,6 @@
 # RustConn User Guide
 
-**Version 0.10.19** | GTK4/libadwaita Connection Manager for Linux
+**Version 0.10.20** | GTK4/libadwaita Connection Manager for Linux
 
 RustConn is a modern connection manager designed for Linux with Wayland-first approach. It supports SSH, RDP, VNC, SPICE, MOSH, SFTP, Telnet, Serial, Kubernetes protocols and Zero Trust integrations through a native GTK4/libadwaita interface.
 
@@ -589,11 +589,11 @@ Forward TCP ports through SSH tunnels. Three modes are supported:
 | Dynamic (`-D`) | `-D local_port` | SOCKS proxy on a local port |
 
 **Configure Port Forwarding:**
-1. Edit an SSH connection → **SSH** tab
+1. Edit an SSH connection → **Protocol** tab
 2. Scroll to **Port Forwarding** section
-3. Click **Add Rule**
-4. Select direction (Local, Remote, Dynamic)
-5. Enter local port, remote host, and remote port (remote host/port not needed for Dynamic)
+3. Select direction (Local, Remote, Dynamic)
+4. Enter local port, remote host, and remote port (remote host/port hidden for Dynamic)
+5. Click **Add Forward**
 6. Add multiple rules as needed
 7. Click **Save**
 
@@ -622,7 +622,7 @@ The SSH tab in the connection dialog contains session-level toggles that control
 | Waypipe | `waypipe ssh ...` | Forward Wayland GUI applications (see [Waypipe](#waypipe-wayland-forwarding) below) |
 
 **Configure:**
-1. Edit an SSH connection → **SSH** tab
+1. Edit an SSH connection → **Protocol** tab
 2. Scroll to the **Session** group
 3. Toggle the desired options
 4. Click **Save**
@@ -634,7 +634,7 @@ All toggles are off by default. They can be combined freely — for example, ena
 Pass arbitrary `-o` options to the SSH command. This is for advanced SSH configuration that doesn't have a dedicated UI toggle.
 
 **Configure:**
-1. Edit an SSH connection → **SSH** tab → **Session** group
+1. Edit an SSH connection → **Protocol** tab → **Session** group
 2. In the **Custom Options** field, enter comma-separated `Key=Value` pairs
 
 **Format:** `Key1=Value1, Key2=Value2`
@@ -3616,6 +3616,31 @@ flatpak override --user --show io.github.totoshko88.RustConn
 # Reset all user overrides to defaults
 flatpak override --user --reset io.github.totoshko88.RustConn
 ```
+
+### RDP Shared Folders in Flatpak
+
+The Flatpak sandbox restricts filesystem access by default. When you select a folder via the file picker, Flatpak provides a temporary document portal path (`/run/user/.../doc/...`) that may not support all file operations required by RDP drive redirection.
+
+To make shared folders work reliably in embedded RDP mode, grant RustConn access to the directories you want to share:
+
+```bash
+# Grant read-write access to your entire home directory
+flatpak override --user --filesystem=home io.github.totoshko88.RustConn
+
+# Or grant access to a specific directory only
+flatpak override --user --filesystem=/home/user/SharedFolder io.github.totoshko88.RustConn
+
+# Read-only access (files visible in Windows but not writable)
+flatpak override --user --filesystem=home:ro io.github.totoshko88.RustConn
+```
+
+After adding the override, restart RustConn and re-add the shared folder in the RDP connection settings. The folder should now appear with full read/write access in the remote Windows session under `\\tsclient\<share_name>`.
+
+**Troubleshooting shared folders in Flatpak:**
+
+- If the folder appears in Windows Explorer but is empty or files give "not available" errors, the path is likely a document portal path without sufficient permissions. Add a `--filesystem` override as shown above.
+- If you share multiple folders, each one appears as a separate network drive in Windows Explorer.
+- External RDP mode (FreeRDP) uses the same paths — the override applies to both embedded and external modes.
 
 ### Why Manual Overrides?
 
