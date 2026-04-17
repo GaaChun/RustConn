@@ -396,6 +396,57 @@ label.error {
 }
 
 /* ============================================================
+ * Sidebar Color Consistency (GNOME HIG)
+ * Search bar and filter bar use .toolbar class for headerbar-like
+ * background. Bottom toolbar uses ToolbarView Raised style.
+ * ============================================================ */
+
+/* Unified sidebar styling — GNOME Files-like color scheme
+ * Sidebar pane uses @headerbar_bg_color to match the headerbar.
+ * Tab bar inherits from sidebar pane background via same color. */
+
+/* Override sidebar pane background to match headerbar */
+overlaysplitview > .sidebar-pane {
+    background-color: @headerbar_bg_color;
+}
+
+/* Tab bar — use same color as headerbar for visual unity */
+tabbar,
+tabbar > revealer,
+tabbar > revealer > box {
+    background: @headerbar_bg_color;
+}
+
+/* Hide separator lines for seamless flat look */
+.sidebar > separator.spacer {
+    min-height: 0;
+    background: none;
+    border: none;
+}
+
+/* Sidebar bottom toolbar — no border for flat look */
+.sidebar toolbarview > .bottom-bar {
+    border-top: none;
+}
+
+/* Sidebar bottom toolbar — flat icons on transparent background */
+.sidebar toolbarview > .bottom-bar {
+    border-top: 1px solid alpha(@borders, 0.3);
+}
+
+/* ============================================================
+ * Connection Dialog — General Tab Styles
+ * Entry widgets in ActionRow suffixes need consistent sizing.
+ * Description TextView needs a visible border inside ActionRow.
+ * ============================================================ */
+
+/* Description TextView border inside ActionRow suffix */
+.connection-dialog scrolledwindow > textview {
+    border: 1px solid alpha(@borders, 0.5);
+    border-radius: 6px;
+}
+
+/* ============================================================
  * Accessibility: Reduced Motion
  * GTK4 CSS does not support @media (prefers-reduced-motion).
  * The transitions used in this stylesheet are minimal (≤200ms)

@@ -116,6 +116,8 @@ impl ConnectionSidebar {
         search_box.set_margin_end(6);
         search_box.set_margin_top(6);
         search_box.set_margin_bottom(6);
+        // No custom background class — let libadwaita handle
+        // @sidebar_bg_color for proper light/dark theme support
 
         // Search entry
         let search_entry = SearchEntry::new();
@@ -794,12 +796,13 @@ impl ConnectionSidebar {
 
         list_view.add_controller(list_view_drop_target);
 
-        // Add bottom toolbar with secondary actions via ToolbarView for raised style
+        // Add bottom toolbar with secondary actions via ToolbarView
+        // Use Flat style for transparent background (icons on transparent bg)
         let (bottom_toolbar, keepass_button) = sidebar_ui::create_sidebar_bottom_toolbar();
         let toolbar_view = adw::ToolbarView::new();
         toolbar_view.set_content(Some(&overlay));
         toolbar_view.add_bottom_bar(&bottom_toolbar);
-        toolbar_view.set_bottom_bar_style(adw::ToolbarStyle::Raised);
+        toolbar_view.set_bottom_bar_style(adw::ToolbarStyle::Flat);
         toolbar_view.set_vexpand(true);
         container.append(&toolbar_view);
 
@@ -1539,11 +1542,9 @@ impl ConnectionSidebar {
 
         if is_active {
             self.keepass_button.remove_css_class("dim-label");
-            self.keepass_button.add_css_class("suggested-action");
             self.keepass_button
                 .set_tooltip_text(Some(&i18n("Open Password Vault (Active)")));
         } else {
-            self.keepass_button.remove_css_class("suggested-action");
             self.keepass_button.add_css_class("dim-label");
             if enabled {
                 self.keepass_button

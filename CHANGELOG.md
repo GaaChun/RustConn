@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.11.0] - 2026-04-17
 
 ### Added
-- **General tab migrated to adw:: widgets** — connection dialog General tab rebuilt with `adw::PreferencesGroup`, `adw::EntryRow`, `adw::SpinRow`, `adw::ComboRow`, and `adw::PasswordEntryRow`; replaces manual Grid+Label+Entry layout with native GNOME HIG sections (Identity, Connection, Authentication, Organization); 30-element tuple replaced with `BasicTabWidgets` struct
+- **General tab migrated to adw:: widgets** — connection dialog General tab rebuilt with `adw::PreferencesGroup`, `adw::EntryRow`, `adw::SpinRow`, `adw::ComboRow`, and `adw::PasswordEntryRow`; replaces manual Grid+Label+Entry layout with native GNOME HIG sections (Identity, Connection, Authentication, Organization); 30-element tuple replaced with `BasicTabWidgets` struct; content wrapped in `adw::Clamp` (max 600px) for consistent width; Entry suffix widgets constrained with `width_chars`/`max_width_chars`
 - **Legacy XOR encryption migration warning** — credentials still using XOR obfuscation are transparently migrated to AES-256-GCM on load; a toast notification shows the count of migrated credentials; XOR support will be removed in v0.12
 - **State access helpers** — `with_state()`, `try_with_state()`, `with_state_mut()`, `try_with_state_mut()` helper functions reduce RefCell borrow panics; documented in ARCHITECTURE.md
 - **Runtime warning for `block_on_async`** — logs `tracing::warn` when GTK main thread is blocked for >100ms, suggesting `spawn_async` instead
@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **RDP connection state structured** — `handle_ironrdp_error()` 13-parameter signature replaced with `RdpConnectionContext` struct
 - **Automation task validation hardened** — import warnings for connections with automation/expect rules; sensitive env vars (`BW_SESSION`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`) cleared before task execution
 - **Localized constants and port descriptions** — `(Root)`, `(None)`, `(No keys loaded)`, and port range labels (`Well-Known`, `Registered`, `Dynamic`) now wrapped in `i18n()` for translation
+- **Sidebar GNOME HIG color consistency** — sidebar pane and tab bar backgrounds unified with `@headerbar_bg_color` for GNOME Files-like appearance; bottom toolbar buttons use `.flat` style; separator between search and list hidden for seamless look; works correctly in both light and dark themes
+- **KeePass button visibility** — active vault button now uses normal icon color instead of `.suggested-action` (which rendered white-on-white in light theme); inactive state uses `.dim-label`
+- **Focus border only in split view** — `.focused-panel` accent border is now hidden when only one panel exists; previously showed a distracting border around the welcome screen and single-tab sessions
 
 ### Security
 - **Automation env var sanitization** — task executor removes sensitive environment variables before spawning shell commands

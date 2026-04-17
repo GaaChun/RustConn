@@ -272,6 +272,15 @@ pub(super) fn create_basic_tab() -> BasicTabWidgets {
 
 **Тестування:** Ручне тестування кожного протоколу + screen reader (Orca).
 
+**Прогрес:**
+- [x] Створити `BasicTabWidgets` struct замість tuple
+- [x] Замінити Grid на `adw::PreferencesGroup` з секціями Identity / Connection / Authentication / Organization
+- [x] Оновити всі місця в `dialog.rs`, що деструктурують tuple, на struct полів
+- [x] Accessible label relations для screen readers (LabelledBy)
+- [x] Візуальне тюнінг: `adw::Clamp` (max 600px), `width_chars`/`max_width_chars` на Entry в suffix, margins 12px
+- [ ] Ручне тестування всіх протоколів і password sources
+- [ ] Перевірка tab order і screen reader (Orca)
+
 ---
 
 ### TASK-005: Посилити валідацію automation tasks
@@ -870,6 +879,23 @@ container.append(&toolbar_view);
 
 ---
 
+### TASK-022: Split view tab coloring скидається при відкритті Settings
+
+**Пріоритет:** 🟠 Високий | **Оцінка:** 1-2 год | **Область:** UX / Bug  
+**Файли:** `rustconn/src/window/mod.rs`, `rustconn/src/terminal_notebook.rs`
+
+**Проблема:**  
+При відкритті діалогу Settings кольорові мітки split view на табах (синій, зелений, помаранчевий тощо) зникають. Після повернення у вкладку з split view мітки відновлюються. Ймовірно Settings діалог тригерить `set_color_tabs_by_protocol()` або перечитує settings і скидає стан tab coloring.
+
+**Що зробити:**
+1. Дослідити чи Settings діалог викликає `refresh_keepass_status()` або інший метод що перемальовує таби
+2. Перевірити чи `set_color_tabs_by_protocol()` не скидає split view colors
+3. Зберігати split view color state окремо від protocol tab coloring
+
+**Тестування:** Ручне — відкрити split view, призначити кольори, відкрити Settings, перевірити що кольори збереглися.
+
+---
+
 ## Зведена таблиця
 
 | # | Задача | Релiз | Пріоритет | Оцінка | Область |
@@ -887,6 +913,7 @@ container.append(&toolbar_view);
 | 011 | Accessible relations у widget builders | v0.12.0 | 🟡 | 2-3 год | A11Y |
 | 012 | Runtime warning для block_on_async | v0.11.0 | 🟡 | 1 год | Architecture |
 | 013 | cargo audit у CI | v0.12.0 | 🟡 | 2-3 год | Security / CI |
+| 022 | Split view tab coloring скидається при Settings | v0.11.0 | 🟠 | 1-2 год | UX / Bug |
 | 014 | Локалізація констант та port descriptions | v0.11.0 | 🟢 | 1-2 год | i18n |
 | 015 | Desktop entry переклади | v0.11.0 | 🟢 | 30 хв | i18n |
 | 016 | Accessible label Command Palette list | v0.11.0 | 🟢 | 15 хв | A11Y |

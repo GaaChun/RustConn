@@ -403,43 +403,41 @@ impl ConnectionDialog {
         let view_stack = Self::create_view_stack(&window, &header);
 
         // === Basic Tab ===
-        let (
-            basic_grid,
-            name_entry,
-            icon_entry,
-            description_view,
-            host_entry,
-            host_label,
-            port_spin,
-            port_label,
-            username_entry,
-            username_label,
-            domain_entry,
-            domain_label,
-            tags_entry,
-            tags_label,
-            protocol_dropdown,
-            password_source_dropdown,
-            password_source_label,
-            password_entry,
-            _password_entry_label,
-            password_visibility_button,
-            password_load_button,
-            password_row,
-            variable_dropdown,
-            variable_row,
-            group_dropdown,
-            username_load_button,
-            domain_load_button,
-            script_command_entry,
-            script_test_button,
-            script_row,
-        ) = super::general_tab::create_basic_tab();
+        let basic = super::general_tab::create_basic_tab();
+        let basic_grid = &basic.container;
+        let name_entry = basic.name_entry.clone();
+        let icon_entry = basic.icon_entry.clone();
+        let description_view = basic.description_view.clone();
+        let host_entry = basic.host_entry.clone();
+        let host_label = basic.host_label.clone();
+        let port_spin = basic.port_spin.clone();
+        let port_label = basic.port_label.clone();
+        let username_entry = basic.username_entry.clone();
+        let username_label = basic.username_label.clone();
+        let domain_entry = basic.domain_entry.clone();
+        let domain_label = basic.domain_label.clone();
+        let tags_entry = basic.tags_entry.clone();
+        let tags_label = basic.tags_label.clone();
+        let protocol_dropdown = basic.protocol_dropdown.clone();
+        let password_source_dropdown = basic.password_source_dropdown.clone();
+        let password_source_label = basic.password_source_label.clone();
+        let password_entry = basic.password_entry.clone();
+        let password_visibility_button = basic.password_visibility_button.clone();
+        let password_load_button = basic.password_load_button.clone();
+        let password_row = basic.password_row.clone();
+        let variable_dropdown = basic.variable_dropdown.clone();
+        let variable_row = basic.variable_row.clone();
+        let group_dropdown = basic.group_dropdown.clone();
+        let username_load_button = basic.username_load_button.clone();
+        let domain_load_button = basic.domain_load_button.clone();
+        let script_command_entry = basic.script_command_entry.clone();
+        let script_test_button = basic.script_test_button.clone();
+        let script_row = basic.script_row.clone();
         // Wrap basic grid in ScrolledWindow for consistent styling
         let basic_scrolled = ScrolledWindow::builder()
             .hscrollbar_policy(gtk4::PolicyType::Never)
             .vscrollbar_policy(gtk4::PolicyType::Automatic)
-            .child(&basic_grid)
+            .child(basic_grid)
             .build();
         view_stack
             .add_titled(&basic_scrolled, Some("basic"), &i18n("Basic"))
