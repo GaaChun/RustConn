@@ -1,4 +1,20 @@
 -------------------------------------------------------------------
+Fri Apr 17 2026 Anton Isaiev <totoshko88@gmail.com> - 0.11.0
+
+- [Added] General tab migrated to adw:: widgets — PreferencesGroup,
+  EntryRow, SpinRow, ComboRow, PasswordEntryRow; BasicTabWidgets struct
+  replaces 30-element tuple (TASK-004)
+- [Added] Legacy XOR encryption migration warning — toast notification
+  shows count of migrated credentials; XOR removed in v0.12 (TASK-006)
+- [Added] State access helpers — with_state(), try_with_state(),
+  with_state_mut(), try_with_state_mut() (TASK-008)
+- [Improved] RDP connection state structured — RdpConnectionContext
+  struct replaces 13-parameter function signature (TASK-007)
+- [Security] Automation task validation hardened — property tests for
+  shell metacharacters; sensitive env vars cleared before task
+  execution (TASK-005)
+
+-------------------------------------------------------------------
 Thu Apr 17 2026 Anton Isaiev <totoshko88@gmail.com> - 0.10.22
 
 - [Fixed] Terminal context menu Copy/Paste now works — use VTE native

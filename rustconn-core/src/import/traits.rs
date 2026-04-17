@@ -74,6 +74,8 @@ pub struct ImportResult {
     pub credentials: HashMap<Uuid, Credentials>,
     /// Snippets imported (native format only)
     pub snippets: Vec<Snippet>,
+    /// Warnings generated during import (non-fatal informational messages)
+    pub warnings: Vec<String>,
 }
 
 impl ImportResult {
@@ -115,6 +117,19 @@ impl ImportResult {
 
     /// Adds a connection to the result
     pub fn add_connection(&mut self, connection: Connection) {
+        // Warn about imported connections with automation/expect rules (TASK-005)
+        let expect_count = connection.automation.expect_rules.len();
+        let has_tasks =
+            connection.pre_connect_task.is_some() || connection.post_disconnect_task.is_some();
+        if has_tasks || expect_count > 0 {
+            let task_count = usize::from(connection.pre_connect_task.is_some())
+                + usize::from(connection.post_disconnect_task.is_some());
+            self.record_warning(format!(
+                "Connection '{}' has {} automation task(s) and {} expect rule(s) — \
+                 review before running",
+                connection.name, task_count, expect_count,
+            ));
+        }
         self.connections.push(connection);
     }
 
@@ -144,6 +159,11 @@ impl ImportResult {
         !self.credentials.is_empty()
     }
 
+    /// Records a warning (non-fatal informational message)
+    pub fn record_warning(&mut self, warning: impl Into<String>) {
+        self.warnings.push(warning.into());
+    }
+
     /// Merges another import result into this one
     pub fn merge(&mut self, other: Self) {
         self.connections.extend(other.connections);
@@ -151,6 +171,7 @@ impl ImportResult {
         self.skipped.extend(other.skipped);
         self.errors.extend(other.errors);
         self.credentials.extend(other.credentials);
+        self.warnings.extend(other.warnings);
     }
 }
 

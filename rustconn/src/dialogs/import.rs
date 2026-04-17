@@ -1454,6 +1454,7 @@ impl ImportDialog {
                                     errors: Vec::new(),
                                     credentials: std::collections::HashMap::new(),
                                     snippets: native_export.snippets,
+                                    warnings: Vec::new(),
                                 };
 
                                 // Extract filename for display

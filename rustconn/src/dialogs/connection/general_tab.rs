@@ -482,15 +482,15 @@ pub(super) fn get_port_description(port: u16) -> String {
 
     // Port range category
     let range = if port <= 1023 {
-        "Well-Known"
+        i18n("Well-Known")
     } else if port <= 49151 {
-        "Registered"
+        i18n("Registered")
     } else {
-        "Dynamic"
+        i18n("Dynamic")
     };
 
     if service.is_empty() {
-        range.to_string()
+        range
     } else {
         format!("{service}, {range}")
     }

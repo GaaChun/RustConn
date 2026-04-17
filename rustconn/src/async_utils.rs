@@ -144,7 +144,17 @@ pub fn block_on_async<F, T>(future: F) -> Result<T, String>
 where
     F: Future<Output = T>,
 {
-    with_runtime(|rt| rt.block_on(future))
+    let start = std::time::Instant::now();
+    let result = with_runtime(|rt| rt.block_on(future));
+    let elapsed = start.elapsed();
+    if elapsed > std::time::Duration::from_millis(100) {
+        tracing::warn!(
+            elapsed_ms = elapsed.as_millis(),
+            "block_on_async blocked GTK main thread for >100ms — \
+             consider using spawn_async instead"
+        );
+    }
+    result
 }
 
 /// Gets or creates the thread-local tokio runtime and executes a closure with it.

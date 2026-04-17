@@ -83,6 +83,8 @@ impl CommandPaletteDialog {
             .margin_bottom(12)
             .build();
 
+        list_box.update_property(&[gtk4::accessible::Property::Label(&i18n("Search results"))]);
+
         list_box.set_placeholder(Some(
             &Label::builder()
                 .label(i18n("No results"))

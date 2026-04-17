@@ -5,6 +5,27 @@ All notable changes to RustConn will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-04-17
+
+### Added
+- **General tab migrated to adw:: widgets** — connection dialog General tab rebuilt with `adw::PreferencesGroup`, `adw::EntryRow`, `adw::SpinRow`, `adw::ComboRow`, and `adw::PasswordEntryRow`; replaces manual Grid+Label+Entry layout with native GNOME HIG sections (Identity, Connection, Authentication, Organization); 30-element tuple replaced with `BasicTabWidgets` struct
+- **Legacy XOR encryption migration warning** — credentials still using XOR obfuscation are transparently migrated to AES-256-GCM on load; a toast notification shows the count of migrated credentials; XOR support will be removed in v0.12
+- **State access helpers** — `with_state()`, `try_with_state()`, `with_state_mut()`, `try_with_state_mut()` helper functions reduce RefCell borrow panics; documented in ARCHITECTURE.md
+- **Runtime warning for `block_on_async`** — logs `tracing::warn` when GTK main thread is blocked for >100ms, suggesting `spawn_async` instead
+- **Accessible label for Command Palette list** — screen readers now announce the results list as "Search results"
+- **Desktop entry translations** — added `Comment[lang]` translations for uk, de, fr, es, cs
+
+### Improved
+- **RDP connection state structured** — `handle_ironrdp_error()` 13-parameter signature replaced with `RdpConnectionContext` struct
+- **Automation task validation hardened** — import warnings for connections with automation/expect rules; sensitive env vars (`BW_SESSION`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`) cleared before task execution
+- **Localized constants and port descriptions** — `(Root)`, `(None)`, `(No keys loaded)`, and port range labels (`Well-Known`, `Registered`, `Dynamic`) now wrapped in `i18n()` for translation
+
+### Security
+- **Automation env var sanitization** — task executor removes sensitive environment variables before spawning shell commands
+
+### Dependencies
+- TBD (will be filled after `cargo update`)
+
 ## [0.10.22] - 2026-04-17
 
 ### Fixed

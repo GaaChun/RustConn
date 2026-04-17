@@ -6,7 +6,7 @@
 #
 
 Name:           rustconn
-Version:        0.10.22
+Version:        0.11.0
 Release:        0
 Summary:        Modern connection manager for Linux (SSH, RDP, VNC, SPICE, Telnet, Serial, Kubernetes, Zero Trust)
 License:        GPL-3.0-or-later
@@ -226,6 +226,13 @@ done
 %{_datadir}/locale/*/LC_MESSAGES/rustconn.mo
 
 %changelog
+* Fri Apr 17 2026 Anton Isaiev <totoshko88@gmail.com> - 0.11.0-0
+- [Added] General tab migrated to adw:: widgets (TASK-004)
+- [Added] Legacy XOR encryption migration warning (TASK-006)
+- [Added] State access helpers — with_state/try_with_state (TASK-008)
+- [Improved] RDP connection state structured — RdpConnectionContext (TASK-007)
+- [Security] Automation task validation hardened (TASK-005)
+
 * Thu Apr 17 2026 Anton Isaiev <totoshko88@gmail.com> - 0.10.22-0
 - [Fixed] Terminal context menu Copy/Paste now works (#84)
 - [Fixed] No more gdk_clipboard_write_async assertion on Copy

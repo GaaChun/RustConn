@@ -303,6 +303,7 @@ fn import_connections(
                 errors: Vec::new(),
                 credentials: std::collections::HashMap::new(),
                 snippets: native.snippets,
+                warnings: Vec::new(),
             }
         }
         ImportFormatArg::RoyalTs => {

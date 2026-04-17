@@ -468,6 +468,12 @@ impl TaskExecutor {
         let mut cmd = Command::new("sh");
         cmd.arg("-c").arg(command);
 
+        // Remove sensitive environment variables to prevent credential leakage
+        // through automation tasks (TASK-005)
+        for var in &["BW_SESSION", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"] {
+            cmd.env_remove(var);
+        }
+
         // Spawn the process
         let child = cmd.spawn().map_err(|e| TaskError::IoError(e.to_string()))?;
 

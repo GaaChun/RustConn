@@ -11,6 +11,7 @@ use crate::variables::Variable;
 use secrecy::SecretString;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// Application-wide settings
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -619,6 +620,22 @@ const SETTINGS_SALT_LEN: usize = 16;
 /// Nonce length for AES-256-GCM
 const SETTINGS_NONCE_LEN: usize = 12;
 
+/// Counts credentials migrated from legacy XOR to AES-256-GCM during this session.
+/// Read by the GUI to show a one-time toast after settings load.
+static LEGACY_XOR_MIGRATION_COUNT: AtomicUsize = AtomicUsize::new(0);
+
+/// Returns the number of credentials migrated from legacy XOR encryption
+/// during this session. The GUI uses this to show a one-time toast.
+#[must_use]
+pub fn legacy_migration_count() -> usize {
+    LEGACY_XOR_MIGRATION_COUNT.load(Ordering::Relaxed)
+}
+
+/// Resets the legacy migration counter (call after showing the toast).
+pub fn reset_legacy_migration_count() {
+    LEGACY_XOR_MIGRATION_COUNT.store(0, Ordering::Relaxed);
+}
+
 /// Header length: magic(4) + version(1) + salt(16) + nonce(12)
 const SETTINGS_HEADER_LEN: usize = 4 + 1 + SETTINGS_SALT_LEN + SETTINGS_NONCE_LEN;
 
@@ -935,9 +952,10 @@ fn decrypt_credential(data: &[u8], machine_key: &[u8]) -> Result<Vec<u8>, String
     } else {
         // Legacy XOR format — decrypt transparently; re-encrypted on next save
         tracing::warn!(
-            "Decrypting credential with legacy XOR cipher — \
-             will be upgraded to AES-256-GCM on next save"
+            "Legacy XOR encryption detected — migrating to AES-256-GCM. \
+             XOR support will be removed in v0.12."
         );
+        LEGACY_XOR_MIGRATION_COUNT.fetch_add(1, Ordering::Relaxed);
         Ok(SecretSettings::xor_cipher_legacy(data, machine_key))
     }
 }

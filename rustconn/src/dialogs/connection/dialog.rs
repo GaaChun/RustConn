@@ -5186,7 +5186,7 @@ impl ConnectionDialog {
         }
 
         // Build hierarchical group list
-        let mut groups_data: Vec<(Option<Uuid>, String)> = vec![(None, "(Root)".to_string())];
+        let mut groups_data: Vec<(Option<Uuid>, String)> = vec![(None, i18n("(Root)"))];
 
         // Helper to add groups recursively with indentation
         fn add_group_recursive(
