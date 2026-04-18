@@ -1179,9 +1179,11 @@ impl SplitViewAdapter {
 
     fn update_focus_styling(&self) {
         let focused_id = self.model.borrow().get_focused_panel();
+        let panel_count = self.panel_widgets.borrow().len();
 
         for (panel_id, widget) in self.panel_widgets.borrow().iter() {
-            if Some(*panel_id) == focused_id {
+            // Only show focus border when there are multiple panels (split view)
+            if panel_count > 1 && Some(*panel_id) == focused_id {
                 widget.add_css_class("focused-panel");
             } else {
                 widget.remove_css_class("focused-panel");

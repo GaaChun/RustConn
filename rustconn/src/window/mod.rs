@@ -44,7 +44,7 @@ use crate::external_window::ExternalWindowManager;
 use crate::monitoring::MonitoringCoordinator;
 use crate::sidebar::{ConnectionItem, ConnectionSidebar};
 use crate::split_view::{SplitDirection, SplitViewBridge};
-use crate::state::SharedAppState;
+use crate::state::{SharedAppState, try_with_state_mut, with_state};
 use crate::terminal::TerminalNotebook;
 use rustconn_core::split::ColorPool;
 
@@ -98,8 +98,7 @@ impl MainWindow {
             .build();
 
         // Apply saved window geometry if available
-        {
-            let state_ref = state.borrow();
+        with_state(&state, |state_ref| {
             let settings = state_ref.settings();
             if settings.ui.remember_window_geometry
                 && let (Some(width), Some(height)) =
@@ -109,7 +108,7 @@ impl MainWindow {
             {
                 window.set_default_size(width, height);
             }
-        }
+        });
 
         // Create header bar
         let header_bar = ui::create_header_bar();
@@ -118,13 +117,8 @@ impl MainWindow {
         let overlay_split_view = adw::OverlaySplitView::new();
 
         // Apply saved sidebar width as max-sidebar-width
-        {
-            let state_ref = state.borrow();
-            let settings = state_ref.settings();
-            let sidebar_width = settings.ui.sidebar_width.unwrap_or(300);
-            overlay_split_view
-                .set_max_sidebar_width(f64::from(sidebar_width.max(360).clamp(360, 600)));
-        }
+        let sidebar_width = with_state(&state, |s| s.settings().ui.sidebar_width.unwrap_or(300));
+        overlay_split_view.set_max_sidebar_width(f64::from(sidebar_width.max(360).clamp(360, 600)));
         overlay_split_view.set_min_sidebar_width(360.0);
         overlay_split_view.set_sidebar_width_fraction(0.3);
         overlay_split_view.set_enable_show_gesture(true);
@@ -136,11 +130,9 @@ impl MainWindow {
         overlay_split_view.set_sidebar(Some(sidebar.widget()));
 
         // Load persisted search history
-        {
-            let state_ref = state.borrow();
-            let search_history = &state_ref.settings().ui.search_history;
-            sidebar.load_search_history(search_history);
-        }
+        with_state(&state, |s| {
+            sidebar.load_search_history(&s.settings().ui.search_history);
+        });
 
         // Create global color pool shared across all split containers
         // This ensures different split containers get different colors
@@ -1924,17 +1916,21 @@ impl MainWindow {
             .collect();
         let groups: Vec<_> = state_ref.list_groups().iter().cloned().cloned().collect();
 
-        // Check for special multiple protocol filter syntax
-        if let Some(protocols_str) = query.strip_prefix("protocols:") {
-            // Handle multiple protocol filters with OR logic
-            let protocol_names: Vec<&str> = protocols_str.split(',').collect();
+        // Check for single protocol filter syntax (protocol:rdp, proto:ssh, p:vnc)
+        let single_protocol = query
+            .strip_prefix("protocol:")
+            .or_else(|| query.strip_prefix("proto:"))
+            .or_else(|| query.strip_prefix("p:"));
+
+        if let Some(protocol_name) = single_protocol {
+            // Handle single protocol filter — direct filtering without scoring
+            let protocol_names: Vec<&str> = vec![protocol_name.trim()];
             let mut filtered_connections = Vec::new();
 
             for conn in &connections {
                 let protocol = get_protocol_string(&conn.protocol_config);
                 let protocol_lower = protocol.to_lowercase();
 
-                // Check if connection matches any of the selected protocols
                 if protocol_names
                     .iter()
                     .any(|p| p.to_lowercase() == protocol_lower)
@@ -1943,7 +1939,33 @@ impl MainWindow {
                 }
             }
 
-            // Display filtered connections
+            for conn in filtered_connections {
+                let protocol = get_protocol_string(&conn.protocol_config);
+                let item = ConnectionItem::new_connection(
+                    &conn.id.to_string(),
+                    &conn.name,
+                    &protocol,
+                    &conn.host,
+                );
+                store.append(&item);
+            }
+        } else if let Some(protocols_str) = query.strip_prefix("protocols:") {
+            // Handle multiple protocol filters with OR logic
+            let protocol_names: Vec<&str> = protocols_str.split(',').collect();
+            let mut filtered_connections = Vec::new();
+
+            for conn in &connections {
+                let protocol = get_protocol_string(&conn.protocol_config);
+                let protocol_lower = protocol.to_lowercase();
+
+                if protocol_names
+                    .iter()
+                    .any(|p| p.to_lowercase() == protocol_lower)
+                {
+                    filtered_connections.push(conn);
+                }
+            }
+
             for conn in filtered_connections {
                 let protocol = get_protocol_string(&conn.protocol_config);
                 let item = ConnectionItem::new_connection(
@@ -3997,8 +4019,8 @@ impl MainWindow {
     #[allow(dead_code)]
     pub fn save_expanded_groups(&self) {
         let expanded = self.sidebar.get_expanded_groups();
-        if let Ok(mut state) = self.state.try_borrow_mut()
-            && let Err(e) = state.update_expanded_groups(expanded)
+        if let Some(Err(e)) =
+            try_with_state_mut(&self.state, |state| state.update_expanded_groups(expanded))
         {
             tracing::warn!(?e, "Failed to update expanded groups");
         }

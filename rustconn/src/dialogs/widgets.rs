@@ -41,12 +41,22 @@ pub fn dialog_header(start_label: &str, end_label: &str) -> (adw::HeaderBar, But
 
 /// Common label strings used across dialogs
 pub mod labels {
+    use crate::i18n::i18n;
+
     /// Label for root group in group dropdown
-    pub const ROOT_GROUP: &str = "(Root)";
+    pub fn root_group() -> String {
+        i18n("(Root)")
+    }
+
     /// Label for no selection in dropdowns
-    pub const NONE: &str = "(None)";
+    pub fn none_label() -> String {
+        i18n("(None)")
+    }
+
     /// Label when no SSH keys are loaded from agent
-    pub const NO_KEYS_LOADED: &str = "(No keys loaded)";
+    pub fn no_keys_loaded() -> String {
+        i18n("(No keys loaded)")
+    }
 }
 
 /// Builder for creating `adw::ActionRow` with a `CheckButton` suffix.
@@ -438,9 +448,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_labels_constants() {
-        assert_eq!(labels::ROOT_GROUP, "(Root)");
-        assert_eq!(labels::NONE, "(None)");
-        assert_eq!(labels::NO_KEYS_LOADED, "(No keys loaded)");
+    fn test_labels_functions() {
+        // Labels return non-empty strings (actual content depends on locale)
+        assert!(!labels::root_group().is_empty());
+        assert!(!labels::none_label().is_empty());
+        assert!(!labels::no_keys_loaded().is_empty());
     }
 }

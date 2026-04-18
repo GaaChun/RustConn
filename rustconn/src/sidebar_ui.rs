@@ -216,6 +216,8 @@ pub fn get_protocol_icon(protocol: &str) -> &'static str {
 }
 
 /// Creates the bulk actions toolbar for group operations mode
+///
+/// Compact icon-only pill buttons matching the protocol filter bar style.
 #[must_use]
 pub fn create_bulk_actions_bar() -> GtkBox {
     let bar = GtkBox::new(Orientation::Horizontal, 4);
@@ -223,50 +225,62 @@ pub fn create_bulk_actions_bar() -> GtkBox {
     bar.set_margin_end(8);
     bar.set_margin_top(4);
     bar.set_margin_bottom(4);
+    bar.set_halign(gtk4::Align::Center);
     bar.add_css_class("bulk-actions-bar");
 
-    let new_group_button = Button::with_label(&i18n("New Group"));
-    new_group_button.set_tooltip_text(Some(&i18n("Create a new group")));
+    let new_group_button = Button::from_icon_name("folder-new-symbolic");
+    new_group_button.add_css_class("pill");
+    new_group_button.add_css_class("bulk-action");
+    new_group_button.set_tooltip_text(Some(&i18n("New Group")));
     new_group_button.set_action_name(Some("win.new-group"));
-    new_group_button.add_css_class("suggested-action");
     new_group_button
         .update_property(&[gtk4::accessible::Property::Label(&i18n("Create new group"))]);
     bar.append(&new_group_button);
 
-    let move_button = Button::with_label(&i18n("Move to Group..."));
-    move_button.set_tooltip_text(Some(&i18n("Move selected items to a group")));
+    let move_button = Button::from_icon_name("folder-move-symbolic");
+    move_button.add_css_class("pill");
+    move_button.add_css_class("bulk-action");
+    move_button.set_tooltip_text(Some(&i18n("Move to Group")));
     move_button.set_action_name(Some("win.move-selected-to-group"));
     move_button.update_property(&[gtk4::accessible::Property::Label(&i18n(
         "Move selected connections to group",
     ))]);
     bar.append(&move_button);
 
-    let cluster_button = Button::with_label(&i18n("Create Cluster"));
-    cluster_button.set_tooltip_text(Some(&i18n("Create a cluster from selected connections")));
+    let cluster_button = Button::from_icon_name("network-workgroup-symbolic");
+    cluster_button.add_css_class("pill");
+    cluster_button.add_css_class("bulk-action");
+    cluster_button.set_tooltip_text(Some(&i18n("Create Cluster")));
     cluster_button.set_action_name(Some("win.cluster-from-selection"));
     cluster_button.update_property(&[gtk4::accessible::Property::Label(&i18n(
         "Create cluster from selected connections",
     ))]);
     bar.append(&cluster_button);
 
-    let select_all_button = Button::with_label(&i18n("Select All"));
-    select_all_button.set_tooltip_text(Some(&i18n("Select all items (Ctrl+A)")));
+    let select_all_button = Button::from_icon_name("edit-select-all-symbolic");
+    select_all_button.add_css_class("pill");
+    select_all_button.add_css_class("bulk-action");
+    select_all_button.set_tooltip_text(Some(&i18n("Select All")));
     select_all_button.set_action_name(Some("win.select-all"));
     select_all_button.update_property(&[gtk4::accessible::Property::Label(&i18n(
         "Select all connections",
     ))]);
     bar.append(&select_all_button);
 
-    let clear_button = Button::with_label(&i18n("Clear"));
-    clear_button.set_tooltip_text(Some(&i18n("Clear selection (Escape)")));
+    let clear_button = Button::from_icon_name("edit-clear-symbolic");
+    clear_button.add_css_class("pill");
+    clear_button.add_css_class("bulk-action");
+    clear_button.set_tooltip_text(Some(&i18n("Clear Selection")));
     clear_button.set_action_name(Some("win.clear-selection"));
     clear_button.update_property(&[gtk4::accessible::Property::Label(&i18n("Clear selection"))]);
     bar.append(&clear_button);
 
-    let delete_button = Button::with_label(&i18n("Delete"));
-    delete_button.set_tooltip_text(Some(&i18n("Delete all selected items")));
+    let delete_button = Button::from_icon_name("user-trash-symbolic");
+    delete_button.add_css_class("pill");
+    delete_button.add_css_class("bulk-action");
+    delete_button.add_css_class("bulk-action-destructive");
+    delete_button.set_tooltip_text(Some(&i18n("Delete Selected")));
     delete_button.set_action_name(Some("win.delete-selected"));
-    delete_button.add_css_class("destructive-action");
     delete_button.update_property(&[gtk4::accessible::Property::Label(&i18n(
         "Delete selected connections",
     ))]);
@@ -283,11 +297,10 @@ pub fn create_sidebar_bottom_toolbar() -> (GtkBox, Button) {
     let toolbar = GtkBox::new(Orientation::Horizontal, 4);
     toolbar.set_margin_start(8);
     toolbar.set_margin_end(8);
-    toolbar.set_margin_top(6);
-    toolbar.set_margin_bottom(6);
     toolbar.set_halign(gtk4::Align::Center);
 
     let group_ops_button = Button::from_icon_name("view-list-symbolic");
+    group_ops_button.add_css_class("flat");
     group_ops_button.set_tooltip_text(Some(&i18n("Group Operations Mode")));
     group_ops_button.set_action_name(Some("win.group-operations"));
     group_ops_button.update_property(&[gtk4::accessible::Property::Label(&i18n(
@@ -296,6 +309,7 @@ pub fn create_sidebar_bottom_toolbar() -> (GtkBox, Button) {
     toolbar.append(&group_ops_button);
 
     let history_button = Button::from_icon_name("document-open-recent-symbolic");
+    history_button.add_css_class("flat");
     history_button.set_tooltip_text(Some(&i18n("Connection History")));
     history_button.set_action_name(Some("win.show-history"));
     history_button.update_property(&[gtk4::accessible::Property::Label(&i18n(
@@ -304,6 +318,7 @@ pub fn create_sidebar_bottom_toolbar() -> (GtkBox, Button) {
     toolbar.append(&history_button);
 
     let sort_button = Button::from_icon_name("view-sort-ascending-symbolic");
+    sort_button.add_css_class("flat");
     sort_button.set_tooltip_text(Some(&i18n("Sort Alphabetically")));
     sort_button.set_action_name(Some("win.sort-connections"));
     sort_button.update_property(&[gtk4::accessible::Property::Label(&i18n(
@@ -312,6 +327,7 @@ pub fn create_sidebar_bottom_toolbar() -> (GtkBox, Button) {
     toolbar.append(&sort_button);
 
     let sort_recent_button = Button::from_icon_name("document-open-recent-symbolic");
+    sort_recent_button.add_css_class("flat");
     sort_recent_button.set_tooltip_text(Some(&i18n("Sort by Recent Usage")));
     sort_recent_button.set_action_name(Some("win.sort-recent"));
     sort_recent_button.update_property(&[gtk4::accessible::Property::Label(&i18n(
@@ -320,6 +336,7 @@ pub fn create_sidebar_bottom_toolbar() -> (GtkBox, Button) {
     toolbar.append(&sort_recent_button);
 
     let import_button = Button::from_icon_name("document-open-symbolic");
+    import_button.add_css_class("flat");
     import_button.set_tooltip_text(Some(&i18n("Import Connections (Ctrl+I)")));
     import_button.set_action_name(Some("win.import"));
     import_button.update_property(&[gtk4::accessible::Property::Label(&i18n(
@@ -328,6 +345,7 @@ pub fn create_sidebar_bottom_toolbar() -> (GtkBox, Button) {
     toolbar.append(&import_button);
 
     let export_button = Button::from_icon_name("document-save-symbolic");
+    export_button.add_css_class("flat");
     export_button.set_tooltip_text(Some(&i18n("Export Connections")));
     export_button.set_action_name(Some("win.export"));
     export_button.update_property(&[gtk4::accessible::Property::Label(&i18n(
@@ -336,6 +354,7 @@ pub fn create_sidebar_bottom_toolbar() -> (GtkBox, Button) {
     toolbar.append(&export_button);
 
     let keepass_button = Button::from_icon_name("dialog-password-symbolic");
+    keepass_button.add_css_class("flat");
     keepass_button.set_tooltip_text(Some(&i18n("Open Password Vault")));
     keepass_button.set_action_name(Some("win.open-keepass"));
     keepass_button.add_css_class("keepass-button");

@@ -35,7 +35,6 @@ use gtk4::{
     Orientation, PolicyType, ScrolledWindow, SearchEntry, SignalListItemFactory, TreeExpander,
     TreeListModel, TreeListRow, Widget, gdk, gio, glib,
 };
-#[cfg(feature = "adw-1-6")]
 use libadwaita as adw;
 use rustconn_core::Debouncer;
 use rustconn_core::connection::{LazyGroupLoader, SelectionState as CoreSelectionState};
@@ -56,8 +55,8 @@ pub struct ConnectionSidebar {
     tree_model: TreeListModel,
     /// Selection model - switches between Single and Multi
     selection_model: Rc<RefCell<SelectionModelWrapper>>,
-    /// Bulk actions toolbar (visible in group ops mode)
-    bulk_actions_bar: GtkBox,
+    /// Bulk actions revealer (animated show/hide in group ops mode)
+    bulk_actions_revealer: gtk4::Revealer,
     /// Current mode
     group_ops_mode: Rc<RefCell<bool>>,
 
@@ -95,7 +94,9 @@ pub struct ConnectionSidebar {
     /// Callback to check if a connection has an active recording session
     /// Takes a connection ID string and returns true if recording is active
     recording_checker: Rc<RefCell<Option<Box<dyn Fn(&str) -> bool>>>>,
-    /// Protocol filter bar container (visibility toggled by settings)
+    /// Protocol filter bar revealer (animated show/hide, toggled by settings)
+    filter_revealer: gtk4::Revealer,
+    /// Inner filter box (child of revealer, holds protocol buttons)
     filter_box: GtkBox,
 }
 
@@ -115,6 +116,8 @@ impl ConnectionSidebar {
         search_box.set_margin_end(6);
         search_box.set_margin_top(6);
         search_box.set_margin_bottom(6);
+        // No custom background class — let libadwaita handle
+        // @sidebar_bg_color for proper light/dark theme support
 
         // Search entry
         let search_entry = SearchEntry::new();
@@ -402,7 +405,20 @@ impl ConnectionSidebar {
         }
 
         container.append(&search_box);
-        container.append(&filter_box);
+
+        // Wrap filter_box in a Revealer for animated show/hide
+        let filter_revealer = gtk4::Revealer::builder()
+            .transition_type(gtk4::RevealerTransitionType::SlideDown)
+            .transition_duration(200)
+            .reveal_child(false)
+            .child(&filter_box)
+            .build();
+        container.append(&filter_revealer);
+
+        // Separator between filters and connection list
+        let separator = gtk4::Separator::new(Orientation::Horizontal);
+        separator.add_css_class("spacer");
+        container.append(&separator);
 
         // Responsive: hide less common protocol filters on narrow sidebar
         // Only needed without AdwWrapBox — WrapBox wraps automatically
@@ -494,10 +510,15 @@ impl ConnectionSidebar {
             &search_history_clone,
         );
 
-        // Create bulk actions toolbar (hidden by default)
+        // Create bulk actions toolbar wrapped in Revealer (hidden by default)
         let bulk_actions_bar = sidebar_ui::create_bulk_actions_bar();
-        bulk_actions_bar.set_visible(false);
-        container.append(&bulk_actions_bar);
+        let bulk_actions_revealer = gtk4::Revealer::builder()
+            .transition_type(gtk4::RevealerTransitionType::SlideDown)
+            .transition_duration(200)
+            .reveal_child(false)
+            .child(&bulk_actions_bar)
+            .build();
+        container.append(&bulk_actions_revealer);
 
         // Create the list store for connection items
         let store = gio::ListStore::new::<ConnectionItem>();
@@ -780,11 +801,15 @@ impl ConnectionSidebar {
 
         list_view.add_controller(list_view_drop_target);
 
-        container.append(&overlay);
-
-        // Add bottom toolbar with secondary actions
+        // Add bottom toolbar with secondary actions via ToolbarView
+        // Use Flat style for transparent background (icons on transparent bg)
         let (bottom_toolbar, keepass_button) = sidebar_ui::create_sidebar_bottom_toolbar();
-        container.append(&bottom_toolbar);
+        let toolbar_view = adw::ToolbarView::new();
+        toolbar_view.set_content(Some(&overlay));
+        toolbar_view.add_bottom_bar(&bottom_toolbar);
+        toolbar_view.set_bottom_bar_style(adw::ToolbarStyle::Flat);
+        toolbar_view.set_vexpand(true);
+        container.append(&toolbar_view);
 
         // Create debouncer for search with 100ms delay
         let search_debouncer = Rc::new(Debouncer::for_search());
@@ -796,7 +821,7 @@ impl ConnectionSidebar {
             store,
             tree_model,
             selection_model,
-            bulk_actions_bar,
+            bulk_actions_revealer,
             group_ops_mode,
 
             search_history,
@@ -814,6 +839,7 @@ impl ConnectionSidebar {
             protocol_filter_buttons,
             keepass_button,
             recording_checker,
+            filter_revealer,
             filter_box,
         }
     }
@@ -1069,8 +1095,8 @@ impl ConnectionSidebar {
         // Update mode flag
         *self.group_ops_mode.borrow_mut() = enabled;
 
-        // Show/hide bulk actions toolbar
-        self.bulk_actions_bar.set_visible(enabled);
+        // Show/hide bulk actions toolbar with animation
+        self.bulk_actions_revealer.set_reveal_child(enabled);
 
         // Create new selection model
         let new_wrapper = if enabled {
@@ -1521,11 +1547,9 @@ impl ConnectionSidebar {
 
         if is_active {
             self.keepass_button.remove_css_class("dim-label");
-            self.keepass_button.add_css_class("suggested-action");
             self.keepass_button
                 .set_tooltip_text(Some(&i18n("Open Password Vault (Active)")));
         } else {
-            self.keepass_button.remove_css_class("suggested-action");
             self.keepass_button.add_css_class("dim-label");
             if enabled {
                 self.keepass_button
@@ -1541,7 +1565,7 @@ impl ConnectionSidebar {
     ///
     /// When hidden, active filters are cleared to avoid confusion.
     pub fn set_filter_visible(&self, visible: bool) {
-        self.filter_box.set_visible(visible);
+        self.filter_revealer.set_reveal_child(visible);
         if !visible {
             // Clear active filters when hiding to avoid hidden filtering
             self.active_protocol_filters.borrow_mut().clear();
@@ -1560,7 +1584,7 @@ impl ConnectionSidebar {
     /// Returns whether the filter bar is currently visible
     #[must_use]
     pub fn is_filter_visible(&self) -> bool {
-        self.filter_box.is_visible()
+        self.filter_revealer.reveals_child()
     }
 }
 

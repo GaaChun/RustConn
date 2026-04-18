@@ -20,6 +20,27 @@ use super::types::{
 #[cfg(feature = "rdp-embedded")]
 use rustconn_core::rdp_client::RdpClientCommand;
 
+/// Groups the shared state references needed by `handle_ironrdp_error`.
+///
+/// Replaces the 13-parameter function signature with a single context struct,
+/// improving readability and reducing clippy `too_many_arguments` warnings.
+#[cfg(feature = "rdp-embedded")]
+pub(super) struct RdpConnectionContext {
+    pub state: Rc<RefCell<RdpConnectionState>>,
+    pub drawing_area: gtk4::DrawingArea,
+    pub toolbar: gtk4::Box,
+    pub on_state_changed: Rc<RefCell<Option<super::types::StateCallback>>>,
+    pub on_error: Rc<RefCell<Option<super::types::ErrorCallback>>>,
+    pub on_fallback: Rc<RefCell<Option<super::types::FallbackCallback>>>,
+    pub is_embedded: Rc<RefCell<bool>>,
+    pub is_ironrdp: Rc<RefCell<bool>>,
+    pub ironrdp_tx: Rc<RefCell<Option<std::sync::mpsc::Sender<RdpClientCommand>>>>,
+    pub client_ref: Rc<RefCell<Option<rustconn_core::rdp_client::RdpClient>>>,
+    pub fallback_config: Rc<RefCell<Option<RdpConfig>>>,
+    pub fallback_process: Rc<RefCell<Option<std::process::Child>>>,
+    pub clipboard_handler_id: Rc<RefCell<Option<glib::SignalHandlerId>>>,
+}
+
 impl super::EmbeddedRdpWidget {
     /// Detects if wlfreerdp is available for embedded mode
     #[must_use]
@@ -992,22 +1013,22 @@ impl super::EmbeddedRdpWidget {
                 // Handle deferred error AFTER the client_ref.borrow() is dropped,
                 // so handle_ironrdp_error can safely call client_ref.borrow_mut()
                 if let Some(ref error_msg) = deferred_error {
-                    Self::handle_ironrdp_error(
-                        error_msg,
-                        &state,
-                        &drawing_area,
-                        &toolbar,
-                        &on_state_changed,
-                        &on_error,
-                        &on_fallback,
-                        &is_embedded,
-                        &is_ironrdp,
-                        &ironrdp_tx,
-                        &client_ref,
-                        &fallback_config,
-                        &fallback_process,
-                        &clipboard_handler_id,
-                    );
+                    let ctx = RdpConnectionContext {
+                        state: state.clone(),
+                        drawing_area: drawing_area.clone(),
+                        toolbar: toolbar.clone(),
+                        on_state_changed: on_state_changed.clone(),
+                        on_error: on_error.clone(),
+                        on_fallback: on_fallback.clone(),
+                        is_embedded: is_embedded.clone(),
+                        is_ironrdp: is_ironrdp.clone(),
+                        ironrdp_tx: ironrdp_tx.clone(),
+                        client_ref: client_ref.clone(),
+                        fallback_config: fallback_config.clone(),
+                        fallback_process: fallback_process.clone(),
+                        clipboard_handler_id: clipboard_handler_id.clone(),
+                    };
+                    Self::handle_ironrdp_error(error_msg, &ctx);
                 }
 
                 if should_break {
@@ -1021,23 +1042,7 @@ impl super::EmbeddedRdpWidget {
 
     /// Handles IronRDP protocol errors with auto-fallback to FreeRDP
     #[cfg(feature = "rdp-embedded")]
-    #[allow(clippy::too_many_arguments)]
-    fn handle_ironrdp_error(
-        msg: &str,
-        state: &Rc<RefCell<RdpConnectionState>>,
-        drawing_area: &gtk4::DrawingArea,
-        toolbar: &gtk4::Box,
-        on_state_changed: &Rc<RefCell<Option<super::types::StateCallback>>>,
-        on_error: &Rc<RefCell<Option<super::types::ErrorCallback>>>,
-        on_fallback: &Rc<RefCell<Option<super::types::FallbackCallback>>>,
-        is_embedded: &Rc<RefCell<bool>>,
-        is_ironrdp: &Rc<RefCell<bool>>,
-        ironrdp_tx: &Rc<RefCell<Option<std::sync::mpsc::Sender<RdpClientCommand>>>>,
-        client_ref: &Rc<RefCell<Option<rustconn_core::rdp_client::RdpClient>>>,
-        fallback_config: &Rc<RefCell<Option<RdpConfig>>>,
-        fallback_process: &Rc<RefCell<Option<std::process::Child>>>,
-        clipboard_handler_id: &Rc<RefCell<Option<glib::SignalHandlerId>>>,
-    ) {
+    fn handle_ironrdp_error(msg: &str, ctx: &RdpConnectionContext) {
         tracing::error!(
             protocol = "rdp",
             error = %msg,
@@ -1045,8 +1050,8 @@ impl super::EmbeddedRdpWidget {
         );
 
         // Clean up clipboard monitor on any error
-        if let Some(handler_id) = clipboard_handler_id.borrow_mut().take() {
-            let display = drawing_area.display();
+        if let Some(handler_id) = ctx.clipboard_handler_id.borrow_mut().take() {
+            let display = ctx.drawing_area.display();
             let cb = display.clipboard();
             cb.disconnect(handler_id);
         }
@@ -1066,64 +1071,69 @@ impl super::EmbeddedRdpWidget {
             );
 
             // Clean up IronRDP state
-            *is_embedded.borrow_mut() = false;
-            *is_ironrdp.borrow_mut() = false;
-            *ironrdp_tx.borrow_mut() = None;
-            toolbar.set_visible(false);
+            *ctx.is_embedded.borrow_mut() = false;
+            *ctx.is_ironrdp.borrow_mut() = false;
+            *ctx.ironrdp_tx.borrow_mut() = None;
+            ctx.toolbar.set_visible(false);
 
             // Disconnect the IronRDP client
-            if let Some(mut c) = client_ref.borrow_mut().take() {
+            if let Some(mut c) = ctx.client_ref.borrow_mut().take() {
                 c.disconnect();
             }
 
             // Attempt FreeRDP external fallback via SafeFreeRdpLauncher
             // (uses /from-stdin to avoid exposing password in /proc/PID/cmdline)
-            let fallback_ok = fallback_config.borrow().as_ref().cloned().and_then(|cfg| {
-                let launcher = SafeFreeRdpLauncher::new();
-                match launcher.launch(&cfg) {
-                    Ok(child) => {
-                        tracing::info!(
-                            protocol = "rdp",
-                            host = %cfg.host,
-                            port = %cfg.port,
-                            "[IronRDP] Fallback to external FreeRDP"
-                        );
-                        *fallback_process.borrow_mut() = Some(child);
-                        Some(())
+            let fallback_ok = ctx
+                .fallback_config
+                .borrow()
+                .as_ref()
+                .cloned()
+                .and_then(|cfg| {
+                    let launcher = SafeFreeRdpLauncher::new();
+                    match launcher.launch(&cfg) {
+                        Ok(child) => {
+                            tracing::info!(
+                                protocol = "rdp",
+                                host = %cfg.host,
+                                port = %cfg.port,
+                                "[IronRDP] Fallback to external FreeRDP"
+                            );
+                            *ctx.fallback_process.borrow_mut() = Some(child);
+                            Some(())
+                        }
+                        Err(e) => {
+                            tracing::error!(
+                                protocol = "rdp",
+                                error = %e,
+                                host = %cfg.host,
+                                "[IronRDP] External FreeRDP fallback failed"
+                            );
+                            None
+                        }
                     }
-                    Err(e) => {
-                        tracing::error!(
-                            protocol = "rdp",
-                            error = %e,
-                            host = %cfg.host,
-                            "[IronRDP] External FreeRDP fallback failed"
-                        );
-                        None
-                    }
-                }
-            });
+                });
 
             if fallback_ok.is_some() {
-                *state.borrow_mut() = RdpConnectionState::Connected;
-                if let Some(ref cb) = *on_state_changed.borrow() {
+                *ctx.state.borrow_mut() = RdpConnectionState::Connected;
+                if let Some(ref cb) = *ctx.on_state_changed.borrow() {
                     cb(RdpConnectionState::Connected);
                 }
-                let fb_cb = on_fallback.borrow_mut().take();
+                let fb_cb = ctx.on_fallback.borrow_mut().take();
                 if let Some(cb) = fb_cb {
                     cb(&i18n("Using external RDP client (server incompatible)"));
-                    *on_fallback.borrow_mut() = Some(cb);
+                    *ctx.on_fallback.borrow_mut() = Some(cb);
                 }
             } else {
-                *state.borrow_mut() = RdpConnectionState::Error;
-                if let Some(ref cb) = *on_error.borrow() {
+                *ctx.state.borrow_mut() = RdpConnectionState::Error;
+                if let Some(ref cb) = *ctx.on_error.borrow() {
                     cb(&i18n("RDP server incompatible. Install FreeRDP."));
                 }
             }
         } else {
             // Non-protocol error — report normally
-            *state.borrow_mut() = RdpConnectionState::Error;
-            toolbar.set_visible(false);
-            if let Some(ref callback) = *on_error.borrow() {
+            *ctx.state.borrow_mut() = RdpConnectionState::Error;
+            ctx.toolbar.set_visible(false);
+            if let Some(ref callback) = *ctx.on_error.borrow() {
                 callback(msg);
             }
         }

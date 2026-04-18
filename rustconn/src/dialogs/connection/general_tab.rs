@@ -2,94 +2,100 @@
 //!
 //! Contains the basic connection fields: name, icon, protocol, host, port,
 //! username, domain, password source, tags, group, and description.
+//!
+//! Uses `adw::PreferencesGroup` sections following GNOME HIG, consistent
+//! with the Advanced and SSH tabs.
 
 use crate::i18n::i18n;
+use adw::prelude::*;
 use gtk4::prelude::*;
 use gtk4::{
-    Box as GtkBox, Button, DropDown, Entry, Grid, Label, Orientation, ScrolledWindow, SpinButton,
+    Box as GtkBox, Button, DropDown, Entry, Label, Orientation, ScrolledWindow, SpinButton,
     StringList, TextView, WrapMode,
 };
+use libadwaita as adw;
+
+/// Widgets created by the General tab, replacing the previous 30-element tuple.
+#[allow(dead_code)]
+pub(super) struct BasicTabWidgets {
+    pub container: GtkBox,
+    pub name_entry: Entry,
+    pub icon_entry: Entry,
+    pub description_view: TextView,
+    pub host_entry: Entry,
+    pub host_label: Label,
+    pub port_spin: SpinButton,
+    pub port_label: Label,
+    pub username_entry: Entry,
+    pub username_label: Label,
+    pub domain_entry: Entry,
+    pub domain_label: Label,
+    pub tags_entry: Entry,
+    pub tags_label: Label,
+    pub protocol_dropdown: DropDown,
+    pub password_source_dropdown: DropDown,
+    pub password_source_label: Label,
+    pub password_entry: Entry,
+    pub password_entry_label: Label,
+    pub password_visibility_button: Button,
+    pub password_load_button: Button,
+    pub password_row: GtkBox,
+    pub variable_dropdown: DropDown,
+    pub variable_row: GtkBox,
+    pub group_dropdown: DropDown,
+    pub username_load_button: Button,
+    pub domain_load_button: Button,
+    pub script_command_entry: Entry,
+    pub script_test_button: Button,
+    pub script_row: GtkBox,
+}
 
 /// Creates the basic/general tab with all core connection fields.
-#[allow(clippy::type_complexity)]
-pub(super) fn create_basic_tab() -> (
-    GtkBox,
-    Entry,
-    Entry,
-    TextView,
-    Entry,
-    Label,
-    SpinButton,
-    Label,
-    Entry,
-    Label,
-    Entry,
-    Label,
-    Entry,
-    Label,
-    DropDown,
-    DropDown,
-    Label,
-    Entry,
-    Label,
-    Button,
-    Button,
-    GtkBox,
-    DropDown,
-    GtkBox,
-    DropDown,
-    Button,
-    Button,
-    Entry,
-    Button,
-    GtkBox,
-) {
-    let vbox = GtkBox::new(Orientation::Vertical, 8);
+///
+/// Uses `adw::PreferencesGroup` sections (Identity, Connection, Authentication,
+/// Organization) following GNOME HIG, consistent with the Advanced tab.
+/// Content is wrapped in `adw::Clamp` to limit max width on wide windows.
+#[must_use]
+pub(super) fn create_basic_tab() -> BasicTabWidgets {
+    let vbox = GtkBox::new(Orientation::Vertical, 0);
     vbox.set_margin_top(12);
     vbox.set_margin_bottom(12);
     vbox.set_margin_start(12);
     vbox.set_margin_end(12);
 
-    let grid = Grid::builder().row_spacing(8).column_spacing(12).build();
-    vbox.append(&grid);
-
-    let mut row = 0;
-
-    // Name
-    let name_label = Label::builder()
-        .label(i18n("Name:"))
-        .halign(gtk4::Align::End)
+    // === Identity Section ===
+    let identity_group = adw::PreferencesGroup::builder()
+        .title(i18n("Identity"))
         .build();
+
     let name_entry = Entry::builder()
         .placeholder_text(i18n("Connection name"))
         .hexpand(true)
+        .width_chars(20)
+        .max_width_chars(40)
         .build();
-    grid.attach(&name_label, 0, row, 1, 1);
-    grid.attach(&name_entry, 1, row, 2, 1);
-    row += 1;
+    let name_row = adw::ActionRow::builder().title(i18n("Name")).build();
+    name_row.add_suffix(&name_entry);
+    name_entry.set_valign(gtk4::Align::Center);
+    identity_group.add(&name_row);
 
-    // Icon (emoji or GTK icon name)
-    let icon_label = Label::builder()
-        .label(i18n("Icon:"))
-        .halign(gtk4::Align::End)
-        .build();
     let icon_entry = Entry::builder()
-        .placeholder_text(i18n("Emoji or icon name (optional)"))
+        .placeholder_text(i18n("Emoji or icon name"))
         .hexpand(true)
+        .width_chars(16)
         .max_width_chars(30)
         .build();
     icon_entry.set_tooltip_text(Some(&i18n(
         "Enter an emoji (e.g. 🇺🇦) or GTK icon name (e.g. starred-symbolic)",
     )));
-    grid.attach(&icon_label, 0, row, 1, 1);
-    grid.attach(&icon_entry, 1, row, 2, 1);
-    row += 1;
-
-    // Protocol
-    let protocol_label_grid = Label::builder()
-        .label(i18n("Protocol:"))
-        .halign(gtk4::Align::End)
+    let icon_row = adw::ActionRow::builder()
+        .title(i18n("Icon"))
+        .subtitle(i18n("Optional"))
         .build();
+    icon_row.add_suffix(&icon_entry);
+    icon_entry.set_valign(gtk4::Align::Center);
+    identity_group.add(&icon_row);
+
     let protocol_items: Vec<String> = vec![
         "SSH".to_string(),
         "RDP".to_string(),
@@ -106,44 +112,49 @@ pub(super) fn create_basic_tab() -> (
     let protocol_list = StringList::new(&protocol_strs);
     let protocol_dropdown = DropDown::builder().model(&protocol_list).build();
     protocol_dropdown.set_selected(0);
-    grid.attach(&protocol_label_grid, 0, row, 1, 1);
-    grid.attach(&protocol_dropdown, 1, row, 2, 1);
-    row += 1;
+    protocol_dropdown.set_valign(gtk4::Align::Center);
+    let protocol_row = adw::ActionRow::builder().title(i18n("Protocol")).build();
+    protocol_row.add_suffix(&protocol_dropdown);
+    identity_group.add(&protocol_row);
 
-    // Host
-    let host_label = Label::builder()
-        .label(i18n("Host:"))
-        .halign(gtk4::Align::End)
+    vbox.append(&identity_group);
+
+    // === Connection Section ===
+    let connection_group = adw::PreferencesGroup::builder()
+        .title(i18n("Connection"))
         .build();
+
+    let host_label = Label::new(Some(&i18n("Host")));
     let host_entry = Entry::builder()
         .placeholder_text(i18n("hostname or IP"))
         .hexpand(true)
+        .width_chars(20)
+        .max_width_chars(40)
         .build();
-    grid.attach(&host_label, 0, row, 1, 1);
-    grid.attach(&host_entry, 1, row, 2, 1);
-    row += 1;
+    host_entry.set_valign(gtk4::Align::Center);
+    let host_row = adw::ActionRow::builder().title(i18n("Host")).build();
+    host_row.add_suffix(&host_entry);
+    connection_group.add(&host_row);
 
-    // Port with description
-    let port_label = Label::builder()
-        .label(i18n("Port:"))
-        .halign(gtk4::Align::End)
-        .build();
+    let port_label = Label::new(Some(&i18n("Port")));
     let port_adj = gtk4::Adjustment::new(22.0, 1.0, 65535.0, 1.0, 10.0, 0.0);
     let port_spin = SpinButton::builder()
         .adjustment(&port_adj)
         .climb_rate(1.0)
         .digits(0)
+        .valign(gtk4::Align::Center)
         .build();
     let port_desc = Label::builder()
         .label(i18n("SSH, Well-Known"))
         .css_classes(["dim-label"])
+        .valign(gtk4::Align::Center)
         .build();
-    let port_box = GtkBox::new(Orientation::Horizontal, 8);
-    port_box.append(&port_spin);
-    port_box.append(&port_desc);
-    grid.attach(&port_label, 0, row, 1, 1);
-    grid.attach(&port_box, 1, row, 2, 1);
-    row += 1;
+    let port_suffix = GtkBox::new(Orientation::Horizontal, 8);
+    port_suffix.append(&port_spin);
+    port_suffix.append(&port_desc);
+    let port_row = adw::ActionRow::builder().title(i18n("Port")).build();
+    port_row.add_suffix(&port_suffix);
+    connection_group.add(&port_row);
 
     // Update port description when port changes
     let port_desc_clone = port_desc.clone();
@@ -154,11 +165,13 @@ pub(super) fn create_basic_tab() -> (
         port_desc_clone.set_label(&desc);
     });
 
-    // Username
-    let username_label = Label::builder()
-        .label(i18n("Username:"))
-        .halign(gtk4::Align::End)
+    vbox.append(&connection_group);
+
+    // === Authentication Section ===
+    let auth_group = adw::PreferencesGroup::builder()
+        .title(i18n("Authentication"))
         .build();
+
     let current_user = std::env::var("USER")
         .or_else(|_| std::env::var("LOGNAME"))
         .unwrap_or_default();
@@ -167,52 +180,50 @@ pub(super) fn create_basic_tab() -> (
     } else {
         format!("(default: {current_user})")
     };
+    let username_label = Label::new(Some(&i18n("Username")));
     let username_entry = Entry::builder()
         .placeholder_text(&placeholder)
         .hexpand(true)
+        .width_chars(16)
+        .max_width_chars(40)
+        .valign(gtk4::Align::Center)
         .build();
-    grid.attach(&username_label, 0, row, 1, 1);
-
     let username_load_button = Button::builder()
         .icon_name("folder-download-symbolic")
         .tooltip_text(i18n("Load from selected group"))
         .sensitive(false)
+        .valign(gtk4::Align::Center)
         .build();
-    let username_box = GtkBox::new(Orientation::Horizontal, 4);
-    username_box.append(&username_entry);
-    username_box.append(&username_load_button);
+    let username_row = adw::ActionRow::builder().title(i18n("Username")).build();
+    username_row.add_suffix(&username_entry);
+    username_row.add_suffix(&username_load_button);
+    auth_group.add(&username_row);
 
-    grid.attach(&username_box, 1, row, 2, 1);
-    row += 1;
-
-    // Domain (for RDP/Windows authentication)
-    let domain_label = Label::builder()
-        .label(i18n("Domain:"))
-        .halign(gtk4::Align::End)
-        .build();
+    // Domain (RDP only — visibility controlled by protocol dropdown)
+    let domain_label = Label::new(Some(&i18n("Domain")));
     let domain_entry = Entry::builder()
         .placeholder_text(i18n("Optional (e.g., WORKGROUP)"))
         .hexpand(true)
+        .width_chars(16)
+        .max_width_chars(40)
+        .valign(gtk4::Align::Center)
         .build();
-    grid.attach(&domain_label, 0, row, 1, 1);
-
     let domain_load_button = Button::builder()
         .icon_name("folder-download-symbolic")
         .tooltip_text(i18n("Load from selected group"))
         .sensitive(false)
+        .valign(gtk4::Align::Center)
         .build();
-    let domain_box = GtkBox::new(Orientation::Horizontal, 4);
-    domain_box.append(&domain_entry);
-    domain_box.append(&domain_load_button);
-
-    grid.attach(&domain_box, 1, row, 2, 1);
-    row += 1;
+    let domain_row = adw::ActionRow::builder()
+        .title(i18n("Domain"))
+        .subtitle(i18n("Windows authentication"))
+        .build();
+    domain_row.add_suffix(&domain_entry);
+    domain_row.add_suffix(&domain_load_button);
+    auth_group.add(&domain_row);
 
     // Password Source
-    let password_source_label = Label::builder()
-        .label(i18n("Password:"))
-        .halign(gtk4::Align::End)
-        .build();
+    let password_source_label = Label::new(Some(&i18n("Password")));
     let pw_src_items: Vec<String> = vec![
         i18n("Prompt"),
         i18n("Vault"),
@@ -223,139 +234,123 @@ pub(super) fn create_basic_tab() -> (
     ];
     let pw_src_strs: Vec<&str> = pw_src_items.iter().map(String::as_str).collect();
     let password_source_list = StringList::new(&pw_src_strs);
-    let password_source_dropdown = DropDown::builder().model(&password_source_list).build();
-    password_source_dropdown.set_selected(0);
-    grid.attach(&password_source_label, 0, row, 1, 1);
-    grid.attach(&password_source_dropdown, 1, row, 2, 1);
-    row += 1;
-
-    // Password with visibility toggle - use grid row for proper alignment
-    let password_entry_label = Label::builder()
-        .label(i18n("Value:"))
-        .halign(gtk4::Align::End)
+    let password_source_dropdown = DropDown::builder()
+        .model(&password_source_list)
+        .valign(gtk4::Align::Center)
         .build();
+    password_source_dropdown.set_selected(0);
+    let pw_source_row = adw::ActionRow::builder()
+        .title(i18n("Password Source"))
+        .build();
+    pw_source_row.add_suffix(&password_source_dropdown);
+    auth_group.add(&pw_source_row);
+
+    // Password value row (visible for Vault source)
+    let password_entry_label = Label::new(Some(&i18n("Value")));
     let password_entry = Entry::builder()
         .placeholder_text(i18n("Password value"))
         .hexpand(true)
+        .width_chars(16)
+        .max_width_chars(40)
         .visibility(false)
+        .valign(gtk4::Align::Center)
         .build();
     let password_visibility_button = Button::builder()
         .icon_name("view-reveal-symbolic")
         .tooltip_text(i18n("Show/hide password"))
+        .valign(gtk4::Align::Center)
         .build();
     let password_load_button = Button::builder()
         .icon_name("document-open-symbolic")
         .tooltip_text(i18n("Load password from vault"))
+        .valign(gtk4::Align::Center)
         .build();
-    let password_box = GtkBox::new(Orientation::Horizontal, 4);
-    password_box.append(&password_entry);
-    password_box.append(&password_visibility_button);
-    password_box.append(&password_load_button);
-    password_box.set_hexpand(true);
+    let password_value_row = adw::ActionRow::builder().title(i18n("Value")).build();
+    password_value_row.add_suffix(&password_entry);
+    password_value_row.add_suffix(&password_visibility_button);
+    password_value_row.add_suffix(&password_load_button);
+    auth_group.add(&password_value_row);
 
-    // Password row container - wraps label and entry box for show/hide
+    // Password row visibility controller (hidden GtkBox for bind_property)
     let password_row = GtkBox::new(Orientation::Horizontal, 0);
     password_row.set_visible(false);
-    // Attach label and password box to grid for proper alignment
-    grid.attach(&password_entry_label, 0, row, 1, 1);
-    grid.attach(&password_box, 1, row, 2, 1);
-    // Bind visibility of label and box to password_row visibility
     password_row
-        .bind_property("visible", &password_entry_label, "visible")
+        .bind_property("visible", &password_value_row, "visible")
         .sync_create()
         .build();
-    password_row
-        .bind_property("visible", &password_box, "visible")
-        .sync_create()
-        .build();
-    row += 1;
 
-    // Variable name dropdown — shown when password source is Variable
-    let variable_label = Label::builder()
-        .label(i18n("Variable:"))
-        .halign(gtk4::Align::End)
-        .build();
+    // Variable dropdown row (visible for Variable source)
     let variable_name_list = StringList::new(&[]);
-    let variable_dropdown = DropDown::builder().model(&variable_name_list).build();
+    let variable_dropdown = DropDown::builder()
+        .model(&variable_name_list)
+        .valign(gtk4::Align::Center)
+        .build();
+    let variable_action_row = adw::ActionRow::builder().title(i18n("Variable")).build();
+    variable_action_row.add_suffix(&variable_dropdown);
+    auth_group.add(&variable_action_row);
+
     let variable_row = GtkBox::new(Orientation::Horizontal, 0);
     variable_row.set_visible(false);
-    grid.attach(&variable_label, 0, row, 1, 1);
-    grid.attach(&variable_dropdown, 1, row, 2, 1);
     variable_row
-        .bind_property("visible", &variable_label, "visible")
+        .bind_property("visible", &variable_action_row, "visible")
         .sync_create()
         .build();
-    variable_row
-        .bind_property("visible", &variable_dropdown, "visible")
-        .sync_create()
-        .build();
-    row += 1;
 
-    // Script command entry — shown when password source is Script
-    let script_label = Label::builder()
-        .label(i18n("Command:"))
-        .halign(gtk4::Align::End)
-        .build();
+    // Script command row (visible for Script source)
     let script_command_entry = Entry::builder()
         .placeholder_text(i18n("e.g. vault kv get -field=password secret/myapp"))
         .hexpand(true)
+        .width_chars(20)
+        .max_width_chars(50)
+        .valign(gtk4::Align::Center)
         .build();
     let script_test_button = Button::builder()
-        .label(i18n("Test Script"))
+        .label(i18n("Test"))
         .tooltip_text(i18n("Test the script command"))
+        .valign(gtk4::Align::Center)
         .build();
-    let script_box = GtkBox::new(Orientation::Horizontal, 4);
-    script_box.append(&script_command_entry);
-    script_box.append(&script_test_button);
+    let script_action_row = adw::ActionRow::builder().title(i18n("Command")).build();
+    script_action_row.add_suffix(&script_command_entry);
+    script_action_row.add_suffix(&script_test_button);
+    auth_group.add(&script_action_row);
+
     let script_row = GtkBox::new(Orientation::Horizontal, 0);
     script_row.set_visible(false);
-    grid.attach(&script_label, 0, row, 1, 1);
-    grid.attach(&script_box, 1, row, 2, 1);
     script_row
-        .bind_property("visible", &script_label, "visible")
+        .bind_property("visible", &script_action_row, "visible")
         .sync_create()
         .build();
-    script_row
-        .bind_property("visible", &script_box, "visible")
-        .sync_create()
-        .build();
-    script_command_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-        script_label.upcast_ref(),
-    ])]);
-    row += 1;
 
-    // Tags
-    let tags_label = Label::builder()
-        .label(i18n("Tags:"))
-        .halign(gtk4::Align::End)
+    vbox.append(&auth_group);
+
+    // === Organization Section ===
+    let org_group = adw::PreferencesGroup::builder()
+        .title(i18n("Organization"))
         .build();
+
+    let tags_label = Label::new(Some(&i18n("Tags")));
     let tags_entry = Entry::builder()
         .placeholder_text(i18n("tag1, tag2, ..."))
         .hexpand(true)
+        .width_chars(16)
+        .max_width_chars(40)
+        .valign(gtk4::Align::Center)
         .build();
-    grid.attach(&tags_label, 0, row, 1, 1);
-    grid.attach(&tags_entry, 1, row, 2, 1);
-    row += 1;
+    let tags_row = adw::ActionRow::builder().title(i18n("Tags")).build();
+    tags_row.add_suffix(&tags_entry);
+    org_group.add(&tags_row);
 
-    // Group
-    let group_label = Label::builder()
-        .label(i18n("Group:"))
-        .halign(gtk4::Align::End)
-        .build();
     let group_items: Vec<String> = vec![i18n("(Root)")];
     let group_strs: Vec<&str> = group_items.iter().map(String::as_str).collect();
     let group_list = StringList::new(&group_strs);
-    let group_dropdown = DropDown::builder().model(&group_list).build();
-    grid.attach(&group_label, 0, row, 1, 1);
-    grid.attach(&group_dropdown, 1, row, 2, 1);
-    row += 1;
-
-    // Description
-    let desc_label = Label::builder()
-        .label(i18n("Description:"))
-        .halign(gtk4::Align::End)
-        .valign(gtk4::Align::Start)
+    let group_dropdown = DropDown::builder()
+        .model(&group_list)
+        .valign(gtk4::Align::Center)
         .build();
+    let group_action_row = adw::ActionRow::builder().title(i18n("Group")).build();
+    group_action_row.add_suffix(&group_dropdown);
+    org_group.add(&group_action_row);
+
     let description_view = TextView::builder()
         .hexpand(true)
         .vexpand(false)
@@ -369,56 +364,71 @@ pub(super) fn create_basic_tab() -> (
     let desc_scrolled = ScrolledWindow::builder()
         .hscrollbar_policy(gtk4::PolicyType::Never)
         .vscrollbar_policy(gtk4::PolicyType::Automatic)
-        .min_content_height(144)
+        .min_content_height(100)
         .hexpand(true)
         .child(&description_view)
         .build();
-    grid.attach(&desc_label, 0, row, 1, 1);
-    grid.attach(&desc_scrolled, 1, row, 2, 1);
+    let desc_row = adw::ActionRow::builder().title(i18n("Description")).build();
+    desc_row.add_suffix(&desc_scrolled);
+    org_group.add(&desc_row);
 
-    // Accessible label relations for screen readers (A11Y-01)
-    icon_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-        icon_label.upcast_ref()
-    ])]);
+    vbox.append(&org_group);
+
+    // Wrap content in Clamp for consistent max-width (GNOME HIG)
+    let clamp = adw::Clamp::builder()
+        .maximum_size(600)
+        .tightening_threshold(400)
+        .child(&vbox)
+        .build();
+    let outer = GtkBox::new(Orientation::Vertical, 0);
+    outer.append(&clamp);
+
+    // Accessible label relations for screen readers
     name_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-        name_label.upcast_ref()
+        name_row.upcast_ref()
+    ])]);
+    icon_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
+        icon_row.upcast_ref()
     ])]);
     protocol_dropdown.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-        protocol_label_grid.upcast_ref(),
+        protocol_row.upcast_ref()
     ])]);
     host_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-        host_label.upcast_ref()
+        host_row.upcast_ref()
     ])]);
     port_spin.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-        port_label.upcast_ref()
+        port_row.upcast_ref()
     ])]);
     username_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-        username_label.upcast_ref()
+        username_row.upcast_ref()
     ])]);
     domain_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-        domain_label.upcast_ref()
+        domain_row.upcast_ref()
     ])]);
     password_source_dropdown.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-        password_source_label.upcast_ref(),
+        pw_source_row.upcast_ref(),
     ])]);
     password_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-        password_entry_label.upcast_ref(),
+        password_value_row.upcast_ref(),
     ])]);
     variable_dropdown.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-        variable_label.upcast_ref()
+        variable_action_row.upcast_ref(),
+    ])]);
+    script_command_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
+        script_action_row.upcast_ref(),
     ])]);
     tags_entry.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-        tags_label.upcast_ref()
+        tags_row.upcast_ref()
     ])]);
     group_dropdown.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-        group_label.upcast_ref()
+        group_action_row.upcast_ref()
     ])]);
     description_view.update_relation(&[gtk4::accessible::Relation::LabelledBy(&[
-        desc_label.upcast_ref()
+        desc_row.upcast_ref()
     ])]);
 
-    (
-        vbox,
+    BasicTabWidgets {
+        container: outer,
         name_entry,
         icon_entry,
         description_view,
@@ -448,12 +458,11 @@ pub(super) fn create_basic_tab() -> (
         script_command_entry,
         script_test_button,
         script_row,
-    )
+    }
 }
 
 /// Returns a description for the given port number.
 pub(super) fn get_port_description(port: u16) -> String {
-    // Well-known service ports
     let service = match port {
         22 => "SSH",
         23 => "Telnet",
@@ -480,17 +489,16 @@ pub(super) fn get_port_description(port: u16) -> String {
         _ => "",
     };
 
-    // Port range category
     let range = if port <= 1023 {
-        "Well-Known"
+        i18n("Well-Known")
     } else if port <= 49151 {
-        "Registered"
+        i18n("Registered")
     } else {
-        "Dynamic"
+        i18n("Dynamic")
     };
 
     if service.is_empty() {
-        range.to_string()
+        range
     } else {
         format!("{service}, {range}")
     }

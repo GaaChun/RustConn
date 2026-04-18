@@ -2093,6 +2093,30 @@ impl AppState {
 /// Shared application state type
 pub type SharedAppState = Rc<RefCell<AppState>>;
 
+/// Safe read access to `SharedAppState`, preventing borrow panics from
+/// leaking across callback boundaries.
+pub fn with_state<R>(state: &SharedAppState, f: impl FnOnce(&AppState) -> R) -> R {
+    f(&state.borrow())
+}
+
+/// Safe read access that returns `None` if the state is already mutably borrowed.
+pub fn try_with_state<R>(state: &SharedAppState, f: impl FnOnce(&AppState) -> R) -> Option<R> {
+    state.try_borrow().ok().map(|s| f(&s))
+}
+
+/// Safe write access to `SharedAppState`.
+pub fn with_state_mut<R>(state: &SharedAppState, f: impl FnOnce(&mut AppState) -> R) -> R {
+    f(&mut state.borrow_mut())
+}
+
+/// Safe write access that returns `None` if the state is already borrowed.
+pub fn try_with_state_mut<R>(
+    state: &SharedAppState,
+    f: impl FnOnce(&mut AppState) -> R,
+) -> Option<R> {
+    state.try_borrow_mut().ok().map(|mut s| f(&mut s))
+}
+
 /// Creates a new shared application state
 pub fn create_shared_state() -> Result<SharedAppState, String> {
     AppState::new().map(|state| Rc::new(RefCell::new(state)))
