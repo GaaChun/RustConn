@@ -72,7 +72,7 @@ msgstr ""
 #. Translators: Replace this with your name and language, e.g. "John Doe (German)"
 #: rustconn/src/app.rs:640
 msgid "translator-credits"
-msgstr "译者致谢"
+msgstr "GaaChun (简体中文)"
 
 #: rustconn/src/app.rs:647
 msgid "User Guide"
