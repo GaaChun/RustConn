@@ -276,6 +276,7 @@ pub fn available_languages() -> Vec<(&'static str, &'static str)> {
         ("sk", "Slovenčina"),
         ("sv", "Svenska"),
         ("uk", "Українська"),
+        ("zh-cn", "简体中文"),
     ]
 }
 
@@ -300,6 +301,7 @@ fn lang_to_locale(lang: &str) -> String {
         "sk" => "sk_SK",
         "sv" => "sv_SE",
         "uk" => "uk_UA",
+        "zh-cn" => "zh_CN",
         other => other,
     };
     format!("{full}.UTF-8")
