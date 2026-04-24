@@ -1,6 +1,6 @@
 # RustConn User Guide
 
-**Version 0.11.7** | GTK4/libadwaita Connection Manager for Linux
+**Version 0.12.0** | GTK4/libadwaita Connection Manager for Linux
 
 RustConn is a modern connection manager designed for Linux with Wayland-first approach. It supports SSH, RDP, VNC, SPICE, MOSH, SFTP, Telnet, Serial, Kubernetes protocols and Zero Trust integrations through a native GTK4/libadwaita interface.
 
@@ -62,13 +62,18 @@ RustConn is a modern connection manager designed for Linux with Wayland-first ap
    - [RDP File Association](#rdp-file-association)
    - [Migration Guide](#migration-guide)
    - [Configuration Sync Between Machines](#configuration-sync-between-machines)
-10. [Security](#security)
+10. [Cloud Sync](#cloud-sync)
+    - [Group Sync](#group-sync)
+    - [Simple Sync](#simple-sync)
+    - [SSH Key Inheritance](#ssh-key-inheritance)
+    - [Credential Resolution](#credential-resolution)
+11. [Security](#security)
     - [Secret Backends](#choosing-a-secret-backend)
     - [Credential Hygiene](#credential-hygiene)
     - [Network Security](#network-security)
-11. [Troubleshooting & FAQ](#troubleshooting--faq)
-12. [Keyboard Shortcuts](#keyboard-shortcuts)
-13. [CLI Reference](CLI_REFERENCE.md)
+12. [Troubleshooting & FAQ](#troubleshooting--faq)
+13. [Keyboard Shortcuts](#keyboard-shortcuts)
+14. [CLI Reference](CLI_REFERENCE.md)
 
 ---
 
@@ -1651,6 +1656,59 @@ rsync -avz ~/.config/rustconn/ user@remote:~/.config/rustconn/
 - `history.toml` and `trash.toml` are machine-local — exclude them from sync
 - Passwords stored in KeePass/libsecret/Bitwarden are not in the config files — sync your vault separately
 - After syncing, restart RustConn to pick up changes
+
+---
+
+## Cloud Sync
+
+Synchronize connection configurations between devices and team members through any shared cloud directory (Google Drive, Syncthing, Nextcloud, Dropbox, USB drive — anything that syncs files).
+
+### Group Sync
+
+Group Sync is designed for teams. Each root group exports to a dedicated `.rcn` file using a Master/Import access model.
+
+- **Master** — full control, exports changes to the sync file
+- **Import** — read-only, imports changes from the sync file
+
+**Enable Group Sync:**
+1. Go to Settings → Cloud Sync → set a Sync Directory
+2. Right-click a root group → Edit Group → set Cloud Sync to "Master"
+3. The group is exported to `<sync-dir>/<group-slug>.rcn`
+
+**Import a shared group:**
+1. Go to Settings → Cloud Sync → "Available in Cloud" section
+2. Click "Import" next to the `.rcn` file
+3. The group appears in the sidebar with a sync indicator (⟳)
+
+Import groups are read-only for synced fields (name, host, port, protocol). Local-only fields (SSH key path, sort order, pinned status) remain editable. Changes from the Master are auto-imported when the file watcher detects updates (3s debounce).
+
+Credentials are never synced — only variable names are included. Each team member configures their own secret backend values locally.
+
+### Simple Sync
+
+Simple Sync is for personal multi-device use. A single `full-sync.rcn` file contains all connections, groups, templates, snippets, and clusters with UUID-based bidirectional merge.
+
+**Enable:** Settings → Cloud Sync → toggle "Sync everything between your devices"
+
+Deletions are tracked via tombstones (auto-cleaned after 30 days). The `device_id` prevents circular self-sync.
+
+### SSH Key Inheritance
+
+Groups can define SSH settings (auth method, key path, proxy jump, agent socket) that child connections inherit. This avoids duplicating key paths across dozens of connections and keeps `ssh_key_path` local-only per device.
+
+**Configure:**
+1. Edit a group → SSH Settings section
+2. Set SSH Key Path, Auth Method, Proxy Jump, or Agent Socket
+3. Child connections with Key Source = "Inherit" use the group's values
+
+The inheritance chain walks from the connection's immediate group up to the root, returning the first value found.
+
+### Credential Resolution
+
+When connecting to a synced connection that references an unconfigured variable or secret backend, RustConn shows an interactive dialog instead of silently failing:
+
+- **Variable Not Configured** — enter the value and select a storage backend, then Save & Connect
+- **Secret Backend Not Configured** — choose "Enter Password Manually" or "Open Settings" to configure the backend
 
 ---
 

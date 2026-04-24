@@ -930,6 +930,10 @@ impl AppState {
     ///
     /// This is extracted from `resolve_credentials` to be callable from a background
     /// thread without needing `&self`.
+    // TODO(cloud-sync): Refactor to return `CredentialResolutionResult` from
+    // `rustconn_core::sync::credential_check` instead of `Option<Credentials>`.
+    // This enables the UI to show specific dialogs (VariableMissing,
+    // BackendNotConfigured, VaultEntryMissing) instead of silently returning None.
     fn resolve_credentials_blocking(
         ctx: CredentialResolutionContext,
     ) -> Result<Option<Credentials>, String> {

@@ -17,7 +17,8 @@ use gtk4::glib;
 use gtk4::prelude::*;
 use gtk4::{Button, Label, Orientation};
 use libadwaita as adw;
-use rustconn_core::models::{Credentials, PasswordSource};
+use rustconn_core::models::{Credentials, PasswordSource, SshAuthMethod};
+use rustconn_core::sync::SyncMode;
 use secrecy::ExposeSecret;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -91,6 +92,29 @@ pub fn edit_selected_connection(
         }
 
         dialog.set_connection(&conn);
+
+        // Check if connection belongs to an Import group → configure read-only synced fields
+        {
+            let state_ref = state.borrow();
+            if let Some(group_id) = conn.group_id {
+                // Walk up to root group to check sync_mode
+                let mut current_id = Some(group_id);
+                while let Some(gid) = current_id {
+                    if let Some(group) = state_ref.get_group(gid) {
+                        if group.parent_id.is_none() {
+                            // Root group found — check sync_mode
+                            if group.sync_mode == SyncMode::Import {
+                                dialog.configure_import_group_mode();
+                            }
+                            break;
+                        }
+                        current_id = group.parent_id;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
 
         // Set up password visibility toggle and source visibility
         dialog.connect_password_visibility_toggle();
@@ -633,11 +657,17 @@ pub fn show_edit_group_dialog(
         .tooltip_text(i18n("Show/hide password"))
         .valign(gtk4::Align::Center)
         .build();
+    password_visibility_btn.update_property(&[gtk4::accessible::Property::Label(&i18n(
+        "Toggle password visibility",
+    ))]);
     let password_load_btn = gtk4::Button::builder()
         .icon_name("folder-symbolic")
         .tooltip_text(i18n("Load password from vault"))
         .valign(gtk4::Align::Center)
         .build();
+    password_load_btn.update_property(&[gtk4::accessible::Property::Label(&i18n(
+        "Load password from vault",
+    ))]);
 
     let password_value_row = adw::ActionRow::builder().title(i18n("Value")).build();
     password_value_row.add_suffix(&password_entry);
@@ -817,6 +847,179 @@ pub fn show_edit_group_dialog(
 
     content.append(&credentials_group);
 
+    // === SSH Settings Section ===
+    let ssh_group = adw::PreferencesGroup::builder()
+        .title(i18n("SSH Settings"))
+        .description(i18n("SSH settings inherited by connections in this group"))
+        .build();
+
+    // SSH Auth Method dropdown (None / Password / PublicKey / Agent / KeyboardInteractive / SecurityKey)
+    let auth_method_list = gtk4::StringList::new(&[
+        &i18n("None"),
+        &i18n("Password"),
+        &i18n("Public Key"),
+        &i18n("Agent"),
+        &i18n("Keyboard Interactive"),
+        &i18n("Security Key"),
+    ]);
+    let auth_method_row = adw::ComboRow::builder()
+        .title(i18n("SSH Authentication Method"))
+        .model(&auth_method_list)
+        .build();
+    let initial_auth_idx: u32 = match group.ssh_auth_method {
+        None => 0,
+        Some(SshAuthMethod::Password) => 1,
+        Some(SshAuthMethod::PublicKey) => 2,
+        Some(SshAuthMethod::Agent) => 3,
+        Some(SshAuthMethod::KeyboardInteractive) => 4,
+        Some(SshAuthMethod::SecurityKey) => 5,
+    };
+    auth_method_row.set_selected(initial_auth_idx);
+    ssh_group.add(&auth_method_row);
+
+    // SSH Key Path with file chooser suffix button
+    let ssh_key_path_row = adw::EntryRow::builder()
+        .title(i18n("SSH Key Path"))
+        .text(
+            group
+                .ssh_key_path
+                .as_ref()
+                .map_or("", |p| p.to_str().unwrap_or("")),
+        )
+        .build();
+    let ssh_key_browse_btn = gtk4::Button::from_icon_name("document-open-symbolic");
+    ssh_key_browse_btn.set_valign(gtk4::Align::Center);
+    ssh_key_browse_btn.set_tooltip_text(Some(&i18n("Select SSH key file")));
+    ssh_key_browse_btn.update_property(&[gtk4::accessible::Property::Label(&i18n(
+        "Select SSH key file",
+    ))]);
+    ssh_key_path_row.add_suffix(&ssh_key_browse_btn);
+    ssh_group.add(&ssh_key_path_row);
+
+    // Connect file chooser button
+    let ssh_key_path_row_clone = ssh_key_path_row.clone();
+    let window_for_chooser = group_window.clone();
+    ssh_key_browse_btn.connect_clicked(move |_| {
+        let file_dialog = gtk4::FileDialog::builder()
+            .title(i18n("Select SSH Key"))
+            .modal(true)
+            .build();
+
+        // Set initial folder to ~/.ssh if it exists
+        if let Some(home) = std::env::var_os("HOME") {
+            let ssh_dir = std::path::PathBuf::from(home).join(".ssh");
+            if ssh_dir.exists() {
+                let gio_file = gtk4::gio::File::for_path(&ssh_dir);
+                file_dialog.set_initial_folder(Some(&gio_file));
+            }
+        }
+
+        let entry = ssh_key_path_row_clone.clone();
+        let parent = window_for_chooser.clone();
+        file_dialog.open(Some(&parent), gtk4::gio::Cancellable::NONE, move |result| {
+            if let Ok(file) = result
+                && let Some(path) = file.path()
+            {
+                let stable_path = if rustconn_core::is_flatpak()
+                    && rustconn_core::is_portal_path(&path)
+                {
+                    rustconn_core::copy_key_to_flatpak_ssh(&path).unwrap_or_else(|| path.clone())
+                } else {
+                    path
+                };
+                entry.set_text(&stable_path.to_string_lossy());
+            }
+        });
+    });
+
+    // SSH Proxy Jump text field
+    let ssh_proxy_jump_row = adw::EntryRow::builder()
+        .title(i18n("SSH Proxy Jump"))
+        .text(group.ssh_proxy_jump.as_deref().unwrap_or_default())
+        .build();
+    ssh_group.add(&ssh_proxy_jump_row);
+
+    // SSH Agent Socket text field
+    let ssh_agent_socket_row = adw::EntryRow::builder()
+        .title(i18n("SSH Agent Socket"))
+        .text(group.ssh_agent_socket.as_deref().unwrap_or_default())
+        .build();
+    ssh_group.add(&ssh_agent_socket_row);
+
+    content.append(&ssh_group);
+
+    // === Cloud Sync Section (root groups only) ===
+    let sync_mode_list =
+        gtk4::StringList::new(&[&i18n("Not synced"), &i18n("Master"), &i18n("Import")]);
+    let sync_mode_row = adw::ComboRow::builder()
+        .title(i18n("Cloud Sync"))
+        .model(&sync_mode_list)
+        .build();
+    let initial_sync_idx: u32 = match group.sync_mode {
+        SyncMode::None => 0,
+        SyncMode::Master => 1,
+        SyncMode::Import => 2,
+    };
+    sync_mode_row.set_selected(initial_sync_idx);
+
+    // Show confirmation dialog when switching to Master mode
+    let previous_sync_idx: Rc<std::cell::Cell<u32>> =
+        Rc::new(std::cell::Cell::new(initial_sync_idx));
+    let prev_idx_for_signal = previous_sync_idx.clone();
+    let state_for_sync = state.clone();
+    let group_window_for_sync = group_window.clone();
+    sync_mode_row.connect_selected_notify(move |row| {
+        let selected = row.selected();
+        let prev = prev_idx_for_signal.get();
+
+        // Only show confirmation when changing TO Master from non-Master
+        if selected == 1 && prev != 1 {
+            let state_ref = state_for_sync.borrow();
+            let sync_dir = state_ref.settings().sync.sync_dir.clone();
+            drop(state_ref);
+
+            if let Some(dir) = sync_dir {
+                // sync_dir configured — show confirmation dialog
+                let sync_dir_display = dir.display().to_string();
+                show_enable_master_confirmation(
+                    &group_window_for_sync,
+                    &sync_dir_display,
+                    row,
+                    &prev_idx_for_signal,
+                );
+            } else {
+                // sync_dir not configured — show setup dialog with folder chooser
+                show_sync_setup_dialog(
+                    &group_window_for_sync,
+                    &state_for_sync,
+                    row,
+                    &prev_idx_for_signal,
+                );
+            }
+        } else {
+            // For non-Master selections, just track the new index
+            prev_idx_for_signal.set(selected);
+        }
+    });
+
+    let sync_group_widget = adw::PreferencesGroup::builder()
+        .title(i18n("Cloud Sync"))
+        .build();
+    sync_group_widget.add(&sync_mode_row);
+
+    // Only show for root groups — subgroups inherit sync mode from their root
+    let is_root_group = group.parent_id.is_none();
+    sync_group_widget.set_visible(is_root_group);
+
+    content.append(&sync_group_widget);
+
+    // Hide Cloud Sync section when parent changes to non-root
+    let sync_group_for_parent = sync_group_widget.clone();
+    parent_row.connect_selected_notify(move |row| {
+        // Index 0 = "(None - Root Level)" means this group becomes/stays root
+        sync_group_for_parent.set_visible(row.selected() == 0);
+    });
+
     // === Description Section ===
     let description_group = adw::PreferencesGroup::builder()
         .title(i18n("Description"))
@@ -864,6 +1067,11 @@ pub fn show_edit_group_dialog(
     let icon_row_clone = icon_row;
     let parent_row_clone = parent_row;
     let description_buffer = description_view.buffer();
+    let auth_method_row_clone = auth_method_row;
+    let ssh_key_path_row_clone2 = ssh_key_path_row;
+    let ssh_proxy_jump_row_clone = ssh_proxy_jump_row;
+    let ssh_agent_socket_row_clone = ssh_agent_socket_row;
+    let sync_mode_row_clone = sync_mode_row;
     let old_name = group.name;
 
     save_btn.connect_clicked(move |_| {
@@ -954,6 +1162,44 @@ pub fn show_edit_group_dialog(
                     Some(icon_text)
                 };
 
+                // Update SSH settings
+                updated.ssh_auth_method = match auth_method_row_clone.selected() {
+                    1 => Some(SshAuthMethod::Password),
+                    2 => Some(SshAuthMethod::PublicKey),
+                    3 => Some(SshAuthMethod::Agent),
+                    4 => Some(SshAuthMethod::KeyboardInteractive),
+                    5 => Some(SshAuthMethod::SecurityKey),
+                    _ => None,
+                };
+
+                let key_path_text = ssh_key_path_row_clone2.text().trim().to_string();
+                updated.ssh_key_path = if key_path_text.is_empty() {
+                    None
+                } else {
+                    Some(std::path::PathBuf::from(key_path_text))
+                };
+
+                let proxy_jump_text = ssh_proxy_jump_row_clone.text().trim().to_string();
+                updated.ssh_proxy_jump = if proxy_jump_text.is_empty() {
+                    None
+                } else {
+                    Some(proxy_jump_text)
+                };
+
+                let agent_socket_text = ssh_agent_socket_row_clone.text().trim().to_string();
+                updated.ssh_agent_socket = if agent_socket_text.is_empty() {
+                    None
+                } else {
+                    Some(agent_socket_text)
+                };
+
+                // Update Cloud Sync mode (only meaningful for root groups)
+                updated.sync_mode = match sync_mode_row_clone.selected() {
+                    1 => SyncMode::Master,
+                    2 => SyncMode::Import,
+                    _ => SyncMode::None,
+                };
+
                 // Capture old groups snapshot before update for vault migration
                 let name_changed = existing.name != updated.name;
                 let parent_changed = existing.parent_id != updated.parent_id;
@@ -1027,6 +1273,132 @@ pub fn show_edit_group_dialog(
     });
 
     group_window.present();
+}
+
+/// Shows the Enable Master confirmation dialog when sync_dir is already configured.
+fn show_enable_master_confirmation(
+    parent: &adw::Window,
+    sync_dir_display: &str,
+    row: &adw::ComboRow,
+    prev_idx: &Rc<std::cell::Cell<u32>>,
+) {
+    let body = i18n_f(
+        "This group will be exported to {}. Other team members with read access can import it.",
+        &[sync_dir_display],
+    );
+
+    let dialog = adw::AlertDialog::new(Some(&i18n("Enable Cloud Sync?")), Some(&body));
+    dialog.add_response("cancel", &i18n("Cancel"));
+    dialog.add_response("enable", &i18n("Enable"));
+    dialog.set_close_response("cancel");
+    dialog.set_response_appearance("enable", adw::ResponseAppearance::Suggested);
+
+    let row_clone = row.clone();
+    let prev_idx_inner = prev_idx.clone();
+    dialog.connect_response(None, move |_, response| {
+        if response == "enable" {
+            prev_idx_inner.set(1);
+        } else {
+            row_clone.set_selected(prev_idx_inner.get());
+        }
+    });
+
+    dialog.present(Some(parent));
+}
+
+/// Shows the Cloud Sync setup dialog when sync_dir is not configured.
+///
+/// Displays an `AdwAlertDialog` with an `AdwStatusPage` empty state
+/// (icon: `folder-remote-symbolic`, title: "Set Up Cloud Sync") and a
+/// "Choose Directory" button. After the user selects a directory, saves
+/// it to `SyncSettings.sync_dir` and proceeds with the Enable Master
+/// confirmation flow.
+fn show_sync_setup_dialog(
+    parent: &adw::Window,
+    state: &SharedAppState,
+    row: &adw::ComboRow,
+    prev_idx: &Rc<std::cell::Cell<u32>>,
+) {
+    let choose_btn = Button::builder()
+        .label(i18n("Choose Directory"))
+        .halign(gtk4::Align::Center)
+        .css_classes(["suggested-action", "pill"])
+        .build();
+
+    let status_page = adw::StatusPage::builder()
+        .icon_name("folder-remote-symbolic")
+        .title(i18n("Set Up Cloud Sync"))
+        .description(i18n(
+            "Choose a directory synced with your cloud service (Google Drive, Nextcloud, Syncthing, etc.)",
+        ))
+        .child(&choose_btn)
+        .build();
+
+    let dialog = adw::AlertDialog::new(None, None);
+    dialog.set_extra_child(Some(&status_page));
+    dialog.add_response("cancel", &i18n("Cancel"));
+    dialog.set_close_response("cancel");
+
+    // Revert combo row on cancel
+    let row_for_cancel = row.clone();
+    let prev_idx_for_cancel = prev_idx.clone();
+    dialog.connect_response(None, move |_, _response| {
+        // Any response (only "cancel" exists) reverts the combo row
+        row_for_cancel.set_selected(prev_idx_for_cancel.get());
+    });
+
+    // "Choose Directory" button opens a folder chooser
+    let state_clone = state.clone();
+    let parent_clone = parent.clone();
+    let row_clone = row.clone();
+    let prev_idx_clone = prev_idx.clone();
+    let dialog_clone = dialog.clone();
+    choose_btn.connect_clicked(move |_| {
+        let file_dialog = gtk4::FileDialog::builder()
+            .title(i18n("Select Sync Directory"))
+            .modal(true)
+            .build();
+
+        let state_inner = state_clone.clone();
+        let parent_inner = parent_clone.clone();
+        let row_inner = row_clone.clone();
+        let prev_idx_inner = prev_idx_clone.clone();
+        let dialog_inner = dialog_clone.clone();
+        file_dialog.select_folder(
+            Some(&parent_clone),
+            gtk4::gio::Cancellable::NONE,
+            move |result| {
+                let Ok(folder) = result else {
+                    return; // User cancelled folder chooser — stay on setup dialog
+                };
+                let Some(path) = folder.path() else {
+                    return;
+                };
+
+                // Save sync_dir to settings
+                if let Ok(mut state_mut) = state_inner.try_borrow_mut() {
+                    state_mut.settings_mut().sync.sync_dir = Some(path.clone());
+                    if let Err(e) = state_mut.save_settings() {
+                        tracing::warn!(?e, "Failed to save sync settings");
+                    }
+                }
+
+                // Close the setup dialog
+                dialog_inner.force_close();
+
+                // Now show the Enable Master confirmation with the new sync_dir
+                let sync_dir_display = path.display().to_string();
+                show_enable_master_confirmation(
+                    &parent_inner,
+                    &sync_dir_display,
+                    &row_inner,
+                    &prev_idx_inner,
+                );
+            },
+        );
+    });
+
+    dialog.present(Some(parent));
 }
 
 /// Shows the quick connect dialog with protocol selection and template support

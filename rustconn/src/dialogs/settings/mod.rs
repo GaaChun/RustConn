@@ -6,6 +6,7 @@
 //! Migrated to `PreferencesDialog` (libadwaita 1.5+) from deprecated `PreferencesWindow`.
 
 mod clients_tab;
+mod cloud_sync_tab;
 mod keybindings_tab;
 mod logging_tab;
 mod monitoring_tab;
@@ -15,6 +16,7 @@ mod terminal_tab;
 mod ui_tab;
 
 pub use clients_tab::*;
+pub use cloud_sync_tab::*;
 pub use keybindings_tab::*;
 pub use logging_tab::*;
 pub use monitoring_tab::*;
@@ -132,6 +134,8 @@ pub struct SettingsDialog {
     // Global highlight rules
     highlight_rules_list: gtk4::ListBox,
     highlight_rules: Rc<RefCell<Vec<rustconn_core::models::HighlightRule>>>,
+    // Cloud Sync settings
+    cloud_sync_widgets: CloudSyncPageWidgets,
     // Current settings
     settings: Rc<RefCell<AppSettings>>,
     // Connections list for startup action dropdown
@@ -292,11 +296,15 @@ impl SettingsDialog {
         move_groups(&clients_page, &connection_page);
         move_groups(&monitoring_widgets.page, &connection_page);
 
-        // Add only the 4 combined pages
+        // Add only the 4 combined pages + Cloud Sync
         dialog.add(&terminal_page);
         dialog.add(&ui_page);
         dialog.add(&secrets_widgets.page);
         dialog.add(&connection_page);
+
+        // 5. Cloud Sync page
+        let cloud_sync_widgets = create_cloud_sync_page();
+        dialog.add(&cloud_sync_widgets.page);
 
         // Initialize settings
         let settings: Rc<RefCell<AppSettings>> = Rc::new(RefCell::new(AppSettings::default()));
@@ -516,6 +524,7 @@ impl SettingsDialog {
             keybindings_page,
             highlight_rules_list,
             highlight_rules,
+            cloud_sync_widgets,
             settings,
             connections: Rc::new(RefCell::new(Vec::new())),
             on_save: None,
@@ -749,6 +758,16 @@ impl SettingsDialog {
 
         // Load global highlight rules
         self.load_highlight_rules(&settings.highlight_rules);
+
+        // Load Cloud Sync settings
+        if let Some(ref sync_dir) = settings.sync.sync_dir {
+            self.cloud_sync_widgets
+                .sync_dir_row
+                .set_text(&sync_dir.to_string_lossy());
+        }
+        self.cloud_sync_widgets
+            .device_name_row
+            .set_text(&settings.sync.device_name);
     }
 
     /// Sets up the close handler to collect and save settings
@@ -964,6 +983,7 @@ impl SettingsDialog {
                         Some(trimmed.to_string())
                     }
                 },
+                sync: settings_clone.borrow().sync.clone(),
             };
 
             // Update stored settings

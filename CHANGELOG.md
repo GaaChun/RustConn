@@ -5,6 +5,28 @@ All notable changes to RustConn will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2026-04-24
+
+### Added
+- **Cloud Sync** — synchronize connection configurations between devices and team members through any shared cloud directory (Google Drive, Syncthing, Nextcloud, Dropbox, USB)
+  - **Group Sync** — per-group `.rcn` files with Master/Import access model and name-based merge
+  - **Simple Sync** — single-file bidirectional sync with UUID-based merge and tombstone deletion tracking
+  - **SSH Key Inheritance** — group-level SSH settings (key path, auth method, proxy jump, agent socket) inherited by child connections; `ssh_key_path` remains local-only per device
+  - **Credential Resolution UX** — interactive `AdwAlertDialog` prompts when variables or secret backends are missing at connect time
+  - **File Watcher** — automatic import on `.rcn` file changes via `notify` crate with 3s debounce
+  - **Cloud Sync Settings page** — `AdwPreferencesPage` with sync directory, device name, synced groups, available files, and Simple Sync toggle
+  - **Sidebar sync indicators** — `emblem-synchronizing-symbolic` for synced groups, `dialog-warning-symbolic` for errors
+  - **Import group UI restrictions** — synced fields read-only, local fields editable, context menu restrictions
+  - **CLI sync commands** — `sync status`, `sync list`, `sync export`, `sync import`, `sync now`
+- **Accessible labels** — added `update_property` accessible labels to icon-only buttons (password visibility toggle, password load, RDP quick actions)
+- **cargo-deny + cargo-audit in CI** — security advisory checks, license allow-list, ban wildcards, source registry restrictions
+- **Document dirty badge** — CSS dot indicator replaces text `"• "` prefix for unsaved documents in sidebar
+
+### Dependencies
+- notify 7 (new — file watching for Cloud Sync)
+- hostname 0.4 (new — default device name)
+- slug 0.1 (new — sync filename generation)
+
 ## [0.11.7] - 2026-04-23
 
 ### Fixed

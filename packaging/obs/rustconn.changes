@@ -1,4 +1,19 @@
 -------------------------------------------------------------------
+Thu Apr 24 2026 Anton Isaiev <totoshko88@gmail.com> - 0.12.0
+
+- Update to version 0.12.0
+- [Added] Cloud Sync — synchronize connections via shared cloud directory
+  (Google Drive, Syncthing, Nextcloud, Dropbox, USB)
+- [Added] Group Sync — per-group .rcn files with Master/Import access model
+- [Added] Simple Sync — single-file bidirectional sync with UUID-based merge
+- [Added] SSH Key Inheritance — group-level SSH settings inherited by children
+- [Added] Credential Resolution UX — interactive dialogs for missing variables
+- [Added] CLI sync commands: sync status, list, export, import, now
+- [Added] Accessible labels for icon-only buttons
+- [Added] cargo-deny + cargo-audit in CI
+- [Added] Document dirty badge — CSS dot indicator
+
+-------------------------------------------------------------------
 Thu Apr 23 2026 Anton Isaiev <totoshko88@gmail.com> - 0.11.7
 
 - Update to version 0.11.7

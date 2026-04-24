@@ -2233,6 +2233,11 @@ impl MainWindow {
                 return;
             };
 
+            // TODO(cloud-sync): When `resolve_credentials_blocking` returns
+            // `CredentialResolutionResult`, handle `VariableMissing` by calling
+            // `show_variable_setup_dialog` and `BackendNotConfigured` by calling
+            // `show_backend_missing_dialog` before falling through to
+            // `handle_resolved_credentials`.
             state_ref.resolve_credentials_gtk(connection_id, move |result| {
                 let resolved_credentials = match result {
                     Ok(creds) => creds,

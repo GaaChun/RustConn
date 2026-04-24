@@ -6989,3 +6989,317 @@ msgid ""
 "ssh;rdp;vnc;spice;mosh;telnet;zerotrust;connection;terminal;remote;"
 "kubernetes;k8s;serial;sftp;"
 msgstr ""
+
+#. SSH Key Inheritance (Phase 0) — group-level SSH settings
+msgid "SSH Authentication Method"
+msgstr ""
+
+msgid "SSH Key Path"
+msgstr ""
+
+msgid "SSH Proxy Jump"
+msgstr ""
+
+msgid "Inherit from group"
+msgstr ""
+
+msgid "Inherited from parent group"
+msgstr ""
+
+#. SSH Key Inheritance — resolved inherited key path shown in connection dialog
+#: rustconn/src/dialogs/connection/dialog.rs
+msgid "Inherited: {}"
+msgstr ""
+
+#. SSH Key Inheritance (Phase 0) — group edit dialog SSH settings UI
+#: rustconn/src/window/edit_dialogs.rs
+msgid "SSH Settings"
+msgstr ""
+
+#: rustconn/src/window/edit_dialogs.rs
+msgid "SSH settings inherited by connections in this group"
+msgstr ""
+
+#: rustconn/src/window/edit_dialogs.rs
+msgid "Security Key"
+msgstr ""
+
+#: rustconn/src/window/edit_dialogs.rs
+msgid "Select SSH key file"
+msgstr ""
+
+#. Cloud Sync Phase 1 — sync models and settings
+msgid "Cloud Sync"
+msgstr ""
+
+msgid "Sync Directory"
+msgstr ""
+
+msgid "Device Name"
+msgstr ""
+
+msgid "Master"
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
+msgid "Not synced"
+msgstr ""
+
+msgid "Sync Mode"
+msgstr ""
+
+msgid "Sync File"
+msgstr ""
+
+msgid "Last Synced"
+msgstr ""
+
+#: rustconn/src/window/edit_dialogs.rs
+msgid "Enable Cloud Sync?"
+msgstr ""
+
+#: rustconn/src/window/edit_dialogs.rs
+msgid "This group will be exported to {}. Other team members with read access can import it."
+msgstr ""
+
+#: rustconn/src/window/edit_dialogs.rs
+msgid "Enable"
+msgstr ""
+
+#: rustconn/src/window/edit_dialogs.rs
+msgid "Set Up Cloud Sync"
+msgstr ""
+
+#: rustconn/src/window/edit_dialogs.rs
+msgid "Choose a directory synced with your cloud service (Google Drive, Nextcloud, Syncthing, etc.)"
+msgstr ""
+
+#: rustconn/src/window/edit_dialogs.rs
+msgid "Choose Directory"
+msgstr ""
+
+#: rustconn/src/window/edit_dialogs.rs rustconn/src/dialogs/settings/cloud_sync_tab.rs
+msgid "Select Sync Directory"
+msgstr ""
+
+#. Cloud Sync Phase 2 — context menu items and toast messages
+#: rustconn/src/sidebar_ui.rs
+msgid "Enable Cloud Sync..."
+msgstr ""
+
+#: rustconn/src/sidebar_ui.rs
+msgid "Sync Now"
+msgstr ""
+
+#. Cloud Sync Phase 2 — toast messages (future use)
+msgid "Disable Sync"
+msgstr ""
+
+msgid "Cloud sync enabled for group '{}'"
+msgstr ""
+
+msgid "Exported to cloud: {} connections"
+msgstr ""
+
+#. Cloud Sync Phase 3 — Import group UI
+#: rustconn/src/dialogs/connection/dialog.rs
+msgid "Synced Properties"
+msgstr ""
+
+#: rustconn/src/dialogs/connection/dialog.rs
+msgid "Local Settings"
+msgstr ""
+
+#: rustconn/src/dialogs/connection/dialog.rs
+msgid "Managed by cloud sync"
+msgstr ""
+
+#: rustconn/src/window/sorting.rs
+msgid "Cannot add connections to synced group"
+msgstr ""
+
+#: rustconn/src/window/sorting.rs
+msgid "Cannot create subgroups in synced group"
+msgstr ""
+
+msgid "Imported '{}': {} connections, {} groups"
+msgstr ""
+
+#: rustconn/src/dialogs/connection/dialog.rs
+msgid "Edit Connection (Synced)"
+msgstr ""
+
+#. Cloud Sync Phase 4 — Credential Resolution UX: variable setup dialog
+#: rustconn/src/dialogs/variable_setup.rs
+msgid "Variable Not Configured"
+msgstr ""
+
+#: rustconn/src/dialogs/variable_setup.rs
+msgid "Connection \u2018{}\u2019 requires variable \u2018{}\u2019"
+msgstr ""
+
+#: rustconn/src/dialogs/variable_setup.rs
+msgid "Connection \u2018{}\u2019 requires variable \u2018{}\u2019\n({})"
+msgstr ""
+
+#: rustconn/src/dialogs/variable_setup.rs
+msgid "Value"
+msgstr ""
+
+#: rustconn/src/dialogs/variable_setup.rs
+msgid "Store in"
+msgstr ""
+
+#: rustconn/src/dialogs/variable_setup.rs
+msgid "Save & Connect"
+msgstr ""
+
+#. Cloud Sync Phase 4 — Credential Resolution UX: backend missing dialog
+#: rustconn/src/dialogs/backend_missing.rs
+msgid "Secret Backend Not Configured"
+msgstr ""
+
+#: rustconn/src/dialogs/backend_missing.rs
+msgid "This connection stores credentials in a secret vault, but no backend is set up yet."
+msgstr ""
+
+#: rustconn/src/dialogs/backend_missing.rs
+msgid "Enter Password Manually"
+msgstr ""
+
+#: rustconn/src/dialogs/backend_missing.rs
+msgid "Open Settings"
+msgstr ""
+
+#. Cloud Sync Phase 5 — Settings UI and sidebar indicators
+#: rustconn/src/dialogs/settings/cloud_sync_tab.rs
+msgid "Setup"
+msgstr ""
+
+#: rustconn/src/dialogs/settings/cloud_sync_tab.rs
+msgid "Synced Groups"
+msgstr ""
+
+#: rustconn/src/dialogs/settings/cloud_sync_tab.rs
+msgid "Available in Cloud"
+msgstr ""
+
+#: rustconn/src/dialogs/settings/cloud_sync_tab.rs
+msgid "Files in sync directory not yet imported"
+msgstr ""
+
+#: rustconn/src/dialogs/settings/cloud_sync_tab.rs
+msgid "Simple Sync"
+msgstr ""
+
+#: rustconn/src/dialogs/settings/cloud_sync_tab.rs
+msgid "Sync everything between your devices"
+msgstr ""
+
+#: rustconn/src/dialogs/settings/cloud_sync_tab.rs
+msgid "Choose sync directory"
+msgstr ""
+
+#: rustconn/src/dialogs/settings/cloud_sync_tab.rs
+msgid "Master · synced"
+msgstr ""
+
+#: rustconn/src/dialogs/settings/cloud_sync_tab.rs
+msgid "Import · synced"
+msgstr ""
+
+#: rustconn/src/dialogs/settings/cloud_sync_tab.rs
+msgid "Sync error"
+msgstr ""
+
+#: rustconn/src/dialogs/settings/cloud_sync_tab.rs
+msgid "Import"
+msgstr ""
+
+#: rustconn/src/dialogs/settings/cloud_sync_tab.rs
+msgid "No sync directory configured"
+msgstr ""
+
+#. Cloud Sync Phase 5 — Sidebar sync indicators
+#: rustconn/src/sidebar/view.rs
+msgid "Master — synced to cloud"
+msgstr ""
+
+#: rustconn/src/sidebar/view.rs
+msgid "Import — synced from cloud"
+msgstr ""
+
+#: rustconn/src/sidebar/view.rs
+msgid "Master — last exported: {}"
+msgstr ""
+
+#: rustconn/src/sidebar/view.rs
+msgid "Import — last synced: {}"
+msgstr ""
+
+#: rustconn/src/sidebar/view.rs
+msgid "Sync error: {}"
+msgstr ""
+
+#: rustconn/src/dialogs/settings/cloud_sync_tab.rs
+msgid "Enable Simple Sync (sync everything between your devices)"
+msgstr ""
+
+#: rustconn/src/dialogs/settings/cloud_sync_tab.rs
+msgid "Simple Sync active — last sync: {}"
+msgstr ""
+
+#: rustconn/src/window/edit_dialogs.rs rustconn/src/window/connection_dialogs.rs
+msgid "Toggle password visibility"
+msgstr ""
+
+#: rustconn/src/window/edit_dialogs.rs rustconn/src/window/connection_dialogs.rs
+msgid "Load password from vault"
+msgstr ""
+
+#: rustconn/src/embedded_rdp/mod.rs
+msgid "Windows admin tools"
+msgstr ""
+
+#: rustconn/src/sidebar/view.rs
+msgid "Unsaved changes"
+msgstr ""
+
+#: rustconn/src/sidebar/view.rs
+msgid "Document has unsaved changes"
+msgstr ""
+
+#. Accessible labels for icon-only buttons (Phase 8 backlog)
+#: rustconn/src/dialogs/connection/ssh.rs
+msgid "Browse for SSH key file"
+msgstr ""
+
+#: rustconn/src/dialogs/connection/dialog.rs
+msgid "Browse for CA certificate file"
+msgstr ""
+
+#: rustconn/src/dialogs/connection/ssh.rs
+msgid "Remove port forward"
+msgstr ""
+
+#: rustconn/src/dialogs/connection/dialog.rs
+msgid "Move rule up"
+msgstr ""
+
+#: rustconn/src/dialogs/connection/dialog.rs
+msgid "Move rule down"
+msgstr ""
+
+#: rustconn/src/dialogs/connection/dialog.rs
+msgid "Delete highlight rule"
+msgstr ""
+
+#: rustconn/src/dialogs/connection/general_tab.rs
+msgid "Load username from selected group"
+msgstr ""
+
+#: rustconn/src/dialogs/connection/general_tab.rs
+msgid "Load domain from selected group"
+msgstr ""
