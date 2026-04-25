@@ -2104,13 +2104,12 @@ impl SplitViewBridge {
                     row.add_prefix(&gtk4::Image::from_icon_name("utilities-terminal-symbolic"));
 
                     // Show split color indicator if session is in any split view
-                    if let Some(&color_index) = split_colors.borrow().get(&session_id) {
-                        if let Some(icon) = create_colored_circle_icon(color_index, 12) {
+                    if let Some(&color_index) = split_colors.borrow().get(&session_id)
+                        && let Some(icon) = create_colored_circle_icon(color_index, 12) {
                             let color_image = gtk4::Image::from_gicon(&icon);
                             color_image.set_pixel_size(12);
                             row.add_suffix(&color_image);
                         }
-                    }
 
                     let callback = on_session_selected.clone();
                     let popover_weak = popover.downgrade();

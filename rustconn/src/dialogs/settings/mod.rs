@@ -583,16 +583,16 @@ impl SettingsDialog {
                 groups.iter().filter_map(|g| g.sync_file.clone()).collect();
 
             for file_path in &files {
-                if let Some(filename) = file_path.file_name().and_then(|f| f.to_str()) {
-                    if !imported_files.contains(filename) {
-                        // Add a simple row (no import callback wired here — import
-                        // is done via the sidebar context menu or CLI)
-                        let row = libadwaita::ActionRow::builder()
-                            .title(filename)
-                            .subtitle(i18n("Available for import"))
-                            .build();
-                        self.cloud_sync_widgets.available_files_group.add(&row);
-                    }
+                if let Some(filename) = file_path.file_name().and_then(|f| f.to_str())
+                    && !imported_files.contains(filename)
+                {
+                    // Add a simple row (no import callback wired here — import
+                    // is done via the sidebar context menu or CLI)
+                    let row = libadwaita::ActionRow::builder()
+                        .title(filename)
+                        .subtitle(i18n("Available for import"))
+                        .build();
+                    self.cloud_sync_widgets.available_files_group.add(&row);
                 }
             }
         }

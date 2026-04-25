@@ -24,15 +24,15 @@ fn arb_group_hierarchy() -> impl Strategy<Value = Vec<ConnectionGroup>> {
     (1usize..=20)
         .prop_flat_map(|n| {
             // For each group: (name_suffix, optional parent index, optional ssh_key_path)
-            let group_specs = prop::collection::vec(
+
+            prop::collection::vec(
                 (
                     "[a-z]{1,8}",                     // name suffix
                     prop::option::of(0usize..20),     // parent index (may be out of range)
                     prop::option::of("[/a-z]{1,20}"), // ssh_key_path
                 ),
                 n..=n,
-            );
-            group_specs
+            )
         })
         .prop_map(|specs| {
             // Create groups with deterministic UUIDs based on index

@@ -69,6 +69,13 @@ pub fn create_application() -> adw::Application {
 
 /// Builds the main UI when the application is activated
 fn build_ui(app: &adw::Application, tray_manager: SharedTrayManager) {
+    // Guard against repeated activation (e.g. second instance, D-Bus
+    // activation).  If a window already exists just present it.
+    if let Some(window) = app.active_window() {
+        window.present();
+        return;
+    }
+
     // Force Adwaita icon theme and suppress deprecated dark-theme property
     // BEFORE loading CSS to prevent libadwaita warnings during theme parsing.
     if let Some(display) = gtk4::gdk::Display::default() {
@@ -116,17 +123,44 @@ fn build_ui(app: &adw::Application, tray_manager: SharedTrayManager) {
 
     // Initialize tray icon if enabled in settings
     let enable_tray = state.borrow().settings().ui.enable_tray_icon;
-    if enable_tray && let Some(tray) = TrayManager::new() {
-        // Update tray with initial state
-        let mut initial_cache = TrayStateCache::default();
-        update_tray_state(&tray, &state, &mut initial_cache);
-        tray.force_refresh();
-        *tray_manager.borrow_mut() = Some(tray);
+    if enable_tray {
+        // Spawn TrayManager on a background thread so that the blocking
+        // D-Bus registration (`tray.spawn()` → `compat::block_on`) does
+        // not stall the GTK main loop.  The result is polled back via a
+        // lightweight channel.
+        let (tray_tx, tray_rx) = std::sync::mpsc::channel::<TrayManager>();
+        std::thread::Builder::new()
+            .name("tray-init".into())
+            .spawn(move || {
+                if let Some(tray) = TrayManager::new() {
+                    let _ = tray_tx.send(tray);
+                }
+            })
+            .ok();
+
+        let state_for_tray = state.clone();
+        let tray_mgr_for_init = tray_manager.clone();
+        glib::timeout_add_local(std::time::Duration::from_millis(50), move || match tray_rx
+            .try_recv()
+        {
+            Ok(tray) => {
+                let mut initial_cache = TrayStateCache::default();
+                update_tray_state(&tray, &state_for_tray, &mut initial_cache);
+                tray.force_refresh();
+                *tray_mgr_for_init.borrow_mut() = Some(tray);
+                glib::ControlFlow::Break
+            }
+            Err(std::sync::mpsc::TryRecvError::Empty) => glib::ControlFlow::Continue,
+            Err(std::sync::mpsc::TryRecvError::Disconnected) => {
+                tracing::warn!("Tray initialization thread exited without creating tray");
+                glib::ControlFlow::Break
+            }
+        });
     }
 
     // Schedule delayed force-refreshes so the D-Bus host caches our menu.
     // The host may not be ready immediately after spawn(), so we retry
-    // at 500ms and 2s to cover both fast and slow host registration.
+    // at 500ms, 2s, and 5s to cover both fast and slow host registration.
     {
         let tray_500ms = tray_manager.clone();
         glib::timeout_add_local_once(std::time::Duration::from_millis(500), move || {
@@ -140,7 +174,6 @@ fn build_ui(app: &adw::Application, tray_manager: SharedTrayManager) {
                 tray.force_refresh();
             }
         });
-        // Extra refresh at 5s for slow D-Bus hosts (e.g. AppIndicator on GNOME)
         let tray_5s = tray_manager.clone();
         glib::timeout_add_local_once(std::time::Duration::from_secs(5), move || {
             if let Some(tray) = tray_5s.borrow().as_ref() {
@@ -462,6 +495,12 @@ fn setup_tray_polling(
             return glib::ControlFlow::Break;
         };
 
+        // Stop polling if the window has been finalized to avoid
+        // interacting with stale GTK objects.
+        if window_for_msgs.upgrade().is_none() {
+            return glib::ControlFlow::Break;
+        }
+
         let tray_ref = tray_for_msgs.borrow();
         let Some(tray) = tray_ref.as_ref() else {
             return glib::ControlFlow::Continue;
@@ -548,10 +587,13 @@ fn setup_tray_polling(
         let Some(tray) = tray_ref.as_ref() else {
             return glib::ControlFlow::Continue;
         };
+        let Some(win) = window_for_state.upgrade() else {
+            // Window has been finalized — stop polling to avoid
+            // touching stale GTK objects.
+            return glib::ControlFlow::Break;
+        };
         // Sync window visibility so tray menu shows correct Show/Hide label
-        if let Some(win) = window_for_state.upgrade() {
-            tray.set_window_visible(win.is_visible());
-        }
+        tray.set_window_visible(win.is_visible());
         update_tray_state(tray, &state_clone, &mut state_cache.borrow_mut());
         glib::ControlFlow::Continue
     });

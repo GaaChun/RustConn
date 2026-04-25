@@ -1902,10 +1902,9 @@ impl MainWindow {
                         .split_colors()
                         .borrow()
                         .contains_key(&session_id)
+                        && let Some(page) = sessions_for_tab.borrow().get(&session_id)
                     {
-                        if let Some(page) = sessions_for_tab.borrow().get(&session_id) {
-                            page.set_indicator_icon(gio::Icon::NONE);
-                        }
+                        page.set_indicator_icon(gio::Icon::NONE);
                     }
 
                     // If session has a split bridge, focus the correct pane

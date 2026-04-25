@@ -7,8 +7,8 @@
 //!
 //! Master group files are filtered out to prevent circular export→import loops.
 
-use std::collections::HashMap;
-use std::path::PathBuf;
+use std::collections::{HashMap, HashSet};
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
@@ -32,7 +32,7 @@ pub struct SyncFileWatcher {
     /// The underlying notify watcher. Kept alive to maintain the watch.
     _watcher: RecommendedWatcher,
     /// Filenames of Master group files to ignore (prevents circular sync).
-    master_files: Arc<Mutex<HashMap<String, ()>>>,
+    master_files: Arc<Mutex<HashSet<String>>>,
     /// Handle to the debounce thread so we can signal it to stop.
     stop_flag: Arc<Mutex<bool>>,
     /// Join handle for the debounce thread — joined on drop for clean shutdown.
@@ -50,10 +50,10 @@ impl SyncFileWatcher {
     ///
     /// Returns [`SyncError::Io`] if the directory cannot be watched.
     pub fn new(
-        sync_dir: PathBuf,
+        sync_dir: &Path,
         callback: impl Fn(PathBuf) + Send + 'static,
     ) -> Result<Self, SyncError> {
-        let master_files: Arc<Mutex<HashMap<String, ()>>> = Arc::new(Mutex::new(HashMap::new()));
+        let master_files: Arc<Mutex<HashSet<String>>> = Arc::new(Mutex::new(HashSet::new()));
         let stop_flag = Arc::new(Mutex::new(false));
 
         // Pending events: filename → last event time
@@ -95,23 +95,27 @@ impl SyncFileWatcher {
 
                 // Filter Master group files
                 if let Some(filename) = path.file_name().and_then(|n| n.to_str()) {
-                    let masters = master_files_clone.lock().unwrap_or_else(|e| e.into_inner());
-                    if masters.contains_key(filename) {
+                    let masters = master_files_clone
+                        .lock()
+                        .unwrap_or_else(std::sync::PoisonError::into_inner);
+                    if masters.contains(filename) {
                         debug!(file = %filename, "Ignoring Master group file change");
                         continue;
                     }
                 }
 
                 // Record/update pending event
-                let mut map = pending_clone.lock().unwrap_or_else(|e| e.into_inner());
+                let mut map = pending_clone
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner);
                 map.insert(path.clone(), Instant::now());
             }
         })
-        .map_err(|e| SyncError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+        .map_err(|e| SyncError::Io(std::io::Error::other(e)))?;
 
         watcher
-            .watch(&sync_dir, RecursiveMode::NonRecursive)
-            .map_err(|e| SyncError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+            .watch(sync_dir, RecursiveMode::NonRecursive)
+            .map_err(|e| SyncError::Io(std::io::Error::other(e)))?;
 
         // Spawn debounce thread
         let pending_debounce = Arc::clone(&pending);
@@ -178,7 +182,7 @@ impl SyncFileWatcher {
             tracing::warn!("Master files mutex poisoned, recovering");
             e.into_inner()
         });
-        masters.insert(filename.to_owned(), ());
+        masters.insert(filename.to_owned());
     }
 
     /// Removes a filename from the Master group filter.
@@ -225,7 +229,7 @@ mod tests {
         let counter = Arc::new(AtomicUsize::new(0));
         let counter_clone = Arc::clone(&counter);
 
-        let watcher = SyncFileWatcher::new(dir.path().to_path_buf(), move |_path| {
+        let watcher = SyncFileWatcher::new(dir.path(), move |_path| {
             counter_clone.fetch_add(1, Ordering::SeqCst);
         })
         .unwrap();
@@ -251,7 +255,7 @@ mod tests {
         let counter = Arc::new(AtomicUsize::new(0));
         let counter_clone = Arc::clone(&counter);
 
-        let _watcher = SyncFileWatcher::new(dir.path().to_path_buf(), move |_path| {
+        let _watcher = SyncFileWatcher::new(dir.path(), move |_path| {
             counter_clone.fetch_add(1, Ordering::SeqCst);
         })
         .unwrap();
@@ -268,7 +272,7 @@ mod tests {
     #[test]
     fn stop_terminates_cleanly() {
         let dir = tempfile::TempDir::new().unwrap();
-        let mut watcher = SyncFileWatcher::new(dir.path().to_path_buf(), |_| {}).unwrap();
+        let mut watcher = SyncFileWatcher::new(dir.path(), |_| {}).unwrap();
         watcher.stop();
         // Should not panic or hang
     }

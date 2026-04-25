@@ -902,9 +902,11 @@ mod tests {
     fn from_connection_strips_ssh_key_path() {
         use std::path::PathBuf;
 
-        let mut ssh_config = SshConfig::default();
-        ssh_config.key_path = Some(PathBuf::from("/home/user/.ssh/id_ed25519"));
-        ssh_config.proxy_jump = Some("bastion.example.com".to_owned());
+        let ssh_config = SshConfig {
+            key_path: Some(PathBuf::from("/home/user/.ssh/id_ed25519")),
+            proxy_jump: Some("bastion.example.com".to_owned()),
+            ..Default::default()
+        };
 
         let conn = Connection::new(
             "test".to_owned(),
@@ -930,8 +932,10 @@ mod tests {
     fn from_connection_strips_sftp_key_path() {
         use std::path::PathBuf;
 
-        let mut ssh_config = SshConfig::default();
-        ssh_config.key_path = Some(PathBuf::from("/home/user/.ssh/sftp_key"));
+        let ssh_config = SshConfig {
+            key_path: Some(PathBuf::from("/home/user/.ssh/sftp_key")),
+            ..Default::default()
+        };
 
         let conn = Connection::new(
             "sftp-test".to_owned(),
@@ -1228,7 +1232,11 @@ mod tests {
     #[test]
     fn slug_unicode_cyrillic() {
         let result = group_name_to_filename("Сервери");
-        assert!(result.ends_with(".rcn"));
+        assert!(
+            std::path::Path::new(&result)
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("rcn"))
+        );
         // Cyrillic should be transliterated to ASCII
         assert!(result.is_ascii());
         assert!(!result.is_empty());

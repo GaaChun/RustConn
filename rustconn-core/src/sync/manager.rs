@@ -23,21 +23,12 @@ use super::group_merge::{GroupMergeEngine, GroupMergeResult};
 use super::settings::{SyncMode, SyncSettings};
 
 /// Per-group sync state tracking.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct GroupSyncState {
     /// Timestamp of the last successful sync operation for this group.
     pub last_synced_at: Option<DateTime<Utc>>,
     /// Last error message if the most recent sync operation failed.
     pub last_error: Option<String>,
-}
-
-impl Default for GroupSyncState {
-    fn default() -> Self {
-        Self {
-            last_synced_at: None,
-            last_error: None,
-        }
-    }
 }
 
 /// Summary of a sync operation (export or import).
@@ -345,6 +336,7 @@ impl SyncManager {
     ///
     /// Returns `Ok(group_id)` if a group ID is available, or `Err` if
     /// the channel is empty or not created.
+    #[allow(clippy::missing_errors_doc, clippy::result_unit_err)]
     pub fn try_recv_export(&mut self) -> Result<Uuid, ()> {
         if let Some(ref mut rx) = self.export_rx {
             rx.try_recv().map_err(|_| ())
@@ -381,12 +373,11 @@ impl SyncManager {
         for entry in std::fs::read_dir(sync_dir)? {
             let entry = entry?;
             let path = entry.path();
-            if path.is_file() {
-                if let Some(ext) = path.extension() {
-                    if ext == "rcn" {
-                        files.push(path);
-                    }
-                }
+            if path.is_file()
+                && let Some(ext) = path.extension()
+                && ext == "rcn"
+            {
+                files.push(path);
             }
         }
         files.sort();
@@ -548,18 +539,18 @@ impl SyncManager {
     ///
     /// Does not panic. The internal `expect` is guarded by a preceding filter
     /// that ensures `sync_file.is_some()`.
+    #[allow(clippy::too_many_lines)]
     pub fn import_all_on_start(
         &mut self,
         groups: &[ConnectionGroup],
         connections: &[Connection],
         local_variable_names: &HashSet<String>,
     ) -> Vec<(GroupMergeResult, SyncReport)> {
-        let sync_dir = match self.settings.sync_dir.as_ref() {
-            Some(dir) => dir.clone(),
-            None => {
-                tracing::debug!("Sync directory not configured, skipping startup import");
-                return Vec::new();
-            }
+        let sync_dir = if let Some(dir) = self.settings.sync_dir.as_ref() {
+            dir.clone()
+        } else {
+            tracing::debug!("Sync directory not configured, skipping startup import");
+            return Vec::new();
         };
 
         if !self.settings.auto_import_on_start {
@@ -964,7 +955,7 @@ mod tests {
     #[test]
     fn settings_returns_configured_settings() {
         let settings = test_settings(Some(PathBuf::from("/tmp/sync")));
-        let mgr = SyncManager::new(settings.clone());
+        let mgr = SyncManager::new(settings);
         assert_eq!(mgr.settings().sync_dir, Some(PathBuf::from("/tmp/sync")));
         assert_eq!(mgr.settings().device_name, "test-device");
     }
@@ -1138,7 +1129,7 @@ mod tests {
         let conn = make_connection("nginx-1", "10.0.1.10", root.id);
 
         let report = mgr
-            .export_group(root.id, &[root.clone()], &[conn], &[], "0.12.0")
+            .export_group(root.id, std::slice::from_ref(&root), &[conn], &[], "0.12.0")
             .unwrap();
 
         assert_eq!(report.group_name, "Production");
@@ -1202,7 +1193,7 @@ mod tests {
         root.sync_mode = SyncMode::Import;
 
         let err = mgr
-            .export_group(root.id, &[root.clone()], &[], &[], "0.12.0")
+            .export_group(root.id, std::slice::from_ref(&root), &[], &[], "0.12.0")
             .unwrap_err();
         assert!(matches!(err, SyncError::NotMasterGroup(id) if id == root.id));
     }
@@ -1260,7 +1251,7 @@ mod tests {
         let root = make_master_root_group("Empty");
 
         let report = mgr
-            .export_group(root.id, &[root.clone()], &[], &[], "0.12.0")
+            .export_group(root.id, &[root], &[], &[], "0.12.0")
             .unwrap();
 
         assert_eq!(report.connections_added, 0);
@@ -1286,7 +1277,7 @@ mod tests {
         // sync_file is None — should auto-generate from name
 
         let _report = mgr
-            .export_group(root.id, &[root.clone()], &[], &[], "0.12.0")
+            .export_group(root.id, &[root], &[], &[], "0.12.0")
             .unwrap();
 
         let file_path = dir.path().join("my-servers.rcn");
@@ -1308,7 +1299,7 @@ mod tests {
         ];
 
         let report = mgr
-            .export_group(root.id, &[root.clone()], &[conn], &vars, "0.12.0")
+            .export_group(root.id, &[root], &[conn], &vars, "0.12.0")
             .unwrap();
 
         assert_eq!(report.variables_created, 1);
@@ -1599,7 +1590,7 @@ mod tests {
     #[test]
     fn collect_group_tree_includes_root() {
         let root = ConnectionGroup::new("Root".to_owned());
-        let result = collect_group_tree(root.id, &[root.clone()]);
+        let result = collect_group_tree(root.id, std::slice::from_ref(&root));
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].id, root.id);
     }
@@ -1678,7 +1669,7 @@ mod tests {
         let (group, _export) = setup_import_scenario(&dir);
 
         let (merge_result, report) = mgr
-            .import_group(group.id, &[group.clone()], &[], &HashSet::new())
+            .import_group(group.id, std::slice::from_ref(&group), &[], &HashSet::new())
             .unwrap();
 
         assert_eq!(report.group_name, "Imported");
@@ -1772,7 +1763,7 @@ mod tests {
         group.sync_mode = SyncMode::Import;
         group.sync_file = Some("nonexistent.rcn".to_owned());
 
-        let reports = mgr.import_all_on_start(&[group.clone()], &[], &HashSet::new());
+        let reports = mgr.import_all_on_start(std::slice::from_ref(&group), &[], &HashSet::new());
         assert!(reports.is_empty());
 
         // Error state should be recorded
@@ -1792,7 +1783,7 @@ mod tests {
         group.sync_mode = SyncMode::Import;
         group.sync_file = Some("corrupt.rcn".to_owned());
 
-        let reports = mgr.import_all_on_start(&[group.clone()], &[], &HashSet::new());
+        let reports = mgr.import_all_on_start(std::slice::from_ref(&group), &[], &HashSet::new());
         assert!(reports.is_empty());
 
         // Error state should be recorded
