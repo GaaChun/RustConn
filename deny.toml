@@ -8,10 +8,10 @@ targets = [
 ]
 
 [advisories]
-vulnerability = "deny"
-unmaintained = "warn"
+# cargo-deny v2: vulnerability/unsound/notice fields removed (always error).
+# Use `ignore` to suppress specific advisories.
+unmaintained = "workspace"
 yanked = "warn"
-notice = "warn"
 
 [licenses]
 unlicensed = "deny"
