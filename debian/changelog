@@ -1,3 +1,17 @@
+rustconn (0.12.2-1) unstable; urgency=medium
+
+  * [Fixed] Flatpak SFTP ssh-add fails with missing askpass — strips
+    SSH_ASKPASS from the environment for bare ssh-add calls (#102)
+  * [Fixed] Blocking operations on GTK main thread — added 5s timeouts
+    to has_secret_backend() and refresh_secret_backend_cache()
+  * [Fixed] Missing timeouts on blocking async operations — added
+    timeouts to flush_persistence (5s), resolve_with_hierarchy (30s),
+    auto_unlock (30s), and vault store/retrieve/delete (10s)
+  * [Translations] All 16 languages aligned to 1697 strings; fixed
+    Italian PO syntax error
+
+ -- Anton Isaiev <totoshko88@gmail.com>  Sun, 26 Apr 2026 12:00:00 +0200
+
 rustconn (0.12.1-1) unstable; urgency=medium
 
   * [Fixed] Split view content disappearing on panel focus switch —

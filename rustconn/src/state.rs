@@ -774,10 +774,19 @@ impl AppState {
     /// Flushes any pending persistence operations immediately
     ///
     /// This ensures that debounced saves are written to disk before application exit.
+    /// Includes a 5-second timeout to prevent hanging on shutdown if the
+    /// persistence layer is unresponsive.
     pub fn flush_persistence(&self) -> Result<(), String> {
         with_runtime(|rt| {
-            rt.block_on(self.connection_manager.flush_persistence())
+            rt.block_on(async {
+                tokio::time::timeout(
+                    std::time::Duration::from_secs(5),
+                    self.connection_manager.flush_persistence(),
+                )
+                .await
+                .map_err(|_| "Flush persistence timed out after 5s".to_string())?
                 .map_err(|e| format!("Failed to flush persistence: {e}"))
+            })
         })?
     }
 
@@ -838,25 +847,47 @@ impl AppState {
     /// Checks if any secret backend is available (uses cache if available)
     ///
     /// Used internally by `resolve_credentials_blocking` and `resolve_credentials_gtk`.
+    /// Includes a 5-second timeout to prevent blocking the GTK main thread
+    /// if the backend is unresponsive.
     pub fn has_secret_backend(&self) -> bool {
         if let Some(cached) = self.secret_backend_available {
             return cached;
         }
         let secret_manager = self.secret_manager.clone();
 
-        with_runtime(|rt| rt.block_on(async { secret_manager.is_available().await }))
-            .unwrap_or(false)
+        with_runtime(|rt| {
+            rt.block_on(async {
+                tokio::time::timeout(
+                    std::time::Duration::from_secs(5),
+                    secret_manager.is_available(),
+                )
+                .await
+                .unwrap_or(false)
+            })
+        })
+        .unwrap_or(false)
     }
 
     /// Refreshes the cached secret backend availability
     ///
     /// Call this after settings changes
     /// that affect the secret backend configuration.
+    /// Includes a 5-second timeout to prevent blocking the GTK main thread
+    /// if the backend is unresponsive.
     pub fn refresh_secret_backend_cache(&mut self) {
         let secret_manager = self.secret_manager.clone();
         self.secret_backend_available = Some(
-            with_runtime(|rt| rt.block_on(async { secret_manager.is_available().await }))
-                .unwrap_or(false),
+            with_runtime(|rt| {
+                rt.block_on(async {
+                    tokio::time::timeout(
+                        std::time::Duration::from_secs(5),
+                        secret_manager.is_available(),
+                    )
+                    .await
+                    .unwrap_or(false)
+                })
+            })
+            .unwrap_or(false),
         );
     }
 
@@ -1316,12 +1347,18 @@ impl AppState {
         let groups = groups.clone();
 
         // Use thread-local runtime (created lazily per thread)
+        // 30-second timeout prevents indefinite hangs if the backend is unresponsive
         let fallback_result = crate::async_utils::with_runtime(|rt| {
             rt.block_on(async {
-                resolver
-                    .resolve_with_hierarchy(&connection, &groups)
-                    .await
-                    .map_err(|e| format!("Failed to resolve credentials: {e}"))
+                match tokio::time::timeout(
+                    std::time::Duration::from_secs(30),
+                    resolver.resolve_with_hierarchy(&connection, &groups),
+                )
+                .await
+                {
+                    Ok(result) => result.map_err(|e| format!("Failed to resolve credentials: {e}")),
+                    Err(_) => Err("Credential resolution timed out after 30s".to_string()),
+                }
             })
         })?;
 

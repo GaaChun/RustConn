@@ -612,7 +612,10 @@ impl MainWindow {
                         .arg(kp)
                         .stdin(std::process::Stdio::null())
                         .stdout(std::process::Stdio::null())
-                        .stderr(std::process::Stdio::piped());
+                        .stderr(std::process::Stdio::piped())
+                        // Strip host SSH_ASKPASS — it may reference a
+                        // program (e.g. ksshaskpass) absent in Flatpak.
+                        .env_remove("SSH_ASKPASS");
                     rustconn_core::sftp::apply_agent_env(&mut ssh_add);
                     match ssh_add.output() {
                         Ok(output) if output.status.success() => {
@@ -729,7 +732,10 @@ impl MainWindow {
                                 .arg(kp)
                                 .stdin(std::process::Stdio::null())
                                 .stdout(std::process::Stdio::null())
-                                .stderr(std::process::Stdio::piped());
+                                .stderr(std::process::Stdio::piped())
+                                // Strip host SSH_ASKPASS — it may reference a
+                                // program (e.g. ksshaskpass) absent in Flatpak.
+                                .env_remove("SSH_ASKPASS");
                             rustconn_core::sftp::apply_agent_env(&mut ssh_add);
                             match ssh_add.output() {
                                 Ok(output) if output.status.success() => {
@@ -917,7 +923,10 @@ impl MainWindow {
                     .arg(kp)
                     .stdin(std::process::Stdio::null())
                     .stdout(std::process::Stdio::null())
-                    .stderr(std::process::Stdio::piped());
+                    .stderr(std::process::Stdio::piped())
+                    // Strip host SSH_ASKPASS — it may reference a
+                    // program (e.g. ksshaskpass) absent in Flatpak.
+                    .env_remove("SSH_ASKPASS");
                 rustconn_core::sftp::apply_agent_env(&mut ssh_add);
                 match ssh_add.output() {
                     Ok(output) if output.status.success() => {
@@ -1014,7 +1023,10 @@ impl MainWindow {
                             .arg(kp)
                             .stdin(std::process::Stdio::null())
                             .stdout(std::process::Stdio::null())
-                            .stderr(std::process::Stdio::piped());
+                            .stderr(std::process::Stdio::piped())
+                            // Strip host SSH_ASKPASS — it may reference a
+                            // program (e.g. ksshaskpass) absent in Flatpak.
+                            .env_remove("SSH_ASKPASS");
                         rustconn_core::sftp::apply_agent_env(&mut ssh_add);
                         match ssh_add.output() {
                             Ok(output) if output.status.success() => {

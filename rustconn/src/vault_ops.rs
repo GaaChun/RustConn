@@ -871,10 +871,15 @@ pub fn dispatch_vault_op(
 
     crate::async_utils::with_runtime(|rt| {
         let backend: std::sync::Arc<dyn SecretBackend> = match backend_type {
-            SecretBackendType::Bitwarden => std::sync::Arc::new(
-                rt.block_on(rustconn_core::secret::auto_unlock(secret_settings))
-                    .map_err(|e| format!("{e}"))?,
-            ),
+            SecretBackendType::Bitwarden => std::sync::Arc::new(rt.block_on(async {
+                tokio::time::timeout(
+                    std::time::Duration::from_secs(30),
+                    rustconn_core::secret::auto_unlock(secret_settings),
+                )
+                .await
+                .map_err(|_| "Bitwarden auto-unlock timed out after 30s".to_string())?
+                .map_err(|e| format!("{e}"))
+            })?),
             SecretBackendType::OnePassword => {
                 std::sync::Arc::new(rustconn_core::secret::OnePasswordBackend::new())
             }
@@ -898,8 +903,15 @@ pub fn dispatch_vault_op(
                     ?backend_type,
                     "dispatch_vault_op: storing credentials"
                 );
-                rt.block_on(backend.store(lookup_key, creds))
-                    .map_err(|e| format!("{e}"))?;
+                rt.block_on(async {
+                    tokio::time::timeout(
+                        std::time::Duration::from_secs(10),
+                        backend.store(lookup_key, creds),
+                    )
+                    .await
+                    .map_err(|_| "Vault store timed out after 10s".to_string())?
+                    .map_err(|e| format!("{e}"))
+                })?;
                 tracing::debug!(%lookup_key, "dispatch_vault_op: store succeeded");
                 Ok(None)
             }
@@ -909,9 +921,15 @@ pub fn dispatch_vault_op(
                     ?backend_type,
                     "dispatch_vault_op: retrieving credentials"
                 );
-                let result = rt
-                    .block_on(backend.retrieve(lookup_key))
-                    .map_err(|e| format!("{e}"))?;
+                let result = rt.block_on(async {
+                    tokio::time::timeout(
+                        std::time::Duration::from_secs(10),
+                        backend.retrieve(lookup_key),
+                    )
+                    .await
+                    .map_err(|_| "Vault retrieve timed out after 10s".to_string())?
+                    .map_err(|e| format!("{e}"))
+                })?;
                 tracing::debug!(
                     %lookup_key,
                     found = result.is_some(),
@@ -920,8 +938,15 @@ pub fn dispatch_vault_op(
                 Ok(result)
             }
             VaultOp::Delete => {
-                rt.block_on(backend.delete(lookup_key))
-                    .map_err(|e| format!("{e}"))?;
+                rt.block_on(async {
+                    tokio::time::timeout(
+                        std::time::Duration::from_secs(10),
+                        backend.delete(lookup_key),
+                    )
+                    .await
+                    .map_err(|_| "Vault delete timed out after 10s".to_string())?
+                    .map_err(|e| format!("{e}"))
+                })?;
                 Ok(None)
             }
         }

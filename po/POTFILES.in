@@ -16,6 +16,7 @@ rustconn/src/window/rdp_vnc.rs
 rustconn/src/window/sessions.rs
 rustconn/src/window/snippets.rs
 rustconn/src/window/clusters.rs
+rustconn/src/window/connection_dialogs.rs
 rustconn/src/window/edit_actions.rs
 rustconn/src/window/edit_dialogs.rs
 rustconn/src/window/groups.rs

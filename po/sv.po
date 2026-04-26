@@ -62,7 +62,7 @@ msgstr "Initieringsfel"
 
 #: rustconn/src/app.rs:340
 msgid "{} credentials migrated from legacy encryption to AES-256-GCM"
-msgstr ""
+msgstr "{} autentiseringsuppgifter migrerade från äldre kryptering till AES-256-GCM"
 
 #: rustconn/src/app.rs:648
 msgid "{} backend unavailable. Using fallback."
@@ -225,7 +225,7 @@ msgstr "Kommandopalett"
 
 #: rustconn/src/dialogs/command_palette.rs:102
 msgid "Search results"
-msgstr ""
+msgstr "Sökresultat"
 
 #: rustconn/src/dialogs/command_palette.rs:106
 msgid "No results"
@@ -349,11 +349,11 @@ msgstr "Spara terminalutdata till fil"
 #: rustconn/src/dialogs/connection/advanced_tab.rs:333
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:175
 msgid "Activity Monitor"
-msgstr ""
+msgstr "Aktivitetsövervakning"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:334
 msgid "Detect terminal output activity or silence"
-msgstr ""
+msgstr "Upptäck terminalaktivitet eller tystnad"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:337
 #: rustconn/src/dialogs/connection/dialog.rs:3399
@@ -373,33 +373,33 @@ msgstr "Aktivitet"
 #: rustconn/src/dialogs/connection/advanced_tab.rs:337
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:181
 msgid "Silence"
-msgstr ""
+msgstr "Tystnad"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:339
 msgid "Mode"
-msgstr ""
+msgstr "Läge"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:340
 msgid "Select monitoring mode for this connection"
-msgstr ""
+msgstr "Välj övervakningsläge för denna anslutning"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:348
 msgid "Quiet Period"
-msgstr ""
+msgstr "Lugn period"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:349
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:193
 msgid "Seconds of silence before activity notification"
-msgstr ""
+msgstr "Sekunder av tystnad före aktivitetsavisering"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:357
 msgid "Silence Timeout"
-msgstr ""
+msgstr "Tystnadstimeout"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:358
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:201
 msgid "Seconds of no output before silence notification"
-msgstr ""
+msgstr "Sekunder utan utdata före tystnadsavisering"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:393
 #: rustconn/src/dialogs/settings/mod.rs:235
@@ -726,11 +726,11 @@ msgstr "Test"
 
 #: rustconn/src/dialogs/connection/dialog.rs:1448
 msgid "Connection Test Successful"
-msgstr ""
+msgstr "Anslutningstest lyckades"
 
 #: rustconn/src/dialogs/connection/dialog.rs:1450
 msgid "Connection successful! Latency: {}ms"
-msgstr ""
+msgstr "Anslutningen lyckades! Latens: {}ms"
 
 #: rustconn/src/dialogs/connection/dialog.rs:1458
 msgid "Unknown error"
@@ -1070,7 +1070,7 @@ msgstr "Mellanvärd"
 #: rustconn/src/dialogs/connection/dialog.rs:2707
 #: rustconn/src/dialogs/connection/rdp.rs:358
 msgid "Tunnel RDP through an SSH connection"
-msgstr ""
+msgstr "Tunnla RDP genom en SSH-anslutning"
 
 #: rustconn/src/dialogs/connection/dialog.rs:2716
 #: rustconn/src/dialogs/connection/dialog.rs:3461
@@ -1343,7 +1343,7 @@ msgstr "Extra kommandoradsalternativ för vncviewer"
 
 #: rustconn/src/dialogs/connection/dialog.rs:3236
 msgid "Tunnel VNC through an SSH connection"
-msgstr ""
+msgstr "Tunnla VNC genom en SSH-anslutning"
 
 #: rustconn/src/dialogs/connection/dialog.rs:3302
 #: rustconn/src/dialogs/connection/spice.rs:87
@@ -1434,7 +1434,7 @@ msgstr "Proxy-URL för tunnlade anslutningar (t.ex. Proxmox VE)"
 
 #: rustconn/src/dialogs/connection/dialog.rs:3528
 msgid "Tunnel SPICE through an SSH connection"
-msgstr ""
+msgstr "Tunnla SPICE genom en SSH-anslutning"
 
 #: rustconn/src/dialogs/connection/dialog.rs:3611
 #: rustconn/src/dialogs/connection/zerotrust.rs:239
@@ -2021,7 +2021,7 @@ msgstr "Redigera anslutning (synkroniserad)"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:68
 msgid "Identity"
-msgstr ""
+msgstr "Identitet"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:72
 msgid "Connection name"
@@ -2029,7 +2029,7 @@ msgstr "Anslutningsnamn"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:83
 msgid "Emoji or icon name"
-msgstr ""
+msgstr "Emoji eller ikonnamn"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:89
 #: rustconn/src/window/connection_dialogs.rs:256
@@ -2045,7 +2045,7 @@ msgstr "Ikon"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:93
 msgid "Optional"
-msgstr ""
+msgstr "Valfritt"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:104
 msgid "Zero Trust"
@@ -2114,7 +2114,7 @@ msgstr "Ladda domän från vald grupp"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:225
 msgid "Windows authentication"
-msgstr ""
+msgstr "Windows-autentisering"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:232
 #: rustconn/src/dialogs/connection/ssh.rs:190
@@ -2166,7 +2166,7 @@ msgstr "Skript"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:249
 msgid "Password Source"
-msgstr ""
+msgstr "Lösenordskälla"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:255
 #: rustconn/src/dialogs/connection/general_tab.rs:280
@@ -2217,7 +2217,7 @@ msgstr "Testa skriptkommandot"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:340
 msgid "Organization"
-msgstr ""
+msgstr "Organisation"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:343
 #: rustconn/src/dialogs/connection/general_tab.rs:351
@@ -2244,15 +2244,15 @@ msgstr "Beskrivning"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:505
 msgid "Well-Known"
-msgstr ""
+msgstr "Välkänd"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:507
 msgid "Registered"
-msgstr ""
+msgstr "Registrerad"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:509
 msgid "Dynamic"
-msgstr ""
+msgstr "Dynamisk"
 
 #: rustconn/src/dialogs/connection/kubernetes.rs:48
 msgid "Kubernetes"
@@ -2607,19 +2607,19 @@ msgstr "Anslutning via en annan SSH-anslutning"
 
 #: rustconn/src/dialogs/connection/ssh.rs:483
 msgid "Keep-Alive Interval"
-msgstr ""
+msgstr "Keep-alive-intervall"
 
 #: rustconn/src/dialogs/connection/ssh.rs:484
 msgid "Seconds between keep-alive packets (0 = disabled)"
-msgstr ""
+msgstr "Sekunder mellan keep-alive-paket (0 = inaktiverad)"
 
 #: rustconn/src/dialogs/connection/ssh.rs:491
 msgid "Keep-Alive Count"
-msgstr ""
+msgstr "Keep-alive-antal"
 
 #: rustconn/src/dialogs/connection/ssh.rs:492
 msgid "Disconnect after this many unanswered packets"
-msgstr ""
+msgstr "Koppla från efter så många obesvarade paket"
 
 #: rustconn/src/dialogs/connection/ssh.rs:519
 #: rustconn/src/dialogs/template.rs:717
@@ -2855,7 +2855,7 @@ msgstr "Exportera anslutningar"
 #: rustconn/src/dialogs/export.rs:197 rustconn/src/dialogs/export.rs:282
 #: rustconn/src/dialogs/export.rs:558
 msgid "All connections"
-msgstr ""
+msgstr "Alla anslutningar"
 
 #: rustconn/src/dialogs/export.rs:247
 msgid "Export Format"
@@ -2908,15 +2908,15 @@ msgstr "Målexportformat"
 
 #: rustconn/src/dialogs/export.rs:278
 msgid "Export Scope"
-msgstr ""
+msgstr "Exportomfång"
 
 #: rustconn/src/dialogs/export.rs:279
 msgid "Choose which connections to export"
-msgstr ""
+msgstr "Välj vilka anslutningar som ska exporteras"
 
 #: rustconn/src/dialogs/export.rs:289
 msgid "Export all or a specific group"
-msgstr ""
+msgstr "Exportera alla eller en specifik grupp"
 
 #: rustconn/src/dialogs/export.rs:298
 msgid "Output Location"
@@ -3863,7 +3863,7 @@ msgstr "CLI-verktyg för molnleverantörer"
 
 #: rustconn/src/dialogs/settings/clients_tab.rs:91
 msgid "Kubernetes CLI tools"
-msgstr ""
+msgstr "Kubernetes CLI-verktyg"
 
 #: rustconn/src/dialogs/settings/clients_tab.rs:154
 #: rustconn/src/dialogs/settings/ssh_agent_tab.rs:44
@@ -4178,23 +4178,23 @@ msgstr "Distribution, kärnversion, drifttid"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:177
 msgid "Default settings for terminal activity and silence detection"
-msgstr ""
+msgstr "Standardinställningar för terminalaktivitet och tystnadsdetektering"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:183
 msgid "Default Mode"
-msgstr ""
+msgstr "Standardläge"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:184
 msgid "Monitoring mode applied to new connections"
-msgstr ""
+msgstr "Övervakningsläge som tillämpas på nya anslutningar"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:192
 msgid "Default Quiet Period"
-msgstr ""
+msgstr "Standard lugn period"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:200
 msgid "Default Silence Timeout"
-msgstr ""
+msgstr "Standard tystnadstimeout"
 
 #: rustconn/src/dialogs/settings/secrets_tab.rs:216
 msgid "Initialized at {}"
@@ -4939,11 +4939,11 @@ msgstr "Rulla till botten vid skrivning"
 
 #: rustconn/src/dialogs/settings/terminal_tab.rs:326
 msgid "Scrollbar"
-msgstr ""
+msgstr "Rullningslist"
 
 #: rustconn/src/dialogs/settings/terminal_tab.rs:327
 msgid "Show a scrollbar next to the terminal"
-msgstr ""
+msgstr "Visa en rullningslist bredvid terminalen"
 
 #: rustconn/src/dialogs/settings/terminal_tab.rs:337
 msgid "Behavior"
@@ -5107,11 +5107,11 @@ msgstr "Visa färgad indikator på flikar baserat på protokolltyp"
 
 #: rustconn/src/dialogs/settings/ui_tab.rs:121
 msgid "Show protocol filters"
-msgstr ""
+msgstr "Visa protokollfilter"
 
 #: rustconn/src/dialogs/settings/ui_tab.rs:122
 msgid "Display protocol filter bar in sidebar"
-msgstr ""
+msgstr "Visa protokollfilterfält i sidofältet"
 
 #: rustconn/src/dialogs/settings/ui_tab.rs:132
 msgid "Window"
@@ -6062,7 +6062,7 @@ msgstr "Autentisering misslyckades. Kontrollera dina uppgifter."
 
 #: rustconn/src/sidebar/filter.rs:26
 msgid "Filter by {} protocol"
-msgstr ""
+msgstr "Filtrera efter {}-protokoll"
 
 #: rustconn/src/sidebar/mod.rs:124
 msgid "Search... (? for help)"
@@ -6070,7 +6070,7 @@ msgstr "Sök... (? för hjälp)"
 
 #: rustconn/src/sidebar/mod.rs:128
 msgid "Search connections"
-msgstr ""
+msgstr "Sök anslutningar"
 
 #: rustconn/src/sidebar/mod.rs:137 rustconn/src/sidebar/mod.rs:144
 msgid "Search pending..."
@@ -6082,11 +6082,11 @@ msgstr "Hjälp med söksyntax"
 
 #: rustconn/src/sidebar/mod.rs:170 rustconn/src/sidebar/mod.rs:174
 msgid "Toggle protocol filters"
-msgstr ""
+msgstr "Växla protokollfilter"
 
 #: rustconn/src/sidebar/mod.rs:590
 msgid "Connection list"
-msgstr ""
+msgstr "Anslutningslista"
 
 #: rustconn/src/sidebar/mod.rs:1573
 msgid "Open Password Vault (Active)"
@@ -6186,7 +6186,7 @@ msgstr "Skapa ny grupp"
 
 #: rustconn/src/sidebar_ui.rs:392
 msgid "Move to Group"
-msgstr ""
+msgstr "Flytta till grupp"
 
 #: rustconn/src/sidebar_ui.rs:395
 msgid "Move selected connections to group"
@@ -6206,7 +6206,7 @@ msgstr "Välj alla anslutningar"
 
 #: rustconn/src/sidebar_ui.rs:422
 msgid "Clear Selection"
-msgstr ""
+msgstr "Rensa markering"
 
 #: rustconn/src/sidebar_ui.rs:424
 msgid "Clear selection"
@@ -6286,7 +6286,7 @@ msgstr "Synkroniseringsfel: {}"
 
 #: rustconn/src/sidebar/view.rs:489
 msgid "Connecting"
-msgstr ""
+msgstr "Ansluter"
 
 #: rustconn/src/sidebar/view.rs:524
 msgid "Document has unsaved changes"
@@ -6310,7 +6310,7 @@ msgstr "Inga smarta mappar"
 
 #: rustconn/src/split_view/adapter.rs:864
 msgid "Terminal panel"
-msgstr ""
+msgstr "Terminalpanel"
 
 #: rustconn/src/split_view/adapter.rs:957
 msgid "Drag to move this session to another panel or tab"
@@ -6318,11 +6318,11 @@ msgstr "Dra för att flytta sessionen till en annan panel eller flik"
 
 #: rustconn/src/split_view/adapter.rs:1058
 msgid "Close Connection"
-msgstr ""
+msgstr "Stäng anslutning"
 
 #: rustconn/src/split_view/adapter.rs:1059
 msgid "Move to New Tab"
-msgstr ""
+msgstr "Flytta till ny flik"
 
 #: rustconn/src/split_view/adapter.rs:1107
 msgid "Empty Panel"
@@ -6464,7 +6464,7 @@ msgstr "Välj en flik att visa"
 
 #: rustconn/src/terminal/config.rs:156
 msgid "Execute Snippet…"
-msgstr ""
+msgstr "Kör kodsnutt…"
 
 #: rustconn/src/terminal/mod.rs:191
 msgid "Tab Overview (Ctrl+Shift+O)"
@@ -6485,7 +6485,7 @@ msgstr "Ange flikgrupp"
 
 #: rustconn/src/terminal/mod.rs:480
 msgid "New group name..."
-msgstr ""
+msgstr "Nytt gruppnamn..."
 
 #: rustconn/src/terminal/mod.rs:485
 msgid "Enter a group name for this tab"
@@ -6493,11 +6493,11 @@ msgstr "Ange ett gruppnamn för denna flik"
 
 #: rustconn/src/terminal/mod.rs:490
 msgid "Existing groups:"
-msgstr ""
+msgstr "Befintliga grupper:"
 
 #: rustconn/src/terminal/mod.rs:518
 msgid "or enter a new name:"
-msgstr ""
+msgstr "eller ange ett nytt namn:"
 
 #: rustconn/src/terminal/mod.rs:534
 msgid "Apply"
@@ -6505,11 +6505,11 @@ msgstr "Tillämpa"
 
 #: rustconn/src/terminal/mod.rs:730 rustconn/src/terminal/mod.rs:962
 msgid "Close All in Group"
-msgstr ""
+msgstr "Stäng alla i grupp"
 
 #: rustconn/src/terminal/mod.rs:732
 msgid "Close {} tabs in group '{}'?"
-msgstr ""
+msgstr "Stäng {} flikar i gruppen '{}'?"
 
 #: rustconn/src/terminal/mod.rs:950
 msgid "Unpin Tab"
@@ -6529,27 +6529,27 @@ msgstr "Ta bort från grupp"
 
 #: rustconn/src/terminal/mod.rs:971
 msgid "Monitor: {}"
-msgstr ""
+msgstr "Övervakning: {}"
 
 #: rustconn/src/terminal/mod.rs:977
 msgid "Close Others"
-msgstr ""
+msgstr "Stäng övriga"
 
 #: rustconn/src/terminal/mod.rs:978
 msgid "Close to the Left"
-msgstr ""
+msgstr "Stäng till vänster"
 
 #: rustconn/src/terminal/mod.rs:979
 msgid "Close to the Right"
-msgstr ""
+msgstr "Stäng till höger"
 
 #: rustconn/src/terminal/mod.rs:982
 msgid "Close All Ungrouped"
-msgstr ""
+msgstr "Stäng alla ogrupperade"
 
 #: rustconn/src/terminal/mod.rs:986
 msgid "Close All Tabs"
-msgstr ""
+msgstr "Stäng alla flikar"
 
 #: rustconn/src/terminal/mod.rs:1763
 msgid "Command not found: {}"
@@ -7062,11 +7062,11 @@ msgstr "Uppgift före anslutning misslyckades. Anslutning avbruten."
 
 #: rustconn/src/window/mod.rs:3523
 msgid "Activity detected: {}"
-msgstr ""
+msgstr "Aktivitet upptäckt: {}"
 
 #: rustconn/src/window/mod.rs:3527
 msgid "Silence detected: {}"
-msgstr ""
+msgstr "Tystnad upptäckt: {}"
 
 #: rustconn/src/window/mod.rs:4380
 msgid "Startup connection not found"
@@ -7078,7 +7078,7 @@ msgstr "Kunde inte öppna .rdp-fil"
 
 #: rustconn/src/window/mod.rs:4564
 msgid "Successfully exported {} connection(s). {} skipped."
-msgstr ""
+msgstr "Exporterade {} anslutning(ar). {} hoppades över."
 
 #: rustconn/src/window/operations.rs:42
 msgid "group"
@@ -7262,11 +7262,11 @@ msgstr "Installera mosh för MOSH-anslutningar"
 
 #: rustconn/src/window/rdp_vnc.rs:362
 msgid "SSH tunnel failed: {}"
-msgstr ""
+msgstr "SSH-tunnel misslyckades: {}"
 
 #: rustconn/src/window/rdp_vnc.rs:558
 msgid "RDP connection failed. Check that the remote host is reachable."
-msgstr ""
+msgstr "RDP-anslutningen misslyckades. Kontrollera att fjärrvärden är nåbar."
 
 #: rustconn/src/window/sessions.rs:34 rustconn/src/window/ui.rs:146
 msgid "Active Sessions"
@@ -7447,7 +7447,7 @@ msgstr "Lokalt shell (Ctrl+Shift+T)"
 
 #: rustconn/src/window/ui.rs:114
 msgid "Open Local Shell"
-msgstr ""
+msgstr "Öppna lokalt skal"
 
 #: rustconn/src/window/ui.rs:142
 msgid "Snippets..."

@@ -461,7 +461,10 @@ pub fn ensure_key_in_agent(connection: &Connection, groups: &[ConnectionGroup]) 
     cmd.arg(&key_path)
         .stdin(std::process::Stdio::null())
         .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::piped());
+        .stderr(std::process::Stdio::piped())
+        // Strip host SSH_ASKPASS — it may point to a program (e.g.
+        // ksshaskpass) that doesn't exist inside the Flatpak sandbox.
+        .env_remove("SSH_ASKPASS");
     apply_agent_env(&mut cmd);
     match cmd.output() {
         Ok(output) if output.status.success() => {

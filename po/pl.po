@@ -63,7 +63,7 @@ msgstr "Błąd inicjalizacji"
 
 #: rustconn/src/app.rs:340
 msgid "{} credentials migrated from legacy encryption to AES-256-GCM"
-msgstr ""
+msgstr "{} danych uwierzytelniających przeniesiono ze starego szyfrowania na AES-256-GCM"
 
 #: rustconn/src/app.rs:648
 msgid "{} backend unavailable. Using fallback."
@@ -226,7 +226,7 @@ msgstr "Paleta poleceń"
 
 #: rustconn/src/dialogs/command_palette.rs:102
 msgid "Search results"
-msgstr ""
+msgstr "Wyniki wyszukiwania"
 
 #: rustconn/src/dialogs/command_palette.rs:106
 msgid "No results"
@@ -350,11 +350,11 @@ msgstr "Zapisz wyjście terminala do pliku"
 #: rustconn/src/dialogs/connection/advanced_tab.rs:333
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:175
 msgid "Activity Monitor"
-msgstr ""
+msgstr "Monitor aktywności"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:334
 msgid "Detect terminal output activity or silence"
-msgstr ""
+msgstr "Wykrywaj aktywność lub ciszę na wyjściu terminala"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:337
 #: rustconn/src/dialogs/connection/dialog.rs:3399
@@ -374,33 +374,33 @@ msgstr "Aktywność"
 #: rustconn/src/dialogs/connection/advanced_tab.rs:337
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:181
 msgid "Silence"
-msgstr ""
+msgstr "Cisza"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:339
 msgid "Mode"
-msgstr ""
+msgstr "Tryb"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:340
 msgid "Select monitoring mode for this connection"
-msgstr ""
+msgstr "Wybierz tryb monitorowania dla tego połączenia"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:348
 msgid "Quiet Period"
-msgstr ""
+msgstr "Okres ciszy"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:349
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:193
 msgid "Seconds of silence before activity notification"
-msgstr ""
+msgstr "Sekundy ciszy przed powiadomieniem o aktywności"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:357
 msgid "Silence Timeout"
-msgstr ""
+msgstr "Limit czasu ciszy"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:358
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:201
 msgid "Seconds of no output before silence notification"
-msgstr ""
+msgstr "Sekundy bez danych wyjściowych przed powiadomieniem o ciszy"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:393
 #: rustconn/src/dialogs/settings/mod.rs:235
@@ -729,11 +729,11 @@ msgstr "Test"
 
 #: rustconn/src/dialogs/connection/dialog.rs:1448
 msgid "Connection Test Successful"
-msgstr ""
+msgstr "Test połączenia zakończony pomyślnie"
 
 #: rustconn/src/dialogs/connection/dialog.rs:1450
 msgid "Connection successful! Latency: {}ms"
-msgstr ""
+msgstr "Połączenie udane! Opóźnienie: {}ms"
 
 #: rustconn/src/dialogs/connection/dialog.rs:1458
 msgid "Unknown error"
@@ -1073,7 +1073,7 @@ msgstr "Host pośredni"
 #: rustconn/src/dialogs/connection/dialog.rs:2707
 #: rustconn/src/dialogs/connection/rdp.rs:358
 msgid "Tunnel RDP through an SSH connection"
-msgstr ""
+msgstr "Tuneluj RDP przez połączenie SSH"
 
 #: rustconn/src/dialogs/connection/dialog.rs:2716
 #: rustconn/src/dialogs/connection/dialog.rs:3461
@@ -1346,7 +1346,7 @@ msgstr "Dodatkowe opcje wiersza poleceń dla vncviewer"
 
 #: rustconn/src/dialogs/connection/dialog.rs:3236
 msgid "Tunnel VNC through an SSH connection"
-msgstr ""
+msgstr "Tuneluj VNC przez połączenie SSH"
 
 #: rustconn/src/dialogs/connection/dialog.rs:3302
 #: rustconn/src/dialogs/connection/spice.rs:87
@@ -1437,7 +1437,7 @@ msgstr "URL proxy dla połączeń tunelowanych (np. Proxmox VE)"
 
 #: rustconn/src/dialogs/connection/dialog.rs:3528
 msgid "Tunnel SPICE through an SSH connection"
-msgstr ""
+msgstr "Tuneluj SPICE przez połączenie SSH"
 
 #: rustconn/src/dialogs/connection/dialog.rs:3611
 #: rustconn/src/dialogs/connection/zerotrust.rs:239
@@ -2024,7 +2024,7 @@ msgstr "Edytuj połączenie (zsynchronizowane)"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:68
 msgid "Identity"
-msgstr ""
+msgstr "Tożsamość"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:72
 msgid "Connection name"
@@ -2032,7 +2032,7 @@ msgstr "Nazwa połączenia"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:83
 msgid "Emoji or icon name"
-msgstr ""
+msgstr "Emoji lub nazwa ikony"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:89
 #: rustconn/src/window/connection_dialogs.rs:256
@@ -2048,7 +2048,7 @@ msgstr "Ikona"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:93
 msgid "Optional"
-msgstr ""
+msgstr "Opcjonalne"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:104
 msgid "Zero Trust"
@@ -2117,7 +2117,7 @@ msgstr "Załaduj domenę z wybranej grupy"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:225
 msgid "Windows authentication"
-msgstr ""
+msgstr "Uwierzytelnianie Windows"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:232
 #: rustconn/src/dialogs/connection/ssh.rs:190
@@ -2169,7 +2169,7 @@ msgstr "Skrypt"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:249
 msgid "Password Source"
-msgstr ""
+msgstr "Źródło hasła"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:255
 #: rustconn/src/dialogs/connection/general_tab.rs:280
@@ -2220,7 +2220,7 @@ msgstr "Testuj polecenie skryptu"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:340
 msgid "Organization"
-msgstr ""
+msgstr "Organizacja"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:343
 #: rustconn/src/dialogs/connection/general_tab.rs:351
@@ -2247,15 +2247,15 @@ msgstr "Opis"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:505
 msgid "Well-Known"
-msgstr ""
+msgstr "Dobrze znane"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:507
 msgid "Registered"
-msgstr ""
+msgstr "Zarejestrowane"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:509
 msgid "Dynamic"
-msgstr ""
+msgstr "Dynamiczny"
 
 #: rustconn/src/dialogs/connection/kubernetes.rs:48
 msgid "Kubernetes"
@@ -2610,19 +2610,19 @@ msgstr "Połączenie przez inne połączenie SSH"
 
 #: rustconn/src/dialogs/connection/ssh.rs:483
 msgid "Keep-Alive Interval"
-msgstr ""
+msgstr "Interwał Keep-Alive"
 
 #: rustconn/src/dialogs/connection/ssh.rs:484
 msgid "Seconds between keep-alive packets (0 = disabled)"
-msgstr ""
+msgstr "Sekundy między pakietami keep-alive (0 = wyłączony)"
 
 #: rustconn/src/dialogs/connection/ssh.rs:491
 msgid "Keep-Alive Count"
-msgstr ""
+msgstr "Licznik Keep-Alive"
 
 #: rustconn/src/dialogs/connection/ssh.rs:492
 msgid "Disconnect after this many unanswered packets"
-msgstr ""
+msgstr "Rozłącz po tylu pakietach bez odpowiedzi"
 
 #: rustconn/src/dialogs/connection/ssh.rs:519
 #: rustconn/src/dialogs/template.rs:717
@@ -2859,7 +2859,7 @@ msgstr "Eksportuj połączenia"
 #: rustconn/src/dialogs/export.rs:197 rustconn/src/dialogs/export.rs:282
 #: rustconn/src/dialogs/export.rs:558
 msgid "All connections"
-msgstr ""
+msgstr "Wszystkie połączenia"
 
 #: rustconn/src/dialogs/export.rs:247
 msgid "Export Format"
@@ -2912,15 +2912,15 @@ msgstr "Docelowy format eksportu"
 
 #: rustconn/src/dialogs/export.rs:278
 msgid "Export Scope"
-msgstr ""
+msgstr "Zakres eksportu"
 
 #: rustconn/src/dialogs/export.rs:279
 msgid "Choose which connections to export"
-msgstr ""
+msgstr "Wybierz połączenia do eksportu"
 
 #: rustconn/src/dialogs/export.rs:289
 msgid "Export all or a specific group"
-msgstr ""
+msgstr "Eksportuj wszystkie lub wybraną grupę"
 
 #: rustconn/src/dialogs/export.rs:298
 msgid "Output Location"
@@ -3867,7 +3867,7 @@ msgstr "Narzędzia CLI dostawców chmury"
 
 #: rustconn/src/dialogs/settings/clients_tab.rs:91
 msgid "Kubernetes CLI tools"
-msgstr ""
+msgstr "Narzędzia CLI Kubernetes"
 
 #: rustconn/src/dialogs/settings/clients_tab.rs:154
 #: rustconn/src/dialogs/settings/ssh_agent_tab.rs:44
@@ -4181,23 +4181,23 @@ msgstr "Dystrybucja, wersja jądra, czas pracy"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:177
 msgid "Default settings for terminal activity and silence detection"
-msgstr ""
+msgstr "Domyślne ustawienia wykrywania aktywności i ciszy terminala"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:183
 msgid "Default Mode"
-msgstr ""
+msgstr "Tryb domyślny"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:184
 msgid "Monitoring mode applied to new connections"
-msgstr ""
+msgstr "Tryb monitorowania stosowany do nowych połączeń"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:192
 msgid "Default Quiet Period"
-msgstr ""
+msgstr "Domyślny okres ciszy"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:200
 msgid "Default Silence Timeout"
-msgstr ""
+msgstr "Domyślny limit czasu ciszy"
 
 #: rustconn/src/dialogs/settings/secrets_tab.rs:216
 msgid "Initialized at {}"
@@ -4941,11 +4941,11 @@ msgstr "Przewiń na dół podczas pisania"
 
 #: rustconn/src/dialogs/settings/terminal_tab.rs:326
 msgid "Scrollbar"
-msgstr ""
+msgstr "Pasek przewijania"
 
 #: rustconn/src/dialogs/settings/terminal_tab.rs:327
 msgid "Show a scrollbar next to the terminal"
-msgstr ""
+msgstr "Pokaż pasek przewijania obok terminala"
 
 #: rustconn/src/dialogs/settings/terminal_tab.rs:337
 msgid "Behavior"
@@ -5109,11 +5109,11 @@ msgstr "Pokaż kolorowy wskaźnik na kartach w zależności od typu protokołu"
 
 #: rustconn/src/dialogs/settings/ui_tab.rs:121
 msgid "Show protocol filters"
-msgstr ""
+msgstr "Pokaż filtry protokołów"
 
 #: rustconn/src/dialogs/settings/ui_tab.rs:122
 msgid "Display protocol filter bar in sidebar"
-msgstr ""
+msgstr "Wyświetl pasek filtrów protokołów na pasku bocznym"
 
 #: rustconn/src/dialogs/settings/ui_tab.rs:132
 msgid "Window"
@@ -6064,7 +6064,7 @@ msgstr "Uwierzytelnianie nieudane. Sprawdź dane logowania."
 
 #: rustconn/src/sidebar/filter.rs:26
 msgid "Filter by {} protocol"
-msgstr ""
+msgstr "Filtruj według protokołu {}"
 
 #: rustconn/src/sidebar/mod.rs:124
 msgid "Search... (? for help)"
@@ -6072,7 +6072,7 @@ msgstr "Szukaj... (? — pomoc)"
 
 #: rustconn/src/sidebar/mod.rs:128
 msgid "Search connections"
-msgstr ""
+msgstr "Szukaj połączeń"
 
 #: rustconn/src/sidebar/mod.rs:137 rustconn/src/sidebar/mod.rs:144
 msgid "Search pending..."
@@ -6084,11 +6084,11 @@ msgstr "Pomoc składni wyszukiwania"
 
 #: rustconn/src/sidebar/mod.rs:170 rustconn/src/sidebar/mod.rs:174
 msgid "Toggle protocol filters"
-msgstr ""
+msgstr "Przełącz filtry protokołów"
 
 #: rustconn/src/sidebar/mod.rs:590
 msgid "Connection list"
-msgstr ""
+msgstr "Lista połączeń"
 
 #: rustconn/src/sidebar/mod.rs:1573
 msgid "Open Password Vault (Active)"
@@ -6188,7 +6188,7 @@ msgstr "Utwórz nową grupę"
 
 #: rustconn/src/sidebar_ui.rs:392
 msgid "Move to Group"
-msgstr ""
+msgstr "Przenieś do grupy"
 
 #: rustconn/src/sidebar_ui.rs:395
 msgid "Move selected connections to group"
@@ -6208,7 +6208,7 @@ msgstr "Zaznacz wszystkie połączenia"
 
 #: rustconn/src/sidebar_ui.rs:422
 msgid "Clear Selection"
-msgstr ""
+msgstr "Wyczyść zaznaczenie"
 
 #: rustconn/src/sidebar_ui.rs:424
 msgid "Clear selection"
@@ -6288,7 +6288,7 @@ msgstr "Błąd synchronizacji: {}"
 
 #: rustconn/src/sidebar/view.rs:489
 msgid "Connecting"
-msgstr ""
+msgstr "Łączenie"
 
 #: rustconn/src/sidebar/view.rs:524
 msgid "Document has unsaved changes"
@@ -6312,7 +6312,7 @@ msgstr "Brak inteligentnych folderów"
 
 #: rustconn/src/split_view/adapter.rs:864
 msgid "Terminal panel"
-msgstr ""
+msgstr "Panel terminala"
 
 #: rustconn/src/split_view/adapter.rs:957
 msgid "Drag to move this session to another panel or tab"
@@ -6320,11 +6320,11 @@ msgstr "Przeciągnij, aby przenieść tę sesję do innego panelu lub karty"
 
 #: rustconn/src/split_view/adapter.rs:1058
 msgid "Close Connection"
-msgstr ""
+msgstr "Zamknij połączenie"
 
 #: rustconn/src/split_view/adapter.rs:1059
 msgid "Move to New Tab"
-msgstr ""
+msgstr "Przenieś do nowej karty"
 
 #: rustconn/src/split_view/adapter.rs:1107
 msgid "Empty Panel"
@@ -6466,7 +6466,7 @@ msgstr "Wybierz kartę do wyświetlenia"
 
 #: rustconn/src/terminal/config.rs:156
 msgid "Execute Snippet…"
-msgstr ""
+msgstr "Wykonaj fragment…"
 
 #: rustconn/src/terminal/mod.rs:191
 msgid "Tab Overview (Ctrl+Shift+O)"
@@ -6487,7 +6487,7 @@ msgstr "Ustaw grupę karty"
 
 #: rustconn/src/terminal/mod.rs:480
 msgid "New group name..."
-msgstr ""
+msgstr "Nazwa nowej grupy..."
 
 #: rustconn/src/terminal/mod.rs:485
 msgid "Enter a group name for this tab"
@@ -6495,11 +6495,11 @@ msgstr "Wprowadź nazwę grupy dla tej karty"
 
 #: rustconn/src/terminal/mod.rs:490
 msgid "Existing groups:"
-msgstr ""
+msgstr "Istniejące grupy:"
 
 #: rustconn/src/terminal/mod.rs:518
 msgid "or enter a new name:"
-msgstr ""
+msgstr "lub wprowadź nową nazwę:"
 
 #: rustconn/src/terminal/mod.rs:534
 msgid "Apply"
@@ -6507,11 +6507,11 @@ msgstr "Zastosuj"
 
 #: rustconn/src/terminal/mod.rs:730 rustconn/src/terminal/mod.rs:962
 msgid "Close All in Group"
-msgstr ""
+msgstr "Zamknij wszystkie w grupie"
 
 #: rustconn/src/terminal/mod.rs:732
 msgid "Close {} tabs in group '{}'?"
-msgstr ""
+msgstr "Zamknąć {} kart w grupie „{}”?"
 
 #: rustconn/src/terminal/mod.rs:950
 msgid "Unpin Tab"
@@ -6531,27 +6531,27 @@ msgstr "Usuń z grupy"
 
 #: rustconn/src/terminal/mod.rs:971
 msgid "Monitor: {}"
-msgstr ""
+msgstr "Monitor: {}"
 
 #: rustconn/src/terminal/mod.rs:977
 msgid "Close Others"
-msgstr ""
+msgstr "Zamknij pozostałe"
 
 #: rustconn/src/terminal/mod.rs:978
 msgid "Close to the Left"
-msgstr ""
+msgstr "Zamknij po lewej"
 
 #: rustconn/src/terminal/mod.rs:979
 msgid "Close to the Right"
-msgstr ""
+msgstr "Zamknij po prawej"
 
 #: rustconn/src/terminal/mod.rs:982
 msgid "Close All Ungrouped"
-msgstr ""
+msgstr "Zamknij wszystkie niezgrupowane"
 
 #: rustconn/src/terminal/mod.rs:986
 msgid "Close All Tabs"
-msgstr ""
+msgstr "Zamknij wszystkie karty"
 
 #: rustconn/src/terminal/mod.rs:1763
 msgid "Command not found: {}"
@@ -7065,11 +7065,11 @@ msgstr "Zadanie przed połączeniem nie powiodło się. Połączenie przerwane."
 
 #: rustconn/src/window/mod.rs:3523
 msgid "Activity detected: {}"
-msgstr ""
+msgstr "Wykryto aktywność: {}"
 
 #: rustconn/src/window/mod.rs:3527
 msgid "Silence detected: {}"
-msgstr ""
+msgstr "Wykryto ciszę: {}"
 
 #: rustconn/src/window/mod.rs:4380
 msgid "Startup connection not found"
@@ -7081,7 +7081,7 @@ msgstr "Nie udało się otworzyć pliku .rdp"
 
 #: rustconn/src/window/mod.rs:4564
 msgid "Successfully exported {} connection(s). {} skipped."
-msgstr ""
+msgstr "Pomyślnie wyeksportowano {} połączeń. {} pominięto."
 
 #: rustconn/src/window/operations.rs:42
 msgid "group"
@@ -7265,11 +7265,11 @@ msgstr "Zainstaluj mosh dla połączeń MOSH"
 
 #: rustconn/src/window/rdp_vnc.rs:362
 msgid "SSH tunnel failed: {}"
-msgstr ""
+msgstr "Tunel SSH nie powiódł się: {}"
 
 #: rustconn/src/window/rdp_vnc.rs:558
 msgid "RDP connection failed. Check that the remote host is reachable."
-msgstr ""
+msgstr "Połączenie RDP nie powiodło się. Sprawdź, czy zdalny host jest osiągalny."
 
 #: rustconn/src/window/sessions.rs:34 rustconn/src/window/ui.rs:146
 msgid "Active Sessions"
@@ -7450,7 +7450,7 @@ msgstr "Lokalna powłoka (Ctrl+Shift+T)"
 
 #: rustconn/src/window/ui.rs:114
 msgid "Open Local Shell"
-msgstr ""
+msgstr "Otwórz lokalną powłokę"
 
 #: rustconn/src/window/ui.rs:142
 msgid "Snippets..."

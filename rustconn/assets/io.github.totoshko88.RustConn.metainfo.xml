@@ -131,6 +131,17 @@
     <control>touch</control>
   </supports>
   <releases>
+    <release version="0.12.2" date="2026-04-26">
+      <description>
+        <p>Version 0.12.2 — Bug fixes and timeouts:</p>
+        <ul>
+          <li>Fixed Flatpak SFTP ssh-add fails with missing askpass</li>
+          <li>Fixed blocking operations on GTK main thread with 5s timeouts</li>
+          <li>Added timeouts to all vault and credential resolution operations</li>
+          <li>All 16 translations aligned to 1697 strings; fixed Italian PO syntax error</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.12.1" date="2026-04-25">
       <description>
         <p>Version 0.12.1 — Bug fixes:</p>

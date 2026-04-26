@@ -5,6 +5,21 @@ All notable changes to RustConn will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.2] - 2026-04-26
+
+### Fixed
+- **Flatpak SFTP ssh-add fails with missing askpass** — `ssh-add` inherited the host's `SSH_ASKPASS` (e.g. `ksshaskpass` on KDE) which doesn't exist inside the Flatpak sandbox, causing "No such file or directory" and blocking mc/file-manager SFTP; now strips `SSH_ASKPASS` from the environment for all bare `ssh-add` calls ([#102](https://github.com/totoshko88/RustConn/issues/102))
+- **Blocking operations on GTK main thread** — `has_secret_backend()` and `refresh_secret_backend_cache()` called `block_on(is_available())` without timeout on the main thread, freezing the UI if the secret backend was unresponsive; added 5-second timeouts to both methods
+- **Missing timeouts on blocking async operations** — `flush_persistence()` (app shutdown), `resolve_with_hierarchy()` (credential fallback), `auto_unlock()` (Bitwarden), and all vault store/retrieve/delete operations in `dispatch_vault_op()` could hang indefinitely; added timeouts (5s for persistence, 30s for credential resolution and Bitwarden unlock, 10s for vault operations) to prevent infinite blocking
+
+### Translations
+- All 16 languages (be, cs, da, de, es, fr, it, kk, nl, pl, pt, sk, sv, uk, uz, zh-cn) aligned to 1697 translatable strings
+- **Italian (it)** — fixed syntax error in PO file (curly quotes breaking msgfmt)
+- **Chinese Simplified (zh-cn)** — 20 fuzzy entries remaining (community-contributed, pending upstream review)
+
+### Dependencies
+- FreeRDP 3.24.1 → 3.25.0 (switched to pub.freerdp.com release tarballs)
+
 ## [0.12.1] - 2026-04-25
 
 ### Fixed
@@ -644,6 +659,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - New: `shell-words` 1.x added to `rustconn` crate (script credential test button)
 - Updated: `aws-lc-rs` 1.16.1→1.16.2, `aws-lc-sys` 0.38.0→0.39.0, `itoa` 1.0.17→1.0.18, `tar` 0.4.44→0.4.45
+
 ## [0.10.1] - 2026-03-19
 
 ### Note
@@ -754,6 +770,7 @@ Thank you to **Todor Todorov** for the support and for pointing out that the don
 
 - clap 4.5.60→4.6.0, gtk4 0.11.0→0.11.1, gdk4 0.11.0→0.11.1, gsk4 0.11.0→0.11.1, glib 0.22.2→0.22.3, openssl 0.10.75→0.10.76, tracing-subscriber 0.3.22→0.3.23
 - Transitive: anstream 0.6.21→1.0.0, anstyle 1.0.13→1.0.14, anstyle-parse 0.2.7→1.0.0, cc 1.2.56→1.2.57, clap_complete 4.5.66→4.6.0, clap_mangen 0.2.31→0.2.33, colorchoice 1.0.4→1.0.5, glib-sys 0.22.0→0.22.3, once_cell 1.21.3→1.21.4, roff 0.2.2→1.1.0, tinyvec 1.10.0→1.11.0, uds_windows 1.2.0→1.2.1
+
 ## [0.9.15] - 2026-03-11
 
 ### Added
@@ -773,6 +790,7 @@ Thank you to **Todor Todorov** for the support and for pointing out that the don
 
 - tokio 1.49→1.50, uuid 1.21→1.22, regex 1.11→1.12, proptest 1.9→1.10, tempfile 3.23→3.26, zip 8.1→8.2, criterion 0.8.1→0.8.2, rpassword 7.3→7.4
 - Transitive: hybrid-array 0.4.7→0.4.8, image 0.25.9→0.25.10, libc 0.2.182→0.2.183, libz-sys 1.1.24→1.1.25, moxcms 0.7.11→0.8.1, quinn-proto 0.11.13→0.11.14, schannel 0.1.28→0.1.29, zerocopy 0.8.40→0.8.42
+
 ## [0.9.13] - 2026-03-09
 
 ### Fixed
@@ -834,6 +852,7 @@ Thank you to **Todor Todorov** for the support and for pointing out that the don
 
 - serde_yaml_ng 0.9→0.10, cfg-expr 0.20.6→0.20.7, inotify 0.11.0→0.11.1, socket2 0.6.2→0.6.3, toml 1.0.4→1.0.6
 - CLI downloads: Teleport 18.7.1→18.7.2
+
 ## [0.9.9] - 2026-03-06
 
 ### Fixed
@@ -844,6 +863,7 @@ Thank you to **Todor Todorov** for the support and for pointing out that the don
 - **Jump host false positive connection status** — SSH status detection now checks terminal text for failure patterns (`Connection timed out`, `Connection refused`, etc.) before marking jump host connections as established ([#41](https://github.com/totoshko88/RustConn/issues/41))
 
 - Bitwarden CLI 2026.1.0→2026.2.0, uuid 1.21.0→1.22.0, winnow 0.7.14→0.7.15
+
 ## [0.9.8] - 2026-03-05
 
 ### Security
@@ -883,6 +903,7 @@ Thank you to **Todor Todorov** for the support and for pointing out that the don
 - **Code quality** — structured tracing fields, i18n coverage, deduplication of clipboard/callback/resize patterns, module-level lint allows removed
 
 - binrw 0.15.0→0.15.1, proc-macro-crate 3.4.0→3.5.0, toml 1.0.3→1.0.4, toml_edit 0.23.10→0.25.4, uds_windows 1.1.0→1.2.0
+
 ## [0.9.7] - 2026-03-04
 
 ### Fixed
@@ -894,6 +915,7 @@ Thank you to **Todor Todorov** for the support and for pointing out that the don
 - **Bitwarden credential lookup speed** — removed per-retrieve `bw sync` (network round-trip) and added a 120-second verification cache for `bw status` checks; vault syncs once on unlock instead of on every credential lookup, making reconnect and batch operations significantly faster
 
 - tokio 1.49→1.50, aws-lc-rs 1.16.0→1.16.1, aws-lc-sys 0.37.1→0.38.0, getrandom 0.4.1→0.4.2, ipnet 2.11→2.12, quote 1.0.44→1.0.45, tokio-macros 2.6.0→2.6.1, zip 8.1→8.2
+
 ## [0.9.6] - 2026-03-02
 
 ### Fixed
@@ -987,6 +1009,7 @@ Thank you to **Todor Todorov** for the support and for pointing out that the don
 - **Translations** — Added waypipe-related strings to all 18 languages
 
 - **Updated**: deflate64 0.1.10→0.1.11, dispatch2 0.3.0→0.3.1, objc2 0.6.3→0.6.4, zerocopy 0.8.39→0.8.40
+
 ## [0.9.2] - 2026-02-26
 
 ### Added
@@ -1125,6 +1148,7 @@ Thank you to **Todor Todorov** for the support and for pointing out that the don
 - **serde_yaml** replaced with **serde_yaml_ng** 0.9 (maintained fork; transparent rename)
 - **cpal** `0.17.1` → `0.17.3`
 - **clap** `4.5.59` → `4.5.60`
+
 ## [0.8.8] - 2026-02-18
 
 ### Security

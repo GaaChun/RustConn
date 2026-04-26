@@ -6,7 +6,7 @@
 #
 
 Name:           rustconn
-Version:        0.12.1
+Version:        0.12.2
 Release:        0
 Summary:        Modern connection manager for Linux (SSH, RDP, VNC, SPICE, MOSH, Telnet, Serial, Kubernetes, Zero Trust)
 License:        GPL-3.0-or-later
@@ -236,6 +236,17 @@ done
 %{_datadir}/locale/*/LC_MESSAGES/rustconn.mo
 
 %changelog
+* Sun Apr 26 2026 Anton Isaiev <totoshko88@gmail.com> - 0.12.2-0
+- [Fixed] Flatpak SFTP ssh-add fails with missing askpass — strips
+  SSH_ASKPASS from the environment for bare ssh-add calls (#102)
+- [Fixed] Blocking operations on GTK main thread — added 5s timeouts
+  to has_secret_backend() and refresh_secret_backend_cache()
+- [Fixed] Missing timeouts on blocking async operations — added
+  timeouts to flush_persistence (5s), resolve_with_hierarchy (30s),
+  auto_unlock (30s), and vault store/retrieve/delete (10s)
+- [Translations] All 16 languages aligned to 1697 strings; fixed
+  Italian PO syntax error
+
 * Sat Apr 25 2026 Anton Isaiev <totoshko88@gmail.com> - 0.12.1-1
 - [Fixed] Split view content disappearing on panel focus switch —
   removed switch_to_tab() call; focus handled via set_focused_pane()

@@ -62,7 +62,7 @@ msgstr "Errore di inizializzazione"
 
 #: rustconn/src/app.rs:340
 msgid "{} credentials migrated from legacy encryption to AES-256-GCM"
-msgstr ""
+msgstr "{} credenziali migrate dalla crittografia legacy ad AES-256-GCM"
 
 #: rustconn/src/app.rs:648
 msgid "{} backend unavailable. Using fallback."
@@ -227,7 +227,7 @@ msgstr "Tavolozza comandi"
 
 #: rustconn/src/dialogs/command_palette.rs:102
 msgid "Search results"
-msgstr ""
+msgstr "Risultati di ricerca"
 
 #: rustconn/src/dialogs/command_palette.rs:106
 msgid "No results"
@@ -351,11 +351,11 @@ msgstr "Salva output del terminale su file"
 #: rustconn/src/dialogs/connection/advanced_tab.rs:333
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:175
 msgid "Activity Monitor"
-msgstr ""
+msgstr "Monitor attività"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:334
 msgid "Detect terminal output activity or silence"
-msgstr ""
+msgstr "Rileva attività o silenzio nell'output del terminale"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:337
 #: rustconn/src/dialogs/connection/dialog.rs:3399
@@ -375,33 +375,33 @@ msgstr "Attività"
 #: rustconn/src/dialogs/connection/advanced_tab.rs:337
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:181
 msgid "Silence"
-msgstr ""
+msgstr "Silenzio"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:339
 msgid "Mode"
-msgstr ""
+msgstr "Modalità"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:340
 msgid "Select monitoring mode for this connection"
-msgstr ""
+msgstr "Seleziona la modalità di monitoraggio per questa connessione"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:348
 msgid "Quiet Period"
-msgstr ""
+msgstr "Periodo di quiete"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:349
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:193
 msgid "Seconds of silence before activity notification"
-msgstr ""
+msgstr "Secondi di silenzio prima della notifica di attività"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:357
 msgid "Silence Timeout"
-msgstr ""
+msgstr "Timeout silenzio"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:358
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:201
 msgid "Seconds of no output before silence notification"
-msgstr ""
+msgstr "Secondi senza output prima della notifica di silenzio"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:393
 #: rustconn/src/dialogs/settings/mod.rs:235
@@ -732,11 +732,11 @@ msgstr "Test"
 
 #: rustconn/src/dialogs/connection/dialog.rs:1448
 msgid "Connection Test Successful"
-msgstr ""
+msgstr "Test di connessione riuscito"
 
 #: rustconn/src/dialogs/connection/dialog.rs:1450
 msgid "Connection successful! Latency: {}ms"
-msgstr ""
+msgstr "Connessione riuscita! Latenza: {} ms"
 
 #: rustconn/src/dialogs/connection/dialog.rs:1458
 msgid "Unknown error"
@@ -1081,7 +1081,7 @@ msgstr "Host di salto"
 #: rustconn/src/dialogs/connection/dialog.rs:2707
 #: rustconn/src/dialogs/connection/rdp.rs:358
 msgid "Tunnel RDP through an SSH connection"
-msgstr ""
+msgstr "Tunnel RDP tramite connessione SSH"
 
 #: rustconn/src/dialogs/connection/dialog.rs:2716
 #: rustconn/src/dialogs/connection/dialog.rs:3461
@@ -1354,7 +1354,7 @@ msgstr "Opzioni aggiuntive della riga di comando per vncviewer"
 
 #: rustconn/src/dialogs/connection/dialog.rs:3236
 msgid "Tunnel VNC through an SSH connection"
-msgstr ""
+msgstr "Tunnel VNC tramite connessione SSH"
 
 #: rustconn/src/dialogs/connection/dialog.rs:3302
 #: rustconn/src/dialogs/connection/spice.rs:87
@@ -1445,7 +1445,7 @@ msgstr "URL proxy per connessioni tunnelizzate (es. Proxmox VE)"
 
 #: rustconn/src/dialogs/connection/dialog.rs:3528
 msgid "Tunnel SPICE through an SSH connection"
-msgstr ""
+msgstr "Tunnel SPICE tramite connessione SSH"
 
 #: rustconn/src/dialogs/connection/dialog.rs:3611
 #: rustconn/src/dialogs/connection/zerotrust.rs:239
@@ -1977,7 +1977,7 @@ msgstr "Ereditato dal gruppo padre"
 #: rustconn/src/dialogs/connection/dialog.rs:5961
 #: rustconn/src/dialogs/connection/ssh.rs:223
 msgid "Default tries ~/.ssh/id_rsa, id_ed25519, id_ecdsa automatically"
-msgstr ""
+msgstr "Per impostazione predefinita prova ~/.ssh/id_rsa, id_ed25519, id_ecdsa automaticamente"
 "Per impostazione predefinita prova ~/.ssh/id_rsa, id_ed25519, id_ecdsa "
 "automaticamente"
 
@@ -2034,7 +2034,7 @@ msgstr "Modifica connessione (sincronizzata)"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:68
 msgid "Identity"
-msgstr ""
+msgstr "Identità"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:72
 msgid "Connection name"
@@ -2042,7 +2042,7 @@ msgstr "Nome connessione"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:83
 msgid "Emoji or icon name"
-msgstr ""
+msgstr "Emoji o nome icona"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:89
 #: rustconn/src/window/connection_dialogs.rs:256
@@ -2058,7 +2058,7 @@ msgstr "Icona"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:93
 msgid "Optional"
-msgstr ""
+msgstr "Opzionale"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:104
 msgid "Zero Trust"
@@ -2127,7 +2127,7 @@ msgstr "Carica dominio dal gruppo selezionato"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:225
 msgid "Windows authentication"
-msgstr ""
+msgstr "Autenticazione Windows"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:232
 #: rustconn/src/dialogs/connection/ssh.rs:190
@@ -2179,7 +2179,7 @@ msgstr "Script"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:249
 msgid "Password Source"
-msgstr ""
+msgstr "Origine password"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:255
 #: rustconn/src/dialogs/connection/general_tab.rs:280
@@ -2230,7 +2230,7 @@ msgstr "Test comando dello script"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:340
 msgid "Organization"
-msgstr ""
+msgstr "Organizzazione"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:343
 #: rustconn/src/dialogs/connection/general_tab.rs:351
@@ -2257,15 +2257,15 @@ msgstr "Descrizione"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:505
 msgid "Well-Known"
-msgstr ""
+msgstr "Noto"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:507
 msgid "Registered"
-msgstr ""
+msgstr "Registrato"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:509
 msgid "Dynamic"
-msgstr ""
+msgstr "Dinamico"
 
 #: rustconn/src/dialogs/connection/kubernetes.rs:48
 msgid "Kubernetes"
@@ -2620,19 +2620,19 @@ msgstr "Connessione tramite un'altra connessione SSH"
 
 #: rustconn/src/dialogs/connection/ssh.rs:483
 msgid "Keep-Alive Interval"
-msgstr ""
+msgstr "Intervallo Keep-Alive"
 
 #: rustconn/src/dialogs/connection/ssh.rs:484
 msgid "Seconds between keep-alive packets (0 = disabled)"
-msgstr ""
+msgstr "Secondi tra pacchetti keep-alive (0 = disabilitato)"
 
 #: rustconn/src/dialogs/connection/ssh.rs:491
 msgid "Keep-Alive Count"
-msgstr ""
+msgstr "Conteggio Keep-Alive"
 
 #: rustconn/src/dialogs/connection/ssh.rs:492
 msgid "Disconnect after this many unanswered packets"
-msgstr ""
+msgstr "Disconnetti dopo questo numero di pacchetti senza risposta"
 
 #: rustconn/src/dialogs/connection/ssh.rs:519
 #: rustconn/src/dialogs/template.rs:717
@@ -2646,7 +2646,7 @@ msgstr "Socket dell'agente SSH"
 
 #: rustconn/src/dialogs/connection/ssh.rs:565
 msgid "Overrides global setting and auto-detected socket for this connection"
-msgstr ""
+msgstr "Sovrascrive l'impostazione globale e il socket rilevato automaticamente per questa connessione"
 "Sovrascrive l'impostazione globale e il socket rilevato automaticamente per "
 "questa connessione"
 
@@ -2868,7 +2868,7 @@ msgstr "Esporta connessioni"
 #: rustconn/src/dialogs/export.rs:197 rustconn/src/dialogs/export.rs:282
 #: rustconn/src/dialogs/export.rs:558
 msgid "All connections"
-msgstr ""
+msgstr "Tutte le connessioni"
 
 #: rustconn/src/dialogs/export.rs:247
 msgid "Export Format"
@@ -2921,15 +2921,15 @@ msgstr "Formato di esportazione di destinazione"
 
 #: rustconn/src/dialogs/export.rs:278
 msgid "Export Scope"
-msgstr ""
+msgstr "Ambito esportazione"
 
 #: rustconn/src/dialogs/export.rs:279
 msgid "Choose which connections to export"
-msgstr ""
+msgstr "Scegli quali connessioni esportare"
 
 #: rustconn/src/dialogs/export.rs:289
 msgid "Export all or a specific group"
-msgstr ""
+msgstr "Esporta tutte o un gruppo specifico"
 
 #: rustconn/src/dialogs/export.rs:298
 msgid "Output Location"
@@ -3879,7 +3879,7 @@ msgstr "Strumenti CLI per provider cloud"
 
 #: rustconn/src/dialogs/settings/clients_tab.rs:91
 msgid "Kubernetes CLI tools"
-msgstr ""
+msgstr "Strumenti CLI Kubernetes"
 
 #: rustconn/src/dialogs/settings/clients_tab.rs:154
 #: rustconn/src/dialogs/settings/ssh_agent_tab.rs:44
@@ -4195,23 +4195,23 @@ msgstr "Distribuzione, versione del kernel, tempo di attività"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:177
 msgid "Default settings for terminal activity and silence detection"
-msgstr ""
+msgstr "Impostazioni predefinite per il rilevamento di attività e silenzio del terminale"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:183
 msgid "Default Mode"
-msgstr ""
+msgstr "Modalità predefinita"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:184
 msgid "Monitoring mode applied to new connections"
-msgstr ""
+msgstr "Modalità di monitoraggio applicata alle nuove connessioni"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:192
 msgid "Default Quiet Period"
-msgstr ""
+msgstr "Periodo di quiete predefinito"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:200
 msgid "Default Silence Timeout"
-msgstr ""
+msgstr "Timeout silenzio predefinito"
 
 #: rustconn/src/dialogs/settings/secrets_tab.rs:216
 msgid "Initialized at {}"
@@ -4738,7 +4738,7 @@ msgstr "Percorso personalizzato del socket dell'agente SSH"
 
 #: rustconn/src/dialogs/settings/ssh_agent_tab.rs:95
 msgid "Overrides auto-detected SSH_AUTH_SOCK for all connections"
-msgstr ""
+msgstr "Sovrascrive SSH_AUTH_SOCK rilevato automaticamente per tutte le connessioni"
 "Sovrascrive il SSH_AUTH_SOCK rilevato automaticamente per tutte le "
 "connessioni"
 
@@ -4954,11 +4954,11 @@ msgstr "Scorri in fondo durante la digitazione"
 
 #: rustconn/src/dialogs/settings/terminal_tab.rs:326
 msgid "Scrollbar"
-msgstr ""
+msgstr "Barra di scorrimento"
 
 #: rustconn/src/dialogs/settings/terminal_tab.rs:327
 msgid "Show a scrollbar next to the terminal"
-msgstr ""
+msgstr "Mostra una barra di scorrimento accanto al terminale"
 
 #: rustconn/src/dialogs/settings/terminal_tab.rs:337
 msgid "Behavior"
@@ -5124,11 +5124,11 @@ msgstr ""
 
 #: rustconn/src/dialogs/settings/ui_tab.rs:121
 msgid "Show protocol filters"
-msgstr ""
+msgstr "Mostra filtri protocollo"
 
 #: rustconn/src/dialogs/settings/ui_tab.rs:122
 msgid "Display protocol filter bar in sidebar"
-msgstr ""
+msgstr "Mostra la barra filtri protocollo nella barra laterale"
 
 #: rustconn/src/dialogs/settings/ui_tab.rs:132
 msgid "Window"
@@ -5798,7 +5798,7 @@ msgstr "variable_name"
 
 #: rustconn/src/dialogs/variables.rs:354
 msgid "Failed to load secret. Check secret backend in Settings."
-msgstr ""
+msgstr "Impossibile caricare il segreto. Controlla il backend segreti nelle impostazioni."
 "Impossibile caricare il segreto. Controlla il backend nelle Impostazioni."
 "Impossibile caricare il segreto. Verificare il backend nelle Impostazioni."
 
@@ -6081,7 +6081,7 @@ msgstr "Autenticazione fallita. Verifica le credenziali."
 
 #: rustconn/src/sidebar/filter.rs:26
 msgid "Filter by {} protocol"
-msgstr ""
+msgstr "Filtra per protocollo {}"
 
 #: rustconn/src/sidebar/mod.rs:124
 msgid "Search... (? for help)"
@@ -6089,7 +6089,7 @@ msgstr "Cerca... (? per aiuto)"
 
 #: rustconn/src/sidebar/mod.rs:128
 msgid "Search connections"
-msgstr ""
+msgstr "Cerca connessioni"
 
 #: rustconn/src/sidebar/mod.rs:137 rustconn/src/sidebar/mod.rs:144
 msgid "Search pending..."
@@ -6101,11 +6101,11 @@ msgstr "Guida alla sintassi di ricerca"
 
 #: rustconn/src/sidebar/mod.rs:170 rustconn/src/sidebar/mod.rs:174
 msgid "Toggle protocol filters"
-msgstr ""
+msgstr "Attiva/disattiva filtri protocollo"
 
 #: rustconn/src/sidebar/mod.rs:590
 msgid "Connection list"
-msgstr ""
+msgstr "Elenco connessioni"
 
 #: rustconn/src/sidebar/mod.rs:1573
 msgid "Open Password Vault (Active)"
@@ -6205,7 +6205,7 @@ msgstr "Crea un nuovo gruppo"
 
 #: rustconn/src/sidebar_ui.rs:392
 msgid "Move to Group"
-msgstr ""
+msgstr "Sposta nel gruppo"
 
 #: rustconn/src/sidebar_ui.rs:395
 msgid "Move selected connections to group"
@@ -6225,7 +6225,7 @@ msgstr "Seleziona tutte le connessioni"
 
 #: rustconn/src/sidebar_ui.rs:422
 msgid "Clear Selection"
-msgstr ""
+msgstr "Cancella selezione"
 
 #: rustconn/src/sidebar_ui.rs:424
 msgid "Clear selection"
@@ -6305,7 +6305,7 @@ msgstr "Errore di sincronizzazione: {}"
 
 #: rustconn/src/sidebar/view.rs:489
 msgid "Connecting"
-msgstr ""
+msgstr "Connessione in corso"
 
 #: rustconn/src/sidebar/view.rs:524
 msgid "Document has unsaved changes"
@@ -6329,7 +6329,7 @@ msgstr "Nessuna cartella intelligente"
 
 #: rustconn/src/split_view/adapter.rs:864
 msgid "Terminal panel"
-msgstr ""
+msgstr "Pannello terminale"
 
 #: rustconn/src/split_view/adapter.rs:957
 msgid "Drag to move this session to another panel or tab"
@@ -6337,11 +6337,11 @@ msgstr "Trascina per spostare questa sessione in un altro pannello o scheda"
 
 #: rustconn/src/split_view/adapter.rs:1058
 msgid "Close Connection"
-msgstr ""
+msgstr "Chiudi connessione"
 
 #: rustconn/src/split_view/adapter.rs:1059
 msgid "Move to New Tab"
-msgstr ""
+msgstr "Sposta in nuova scheda"
 
 #: rustconn/src/split_view/adapter.rs:1107
 msgid "Empty Panel"
@@ -6483,7 +6483,7 @@ msgstr "Seleziona una scheda da visualizzare"
 
 #: rustconn/src/terminal/config.rs:156
 msgid "Execute Snippet…"
-msgstr ""
+msgstr "Esegui snippet…"
 
 #: rustconn/src/terminal/mod.rs:191
 msgid "Tab Overview (Ctrl+Shift+O)"
@@ -6504,7 +6504,7 @@ msgstr "Imposta gruppo scheda"
 
 #: rustconn/src/terminal/mod.rs:480
 msgid "New group name..."
-msgstr ""
+msgstr "Nome nuovo gruppo..."
 
 #: rustconn/src/terminal/mod.rs:485
 msgid "Enter a group name for this tab"
@@ -6512,11 +6512,11 @@ msgstr "Inserisci un nome di gruppo per questa scheda"
 
 #: rustconn/src/terminal/mod.rs:490
 msgid "Existing groups:"
-msgstr ""
+msgstr "Gruppi esistenti:"
 
 #: rustconn/src/terminal/mod.rs:518
 msgid "or enter a new name:"
-msgstr ""
+msgstr "o inserisci un nuovo nome:"
 
 #: rustconn/src/terminal/mod.rs:534
 msgid "Apply"
@@ -6524,11 +6524,11 @@ msgstr "Applica"
 
 #: rustconn/src/terminal/mod.rs:730 rustconn/src/terminal/mod.rs:962
 msgid "Close All in Group"
-msgstr ""
+msgstr "Chiudi tutte nel gruppo"
 
 #: rustconn/src/terminal/mod.rs:732
 msgid "Close {} tabs in group '{}'?"
-msgstr ""
+msgstr "Chiudere {} schede nel gruppo '{}'?"
 
 #: rustconn/src/terminal/mod.rs:950
 msgid "Unpin Tab"
@@ -6548,27 +6548,27 @@ msgstr "Rimuovi dal gruppo"
 
 #: rustconn/src/terminal/mod.rs:971
 msgid "Monitor: {}"
-msgstr ""
+msgstr "Monitor: {}"
 
 #: rustconn/src/terminal/mod.rs:977
 msgid "Close Others"
-msgstr ""
+msgstr "Chiudi altre"
 
 #: rustconn/src/terminal/mod.rs:978
 msgid "Close to the Left"
-msgstr ""
+msgstr "Chiudi a sinistra"
 
 #: rustconn/src/terminal/mod.rs:979
 msgid "Close to the Right"
-msgstr ""
+msgstr "Chiudi a destra"
 
 #: rustconn/src/terminal/mod.rs:982
 msgid "Close All Ungrouped"
-msgstr ""
+msgstr "Chiudi tutte senza gruppo"
 
 #: rustconn/src/terminal/mod.rs:986
 msgid "Close All Tabs"
-msgstr ""
+msgstr "Chiudi tutte le schede"
 
 #: rustconn/src/terminal/mod.rs:1763
 msgid "Command not found: {}"
@@ -6861,7 +6861,7 @@ msgstr "{} non è andato online dopo WoL"
 
 #: rustconn/src/window/edit_actions.rs:422
 msgid "Failed to send Wake On LAN packet. Check network permissions."
-msgstr ""
+msgstr "Impossibile inviare il pacchetto Wake On LAN. Controlla i permessi di rete."
 "Impossibile inviare il pacchetto Wake On LAN. Controlla i permessi di rete."
 
 #: rustconn/src/window/edit_actions.rs:468
@@ -7082,11 +7082,11 @@ msgstr "Attività pre-connessione fallita. Connessione interrotta."
 
 #: rustconn/src/window/mod.rs:3523
 msgid "Activity detected: {}"
-msgstr ""
+msgstr "Attività rilevata: {}"
 
 #: rustconn/src/window/mod.rs:3527
 msgid "Silence detected: {}"
-msgstr ""
+msgstr "Silenzio rilevato: {}"
 
 #: rustconn/src/window/mod.rs:4380
 msgid "Startup connection not found"
@@ -7098,7 +7098,7 @@ msgstr "Impossibile aprire il file .rdp"
 
 #: rustconn/src/window/mod.rs:4564
 msgid "Successfully exported {} connection(s). {} skipped."
-msgstr ""
+msgstr "Esportate con successo {} connessione/i. {} saltate."
 
 #: rustconn/src/window/operations.rs:42
 msgid "group"
@@ -7282,11 +7282,11 @@ msgstr "Installa Mosh per le connessioni MOSH"
 
 #: rustconn/src/window/rdp_vnc.rs:362
 msgid "SSH tunnel failed: {}"
-msgstr ""
+msgstr "Tunnel SSH fallito: {}"
 
 #: rustconn/src/window/rdp_vnc.rs:558
 msgid "RDP connection failed. Check that the remote host is reachable."
-msgstr ""
+msgstr "Connessione RDP fallita. Verifica che l'host remoto sia raggiungibile."
 
 #: rustconn/src/window/sessions.rs:34 rustconn/src/window/ui.rs:146
 msgid "Active Sessions"
@@ -7467,7 +7467,7 @@ msgstr "Shell locale (Ctrl+Shift+T)"
 
 #: rustconn/src/window/ui.rs:114
 msgid "Open Local Shell"
-msgstr ""
+msgstr "Apri shell locale"
 
 #: rustconn/src/window/ui.rs:142
 msgid "Snippets..."

@@ -319,12 +319,18 @@ impl VariablesDialog {
                         let lookup_key = rustconn_core::variable_secret_key(&var_name);
                         let backend = rustconn_core::secret::LibSecretBackend::new("rustconn");
                         crate::async_utils::with_runtime(|rt| {
-                            let creds = rt
-                                .block_on(rustconn_core::secret::SecretBackend::retrieve(
-                                    &backend,
-                                    &lookup_key,
-                                ))
-                                .map_err(|e| format!("{e}"))?;
+                            let creds = rt.block_on(async {
+                                tokio::time::timeout(
+                                    std::time::Duration::from_secs(10),
+                                    rustconn_core::secret::SecretBackend::retrieve(
+                                        &backend,
+                                        &lookup_key,
+                                    ),
+                                )
+                                .await
+                                .map_err(|_| "Vault retrieve timed out".to_string())?
+                                .map_err(|e| format!("{e}"))
+                            })?;
                             Ok(creds.and_then(|c| c.expose_password().map(String::from)))
                         })?
                     }

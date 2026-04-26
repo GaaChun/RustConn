@@ -1,4 +1,18 @@
 -------------------------------------------------------------------
+Sun Apr 26 2026 Anton Isaiev <totoshko88@gmail.com> - 0.12.2
+
+- Update to version 0.12.2
+- [Fixed] Flatpak SFTP ssh-add fails with missing askpass — strips
+  SSH_ASKPASS from the environment for bare ssh-add calls (#102)
+- [Fixed] Blocking operations on GTK main thread — added 5s timeouts
+  to has_secret_backend() and refresh_secret_backend_cache()
+- [Fixed] Missing timeouts on blocking async operations — added
+  timeouts to flush_persistence (5s), resolve_with_hierarchy (30s),
+  auto_unlock (30s), and vault store/retrieve/delete (10s)
+- [Translations] All 16 languages aligned to 1697 strings; fixed
+  Italian PO syntax error
+
+-------------------------------------------------------------------
 Sat Apr 25 2026 Anton Isaiev <totoshko88@gmail.com> - 0.12.1
 
 - Update to version 0.12.1

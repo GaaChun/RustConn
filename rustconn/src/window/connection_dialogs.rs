@@ -486,27 +486,52 @@ pub fn show_new_group_dialog_with_parent(
                         match backend_type {
                             SecretBackendType::Bitwarden => {
                                 crate::async_utils::with_runtime(|rt| {
-                                    let backend = rt
-                                        .block_on(rustconn_core::secret::auto_unlock(
-                                            &secret_settings,
-                                        ))
-                                        .map_err(|e| format!("{e}"))?;
-                                    rt.block_on(backend.retrieve(&lookup_key))
+                                    let backend = rt.block_on(async {
+                                        tokio::time::timeout(
+                                            std::time::Duration::from_secs(30),
+                                            rustconn_core::secret::auto_unlock(&secret_settings),
+                                        )
+                                        .await
+                                        .map_err(|_| "Bitwarden auto-unlock timed out".to_string())?
                                         .map_err(|e| format!("{e}"))
+                                    })?;
+                                    rt.block_on(async {
+                                        tokio::time::timeout(
+                                            std::time::Duration::from_secs(10),
+                                            backend.retrieve(&lookup_key),
+                                        )
+                                        .await
+                                        .map_err(|_| "Vault retrieve timed out".to_string())?
+                                        .map_err(|e| format!("{e}"))
+                                    })
                                 })?
                             }
                             SecretBackendType::OnePassword => {
                                 let backend = rustconn_core::secret::OnePasswordBackend::new();
                                 crate::async_utils::with_runtime(|rt| {
-                                    rt.block_on(backend.retrieve(&lookup_key))
+                                    rt.block_on(async {
+                                        tokio::time::timeout(
+                                            std::time::Duration::from_secs(10),
+                                            backend.retrieve(&lookup_key),
+                                        )
+                                        .await
+                                        .map_err(|_| "Vault retrieve timed out".to_string())?
                                         .map_err(|e| format!("{e}"))
+                                    })
                                 })?
                             }
                             SecretBackendType::Passbolt => {
                                 let backend = rustconn_core::secret::PassboltBackend::new();
                                 crate::async_utils::with_runtime(|rt| {
-                                    rt.block_on(backend.retrieve(&lookup_key))
+                                    rt.block_on(async {
+                                        tokio::time::timeout(
+                                            std::time::Duration::from_secs(10),
+                                            backend.retrieve(&lookup_key),
+                                        )
+                                        .await
+                                        .map_err(|_| "Vault retrieve timed out".to_string())?
                                         .map_err(|e| format!("{e}"))
+                                    })
                                 })?
                             }
                             SecretBackendType::Pass => {
@@ -515,8 +540,15 @@ pub fn show_new_group_dialog_with_parent(
                                         &secret_settings,
                                     );
                                 crate::async_utils::with_runtime(|rt| {
-                                    rt.block_on(backend.retrieve(&lookup_key))
+                                    rt.block_on(async {
+                                        tokio::time::timeout(
+                                            std::time::Duration::from_secs(10),
+                                            backend.retrieve(&lookup_key),
+                                        )
+                                        .await
+                                        .map_err(|_| "Vault retrieve timed out".to_string())?
                                         .map_err(|e| format!("{e}"))
+                                    })
                                 })?
                             }
                             SecretBackendType::LibSecret
@@ -525,8 +557,15 @@ pub fn show_new_group_dialog_with_parent(
                                 let backend =
                                     rustconn_core::secret::LibSecretBackend::new("rustconn");
                                 crate::async_utils::with_runtime(|rt| {
-                                    rt.block_on(backend.retrieve(&lookup_key))
+                                    rt.block_on(async {
+                                        tokio::time::timeout(
+                                            std::time::Duration::from_secs(10),
+                                            backend.retrieve(&lookup_key),
+                                        )
+                                        .await
+                                        .map_err(|_| "Vault retrieve timed out".to_string())?
                                         .map_err(|e| format!("{e}"))
+                                    })
                                 })?
                             }
                         }
