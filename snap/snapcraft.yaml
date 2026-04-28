@@ -199,7 +199,6 @@ parts:
     rust-channel: "1.95"
     rust-path: [rustconn, rustconn-cli]
     rust-use-global-lto: true
-    rust-features: [adw-1-8]
     build-packages:
       - libgtk-4-dev
       - libadwaita-1-dev
