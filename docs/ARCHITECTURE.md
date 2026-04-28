@@ -1,6 +1,6 @@
 # RustConn Architecture Guide
 
-**Version 0.12.3** | Last updated: April 2026
+**Version 0.12.4** | Last updated: April 2026
 
 This document describes the internal architecture of RustConn for contributors and maintainers.
 
@@ -1006,7 +1006,7 @@ rustconn-core/src/
 │   ├── retry.rs           # RetryConfig, RetryState, exponential backoff
 │   ├── port_check.rs      # TCP port reachability check
 │   └── ...
-├── protocol/              # Protocol implementations (incl. mosh.rs)
+├── protocol/              # Protocol implementations
 ├── secret/                # Credential backends
 │   ├── mod.rs             # Module exports
 │   ├── backend.rs         # SecretBackend trait

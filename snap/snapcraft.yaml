@@ -1,46 +1,55 @@
 name: rustconn
-base: core24
-version: '0.12.3'
+base: core26
+version: '0.12.4'
 summary: Manage remote connections easily
 description: |
   RustConn is a modern connection manager for Linux with a GTK4/Wayland-native
-  interface. Manage SSH, RDP, VNC, SPICE, MOSH, Telnet, Serial, Kubernetes,
-  and Zero Trust connections from a single application.
+  interface. Manage SSH, RDP, VNC, SPICE, MOSH, Telnet, Serial, Kubernetes, and
+  Zero Trust connections from a single application. Core protocols use embedded
+  Rust implementations — no external dependencies required.
 
   Protocols (embedded Rust implementations):
-  - SSH with embedded VTE terminal and split view
-  - RDP via IronRDP (embedded)
-  - VNC via vnc-rs (embedded)
-  - SPICE via external remote-viewer (install on host)
-  - MOSH via external mosh client (install on host)
-  - Telnet via bundled inetutils telnet client
-  - Serial via bundled picocom
-  - Kubernetes via kubectl exec (install on host)
-  - Waypipe for Wayland application forwarding over SSH
+  - SSH with embedded VTE terminal, split view, and scrollbar
+  - RDP via IronRDP (embedded, with FreeRDP fallback)
+  - VNC via vnc-rs (embedded, with TigerVNC fallback)
+  - SPICE via spice-client (embedded, with remote-viewer fallback)
+  - MOSH with predict mode and UDP port range
+  - Telnet via external telnet client
+  - Serial via picocom (RS-232/USB serial consoles)
+  - Kubernetes via kubectl exec (shell access to pods)
+  - Zero Trust: AWS SSM, GCP IAP, Azure Bastion, OCI Bastion,
+    Cloudflare, Teleport, Tailscale, Boundary, Hoop.dev
 
-  Zero Trust (install CLIs on host):
-  - AWS SSM, GCP IAP, Azure Bastion, OCI Bastion
-  - Cloudflare Tunnel, Teleport, Tailscale, Boundary
+  Cloud Sync:
+  - Synchronize connections via shared directories (Google Drive,
+    Syncthing, Nextcloud, Dropbox, USB)
+  - Group Sync with Master/Import access model
+  - Simple Sync with UUID-based merge and tombstone deletion
+
+  File Transfer:
+  - SFTP file browser via Midnight Commander with split-panel navigation
 
   Organization:
-  - Groups, tags, and templates
+  - Groups, tags, templates, and smart folders
   - Connection history and statistics
-  - Session logging
+  - Session logging and recording
+  - Tab Overview, Tab Pinning, and Tab Switcher
 
   Import/Export:
-  - Asbru-CM, Remmina, SSH config, Ansible inventory
-  - Royal TS, MobaXterm, native format (.rcn)
+  - Asbru-CM, Remmina, SSH config, Ansible inventory, CSV
+  - Royal TS, MobaXterm, RDP files, libvirt, native format (.rcn)
 
   Security:
-  - KeePassXC (KDBX files)
+  - KeePassXC (KDBX files and proxy)
   - libsecret (GNOME Keyring)
-  - Bitwarden CLI, 1Password CLI, Passbolt CLI (install on host)
+  - Bitwarden CLI, 1Password CLI, Passbolt CLI, Pass (passwordstore.org)
 
   Productivity:
-  - Split terminals
-  - Command snippets
-  - Cluster commands
-  - Wake-on-LAN
+  - Split terminals with multi-panel layouts
+  - Command snippets and cluster broadcast
+  - Custom terminal themes and per-connection color overrides
+  - Remote host monitoring (CPU, memory, disk, network)
+  - Wake-on-LAN with auto-connect
 
   Note: This snap uses strict confinement with embedded protocol clients.
   External CLIs (Zero Trust, password managers) must be installed on host
@@ -74,7 +83,6 @@ layout:
     bind: $SNAP/usr/share/glib-2.0/schemas
 
 plugs:
-  # GTK/Desktop integration via content snaps
   gtk-3-themes:
     interface: content
     target: $SNAP/data-dir/themes
@@ -87,17 +95,10 @@ plugs:
     interface: content
     target: $SNAP/data-dir/sounds
     default-provider: gtk-common-themes
-
-  # SSH keys access
   ssh-keys:
     interface: ssh-keys
-
-  # Serial port access for serial console connections
   serial-port:
     interface: serial-port
-
-  # Cloud provider credentials
-  # .aws needs read-write: AWS CLI v2 SSO writes session tokens to ~/.aws/sso/cache/
   aws-credentials:
     interface: personal-files
     write:
@@ -114,13 +115,10 @@ plugs:
     interface: personal-files
     read:
       - $HOME/.oci
-  # Kubernetes config
   kube-credentials:
     interface: personal-files
     read:
       - $HOME/.kube
-
-  # Host CLI access for Zero Trust and password managers
   host-usr-bin:
     interface: system-files
     read:
@@ -201,6 +199,7 @@ parts:
     rust-channel: "1.95"
     rust-path: [rustconn, rustconn-cli]
     rust-use-global-lto: true
+    rust-features: [adw-1-8]
     build-packages:
       - libgtk-4-dev
       - libadwaita-1-dev
@@ -247,7 +246,6 @@ parts:
       cp rustconn/assets/io.github.totoshko88.RustConn.desktop $CRAFT_PART_INSTALL/usr/share/applications/
       cp rustconn/assets/io.github.totoshko88.RustConn.metainfo.xml $CRAFT_PART_INSTALL/usr/share/metainfo/
       cp -r rustconn/assets/icons/hicolor $CRAFT_PART_INSTALL/usr/share/icons/
-      # Compile locale files (.po -> .mo)
       for po_file in po/*.po; do
         [ -f "$po_file" ] || continue
         lang=$(basename "$po_file" .po)
@@ -256,11 +254,9 @@ parts:
       done
     override-prime: |
       craftctl default
-      # Update gdk-pixbuf loaders cache
       if [ -d usr/lib/*/gdk-pixbuf-2.0 ]; then
         /usr/lib/*/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders > usr/lib/*/gdk-pixbuf-2.0/2.10.0/loaders.cache 2>/dev/null || true
       fi
-      # Compile GSettings schemas
       if [ -d usr/share/glib-2.0/schemas ]; then
         glib-compile-schemas usr/share/glib-2.0/schemas 2>/dev/null || true
       fi

@@ -131,6 +131,17 @@
     <control>touch</control>
   </supports>
   <releases>
+    <release version="0.12.4" date="2026-04-28">
+      <description>
+        <p>Version 0.12.4 — Dead code cleanup and dependency updates:</p>
+        <ul>
+          <li>Removed dead mosh.rs dialog module — MOSH settings already integrated into SSH tab</li>
+          <li>Removed legacy connect_password_load_button wrapper — all callers use _with_groups variant</li>
+          <li>Removed unused add_available_file_row from Cloud Sync settings</li>
+          <li>rpassword 7.4.0 → 7.5.0, rustls 0.23.39 → 0.23.40</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.12.3" date="2026-04-28">
       <description>
         <p>Version 0.12.3 — Bug fix, accessibility, and dependency updates:</p>

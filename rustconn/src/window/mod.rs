@@ -4115,7 +4115,7 @@ impl MainWindow {
 
             // Populate Cloud Sync sections
             let groups: Vec<_> = state_ref.list_groups().into_iter().cloned().collect();
-            dialog.populate_cloud_sync(&groups, state_ref.sync_manager());
+            dialog.populate_cloud_sync(&groups, state_ref.sync_manager(), &state);
         }
 
         let window_clone = window.clone();
