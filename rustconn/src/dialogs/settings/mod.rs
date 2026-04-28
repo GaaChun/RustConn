@@ -556,8 +556,8 @@ impl SettingsDialog {
         &self,
         groups: &[rustconn_core::models::ConnectionGroup],
         sync_manager: &rustconn_core::sync::SyncManager,
+        state: &crate::state::SharedAppState,
     ) {
-        use crate::i18n::i18n;
         use rustconn_core::sync::settings::SyncMode;
 
         // Populate synced groups
@@ -576,7 +576,7 @@ impl SettingsDialog {
             );
         }
 
-        // Populate available files
+        // Populate available files with Import button
         if let Ok(files) = sync_manager.list_available_sync_files() {
             // Filter out files already imported by any group
             let imported_files: std::collections::HashSet<String> =
@@ -586,14 +586,70 @@ impl SettingsDialog {
                 if let Some(filename) = file_path.file_name().and_then(|f| f.to_str())
                     && !imported_files.contains(filename)
                 {
-                    // Add a simple row (no import callback wired here — import
-                    // is done via the sidebar context menu or CLI)
-                    let row = libadwaita::ActionRow::builder()
-                        .title(filename)
-                        .subtitle(i18n("Available for import"))
-                        .build();
-                    self.cloud_sync_widgets.available_files_group.add(&row);
+                    let state_clone = state.clone();
+                    add_available_file_row(
+                        &self.cloud_sync_widgets.available_files_group,
+                        filename,
+                        move |fname| {
+                            Self::import_cloud_file(&state_clone, fname);
+                        },
+                    );
                 }
+            }
+        }
+    }
+
+    /// Imports a `.rcn` file from the sync directory by creating an Import group
+    /// and triggering an immediate sync.
+    fn import_cloud_file(state: &crate::state::SharedAppState, filename: &str) {
+        use rustconn_core::sync::settings::SyncMode;
+
+        let Ok(mut state_mut) = state.try_borrow_mut() else {
+            tracing::warn!("Could not borrow state for cloud file import");
+            return;
+        };
+
+        // Derive group name from filename (strip .rcn extension)
+        let group_name = filename
+            .strip_suffix(".rcn")
+            .unwrap_or(filename)
+            .to_string();
+
+        // Create a new Import group
+        let group_id = match state_mut.create_group(group_name) {
+            Ok(id) => id,
+            Err(e) => {
+                tracing::warn!(error = %e, filename, "Failed to create group for cloud import");
+                return;
+            }
+        };
+
+        // Configure the group for Import sync
+        if let Some(group) = state_mut.get_group(group_id).cloned() {
+            let mut updated = group;
+            updated.sync_mode = SyncMode::Import;
+            updated.sync_file = Some(filename.to_owned());
+            if let Err(e) = state_mut
+                .connection_manager()
+                .update_group(group_id, updated)
+            {
+                tracing::warn!(error = %e, "Failed to configure import group");
+                return;
+            }
+        }
+
+        // Trigger immediate sync to import connections
+        match state_mut.sync_now_group(group_id) {
+            Ok(report) => {
+                tracing::info!(
+                    filename,
+                    added = report.connections_added,
+                    updated = report.connections_updated,
+                    "Cloud file imported successfully"
+                );
+            }
+            Err(e) => {
+                tracing::warn!(error = %e, filename, "Failed to import cloud file");
             }
         }
     }

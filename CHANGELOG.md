@@ -5,6 +5,22 @@ All notable changes to RustConn will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.4] - 2026-04-29
+
+### Fixed
+- **"Copy Password" from context menu resolves from vault** — previously only worked with cached credentials (required connecting first); now falls back to `resolve_credentials_gtk` to fetch the password directly from the configured secret backend (KeePass, Bitwarden, 1Password, etc.) when no cached credentials are available
+
+### Cleaned
+- **Removed dead `mosh.rs` dialog module** — standalone MOSH options panel was never wired into the connection dialog; MOSH settings are already integrated into the SSH tab via `ssh::create_ssh_options()`
+- **Removed legacy `connect_password_load_button` wrapper** — unused passthrough method in `ConnectionDialog` that delegated to `connect_password_load_button_with_groups` with empty groups; all callers already use the `_with_groups` variant directly
+
+### Added
+- **Import button in Cloud Sync settings** — "Available in Cloud" section now shows an "Import" button on each unimported `.rcn` file; clicking it creates an Import group and triggers an immediate sync, importing all connections from the file
+
+### Dependencies
+- rpassword 7.4.0 → 7.5.0
+- rustls 0.23.39 → 0.23.40
+
 ## [0.12.3] - 2026-04-28
 
 ### Fixed

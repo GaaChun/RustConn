@@ -6452,33 +6452,6 @@ impl ConnectionDialog {
     /// Connects password load button to load password from vault (KeePass or Keyring)
     ///
     /// This method sets up the click handler for the password load button.
-    /// When clicked, it loads the password from the appropriate backend based on
-    /// the selected password source (KeePass or Keyring).
-    ///
-    /// # Arguments
-    /// * `kdbx_enabled` - Whether KeePass is enabled
-    /// * `kdbx_path` - Path to the KeePass database
-    /// * `kdbx_password` - Password for the KeePass database
-    /// * `kdbx_key_file` - Key file for the KeePass database
-    pub fn connect_password_load_button(
-        &self,
-        kdbx_enabled: bool,
-        kdbx_path: Option<std::path::PathBuf>,
-        kdbx_password: Option<String>,
-        kdbx_key_file: Option<std::path::PathBuf>,
-        secret_settings: rustconn_core::config::SecretSettings,
-    ) {
-        // Call the extended version with empty groups (legacy behavior)
-        self.connect_password_load_button_with_groups(
-            kdbx_enabled,
-            kdbx_path,
-            kdbx_password,
-            kdbx_key_file,
-            Vec::new(),
-            secret_settings,
-        );
-    }
-
     /// Connects password load button with group hierarchy support
     ///
     /// This method sets up the click handler for the password load button.

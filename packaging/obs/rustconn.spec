@@ -6,7 +6,7 @@
 #
 
 Name:           rustconn
-Version:        0.12.3
+Version:        0.12.4
 Release:        0
 Summary:        Modern connection manager for Linux (SSH, RDP, VNC, SPICE, MOSH, Telnet, Serial, Kubernetes, Zero Trust)
 License:        GPL-3.0-or-later
@@ -235,6 +235,14 @@ done
 %{_datadir}/locale/*/LC_MESSAGES/rustconn.mo
 
 %changelog
+* Tue Apr 28 2026 Anton Isaiev <totoshko88@gmail.com> - 0.12.4-0
+- [Cleaned] Removed dead mosh.rs dialog module — MOSH settings already
+  integrated into SSH tab via ssh::create_ssh_options()
+- [Cleaned] Removed legacy connect_password_load_button wrapper — all
+  callers use connect_password_load_button_with_groups directly
+- [Cleaned] Removed unused add_available_file_row from Cloud Sync settings
+- [Dependencies] rpassword 7.4.0 → 7.5.0, rustls 0.23.39 → 0.23.40
+
 * Tue Apr 28 2026 Anton Isaiev <totoshko88@gmail.com> - 0.12.3-0
 - [Fixed] Sync toast shows raw placeholders instead of values —
   i18n_f() only supports {} placeholders; changed both sync message

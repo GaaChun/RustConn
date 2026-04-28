@@ -22,8 +22,6 @@ mod dialog;
 mod general_tab;
 pub mod kubernetes;
 mod logging_tab;
-#[allow(dead_code)]
-mod mosh;
 mod protocol_layout;
 mod rdp;
 pub mod serial;

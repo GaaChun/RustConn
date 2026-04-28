@@ -143,20 +143,24 @@ pub fn add_synced_group_row(group: &adw::PreferencesGroup, name: &str, sync_mode
 
 /// Adds an available cloud file row with an "Import" suffix button.
 ///
-/// The `on_import` callback is invoked when the user clicks "Import".
-#[allow(dead_code)] // Will be used when import-from-settings is wired up
+/// The `on_import` callback is invoked with the filename when the user clicks "Import".
 pub fn add_available_file_row(
     group: &adw::PreferencesGroup,
     filename: &str,
     on_import: impl Fn(&str) + 'static,
 ) {
-    let row = adw::ActionRow::builder().title(filename).build();
+    let row = adw::ActionRow::builder()
+        .title(filename)
+        .subtitle(&i18n("Available for import"))
+        .build();
 
     let import_btn = gtk4::Button::builder()
         .label(i18n("Import"))
         .valign(gtk4::Align::Center)
         .css_classes(["suggested-action"])
         .build();
+    import_btn.set_tooltip_text(Some(&i18n("Import this file as a new group")));
+    import_btn.update_property(&[gtk4::accessible::Property::Label(&i18n("Import sync file"))]);
 
     let filename_owned = filename.to_owned();
     import_btn.connect_clicked(move |_| {

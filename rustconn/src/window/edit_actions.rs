@@ -131,6 +131,7 @@ impl MainWindow {
         let window_weak = window.downgrade();
         let toast_clone = self.toast_overlay.clone();
         copy_password_action.connect_activate(move |_, _| {
+            use secrecy::ExposeSecret;
             let Some(item) = sidebar_clone.get_selected_item() else {
                 return;
             };
@@ -143,42 +144,84 @@ impl MainWindow {
             let Ok(state_ref) = state_clone.try_borrow() else {
                 return;
             };
-            if state_ref.get_connection(conn_id).is_some() {
-                // Try cached credentials (resolved from vault during connection)
-                use secrecy::ExposeSecret;
-                if let Some(creds) = state_ref.get_cached_credentials(conn_id) {
-                    let pw = creds.password.expose_secret();
-                    if pw.is_empty() {
-                        toast_clone.show_warning(&crate::i18n::i18n("Cached password is empty"));
-                    } else {
-                        let pw_owned = pw.to_string();
-                        if let Some(win) = window_weak.upgrade() {
-                            let clipboard = gtk4::prelude::WidgetExt::display(&win).clipboard();
-                            clipboard.set_text(&pw_owned);
-                            toast_clone.show_success(&crate::i18n::i18n(
-                                "Password copied (auto-clears in 30s)",
-                            ));
-                            // Auto-clear clipboard after 30 seconds only if it still
-                            // contains the password we set (don't clobber user data)
-                            let clipboard_weak = clipboard.downgrade();
-                            glib::timeout_add_seconds_local_once(30, move || {
-                                if let Some(cb) = clipboard_weak.upgrade() {
-                                    cb.read_text_async(gio::Cancellable::NONE, move |result| {
-                                        if let Ok(Some(current)) = result
-                                            && current.as_str() == pw_owned
-                                            && let Some(cb2) = clipboard_weak.upgrade()
-                                        {
-                                            cb2.set_text("");
-                                        }
-                                    });
+            if state_ref.get_connection(conn_id).is_none() {
+                return;
+            }
+
+            // Helper closure to copy password to clipboard with auto-clear
+            let copy_to_clipboard =
+                |pw_owned: String,
+                 window_weak: &glib::WeakRef<adw::ApplicationWindow>,
+                 toast: &SharedToastOverlay| {
+                    if let Some(win) = window_weak.upgrade() {
+                        let clipboard = gtk4::prelude::WidgetExt::display(&win).clipboard();
+                        clipboard.set_text(&pw_owned);
+                        toast.show_success(&crate::i18n::i18n(
+                            "Password copied (auto-clears in 30s)",
+                        ));
+                        let clipboard_weak = clipboard.downgrade();
+                        glib::timeout_add_seconds_local_once(30, move || {
+                            if let Some(cb) = clipboard_weak.upgrade() {
+                                cb.read_text_async(gio::Cancellable::NONE, move |result| {
+                                    if let Ok(Some(current)) = result
+                                        && current.as_str() == pw_owned
+                                        && let Some(cb2) = clipboard_weak.upgrade()
+                                    {
+                                        cb2.set_text("");
+                                    }
+                                });
+                            }
+                        });
+                    }
+                };
+
+            // Try cached credentials first (resolved from vault during connection)
+            if let Some(creds) = state_ref.get_cached_credentials(conn_id) {
+                let pw = creds.password.expose_secret();
+                if pw.is_empty() {
+                    toast_clone.show_warning(&crate::i18n::i18n("Cached password is empty"));
+                } else {
+                    copy_to_clipboard(pw.to_string(), &window_weak, &toast_clone);
+                }
+                return;
+            }
+
+            // No cached credentials — resolve from vault backend
+            drop(state_ref);
+            let window_weak2 = window_weak.clone();
+            let toast_clone2 = toast_clone.clone();
+            if let Ok(state_ref2) = state_clone.try_borrow() {
+                state_ref2.resolve_credentials_gtk(conn_id, move |result| {
+                    use rustconn_core::sync::CredentialResolutionResult;
+                    match result {
+                        Ok(CredentialResolutionResult::Resolved(creds)) => {
+                            if let Some(ref password) = creds.password {
+                                let pw = password.expose_secret();
+                                if pw.is_empty() {
+                                    toast_clone2
+                                        .show_warning(&crate::i18n::i18n("Password is empty"));
+                                } else {
+                                    copy_to_clipboard(pw.to_string(), &window_weak2, &toast_clone2);
                                 }
-                            });
+                            } else {
+                                toast_clone2.show_warning(&crate::i18n::i18n(
+                                    "No password configured for this connection",
+                                ));
+                            }
+                        }
+                        Ok(_) => {
+                            toast_clone2.show_warning(&crate::i18n::i18n(
+                                "No password configured for this connection",
+                            ));
+                        }
+                        Err(e) => {
+                            tracing::warn!(error = %e, "Failed to resolve credentials for copy");
+                            toast_clone2.show_warning(&crate::i18n::i18n(
+                                "Could not retrieve password from secret backend",
+                            ));
                         }
                     }
-                } else {
-                    toast_clone
-                        .show_warning(&crate::i18n::i18n("Connect first to cache credentials"));
-                }
+                });
             }
         });
         window.add_action(&copy_password_action);
