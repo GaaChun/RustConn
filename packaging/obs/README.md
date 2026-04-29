@@ -1,190 +1,166 @@
 # RustConn OBS Packaging
 
-Файли для автоматичної збірки на [Open Build Service](https://build.opensuse.org/).
+Build files for the [Open Build Service](https://build.opensuse.org/package/show/home:totoshko88:rustconn/rustconn).
 
-## Підтримувані дистрибутиви
+## Supported Distributions
 
-| Дистрибутив | Версія | Rust джерело | Статус |
-|-------------|--------|--------------|--------|
-| openSUSE Tumbleweed | Rolling | System (1.95+) | ✅ |
-| openSUSE Slowroll | Rolling (slow) | System (1.95+) | ✅ |
-| openSUSE Leap | 16.0 | devel:languages:rust | ✅ |
-| Fedora | 42 | System (1.93) | ✅ |
-| Fedora | 43 | System (1.90) | ✅ |
+| Distribution | Version | GTK4 | libadwaita | Feature Flag | Rust Source |
+|-------------|---------|------|------------|-------------|-------------|
+| openSUSE Tumbleweed | Rolling | 4.18 | 1.9 | `adw-1-8` | System (devel:languages:rust) |
+| openSUSE Slowroll | Rolling | 4.18 | 1.9 | `adw-1-8` | System (devel:languages:rust) |
+| openSUSE Leap | 16.0 | 4.16 | 1.7 | `adw-1-7` | devel:languages:rust |
+| Fedora | 44 | 4.18 | 1.9 | `adw-1-8` | System |
+| Fedora | 43 | 4.18 | 1.8 | `adw-1-8` | System |
+| Debian | 13 (Trixie) | 4.18 | 1.7 | `adw-1-7` | Bundled toolchain |
+| Ubuntu | 26.04 LTS | 4.18 | 1.9 | `adw-1-8` | Bundled toolchain |
+| Ubuntu | 24.04 LTS | 4.14 | 1.5 | (baseline) | Bundled toolchain |
 
-**Примітка:** MSRV (Minimum Supported Rust Version) = 1.95
+**MSRV:** 1.95 (Minimum Supported Rust Version)
 
-Ubuntu/Debian не підтримуються в OBS — системний Rust занадто старий:
-- Ubuntu 24.04: Rust 1.75, Ubuntu 25.04: Rust 1.84, Ubuntu 25.10: Rust 1.85
-- Ubuntu 26.04 (resolute) матиме Rust 1.95 — можна додати після релізу
-- Debian 13 (trixie): Rust 1.85 (system), 1.90 (backports) — OBS не може використовувати backports
-- Використовуйте GitHub releases для .deb та AppImage пакетів.
+### Rust Toolchain Strategy
 
-## Автоматичне оновлення
+- **openSUSE:** System Rust from `devel:languages:rust` repository (1.95+)
+- **Fedora:** Bundled standalone toolchain (`rust-toolchain.tar.zst`) — system Rust may lag behind MSRV
+- **Debian/Ubuntu:** Bundled standalone toolchain — system Rust is too old
 
-При створенні нового релізу на GitHub, workflow автоматично:
-1. Оновлює `_service` з новим тегом
-2. Копіює `rustconn.changes` та `rustconn.spec`
-3. Комітить зміни в OBS
-4. Тригерить перезбірку всіх репозиторіїв
+### Feature Flags
 
-### Необхідні секрети GitHub
+The spec file automatically selects libadwaita feature flags based on the distro:
 
-| Секрет | Опис |
-|--------|------|
-| `OBS_USERNAME` | Логін на build.opensuse.org |
-| `OBS_PASSWORD` | Пароль на build.opensuse.org |
+| Flag | Requires | Distros |
+|------|----------|---------|
+| `adw-1-8` | libadwaita ≥ 1.8 | Tumbleweed, Slowroll, Fedora 43+, Ubuntu 26.04 |
+| `adw-1-7` | libadwaita ≥ 1.7 | Leap 16.0, Debian 13 |
+| (none) | libadwaita ≥ 1.5 | Ubuntu 24.04 |
 
-## Структура файлів
+## File Structure
 
-| Файл | Призначення |
-|------|-------------|
-| `_service` | Автоматичне завантаження з Git |
-| `_multibuild` | Мультибілд (standard + appimage) |
-| `rustconn.spec` | RPM spec для openSUSE/Fedora/RHEL |
-| `rustconn.changes` | Changelog для RPM |
+| File | Purpose |
+|------|---------|
+| `_meta` | OBS project metadata (repositories, architectures) |
+| `_service` | Source download service (git tag checkout) |
+| `_multibuild` | Multi-build flavors: `standard` + `appimage` |
+| `rustconn.spec` | RPM spec for openSUSE / Fedora |
+| `rustconn.changes` | RPM changelog (OBS format) |
 | `rustconn.dsc` | Debian source control |
-| `debian.*` | Файли для збірки DEB |
-| `AppImageBuilder.yml` | Конфігурація для AppImage |
+| `debian.changelog` | Debian changelog |
+| `debian.control` | Debian build/runtime dependencies |
+| `debian.copyright` | Debian copyright file |
+| `debian.rules` | Debian build rules |
+| `AppImageBuilder.yml` | AppImage configuration |
 
-## Залежності для збірки
+## Build Dependencies
 
 ### RPM (openSUSE)
+
 ```
-cargo >= 1.87, rust >= 1.87, cargo-packaging
-gtk4-devel >= 4.14, vte-devel, libadwaita-devel
-alsa-devel, dbus-1-devel, openssl-devel, zstd
+cargo >= 1.95, rust >= 1.95, cargo-packaging
+pkgconfig(gtk4) >= 4.14, pkgconfig(vte-2.91-gtk4), pkgconfig(libadwaita-1)
+pkgconfig(dbus-1), pkgconfig(openssl), alsa-devel
+zstd, gcc, make, gettext-tools
 ```
 
-### RPM (Fedora/RHEL)
+### RPM (Fedora)
+
 ```
-cargo >= 1.87, rust >= 1.87 (або rustup для старіших версій)
-gtk4-devel >= 4.14, vte291-gtk4-devel, libadwaita-devel
-alsa-lib-devel, dbus-devel, openssl-devel, zstd
+pkgconfig(gtk4) >= 4.14, pkgconfig(vte-2.91-gtk4), pkgconfig(libadwaita-1)
+pkgconfig(dbus-1), pkgconfig(openssl), alsa-lib-devel
+zstd, gcc, make, gettext-devel
+# Rust provided via bundled toolchain (rust-toolchain.tar.zst)
 ```
 
-### DEB (Ubuntu/Debian)
+### DEB (Debian / Ubuntu)
+
 ```
-cargo >= 1.87, rustc >= 1.87
-libgtk-4-dev >= 4.14, libvte-2.91-gtk4-dev, libadwaita-1-dev
-libasound2-dev, libdbus-1-dev, libssl-dev, zstd
+libgtk-4-dev (>= 4.14), libvte-2.91-gtk4-dev, libadwaita-1-dev
+libssl-dev, libasound2-dev, pkg-config, clang, cmake, gettext, zstd
+# Rust provided via bundled toolchain (rust-toolchain.tar.zst)
 ```
 
-## Налаштування OBS
+## CI Automation
 
-### 1. Створення проєкту
+When a new release tag is pushed to GitHub, the OBS workflow automatically:
+
+1. Updates `_service` with the new tag
+2. Copies `rustconn.changes` and `rustconn.spec`
+3. Commits changes to OBS via `osc`
+4. Triggers rebuild across all repositories
+
+### Required GitHub Secrets
+
+| Secret | Description |
+|--------|-------------|
+| `OBS_USERNAME` | Login for build.opensuse.org |
+| `OBS_PASSWORD` | Password for build.opensuse.org |
+
+## Manual Operations
+
+### Project Setup
 
 ```bash
-# Встановіть osc
+# Install osc
 # openSUSE: sudo zypper install osc
-# Fedora: sudo dnf install osc
+# Fedora:   sudo dnf install osc
 
-# Checkout проєкту
+# Checkout project
 osc checkout home:totoshko88:rustconn/rustconn
 cd home:totoshko88:rustconn/rustconn
 ```
 
-### 2. Репозиторії для збірки
-
-Рекомендовані репозиторії в OBS:
-
-**RPM:**
-- openSUSE_Tumbleweed
-- openSUSE_Slowroll
-- openSUSE_Leap_16.0
-- Fedora_42
-- Fedora_43
-
-**DEB:**
-- Debian 13+ (коли Rust >= 1.95 буде доступний)
-- xUbuntu_26.04 (коли вийде)
-
-### 3. Оновлення версії
+### Update Project Metadata
 
 ```bash
-# 1. Оновіть _service revision на новий тег
-sed -i 's/revision>v.*/revision>v0.5.0</' _service
-
-# 2. Оновіть rustconn.changes
-# 3. Оновіть debian.changelog
-
-# 4. Запустіть source service
-osc service runall
-
-# 5. Commit
-osc commit -m "Update to 0.5.0"
+# Apply _meta (add/remove repositories)
+osc meta prj home:totoshko88:rustconn -F packaging/obs/_meta
 ```
 
-## Встановлення
-
-### openSUSE Tumbleweed
-```bash
-sudo zypper ar https://download.opensuse.org/repositories/home:/totoshko88:/rustconn/openSUSE_Tumbleweed/ rustconn
-sudo zypper ref
-sudo zypper in rustconn
-```
-
-### openSUSE Slowroll
-```bash
-sudo zypper ar https://download.opensuse.org/repositories/home:/totoshko88:/rustconn/openSUSE_Slowroll/ rustconn
-sudo zypper ref
-sudo zypper in rustconn
-```
-
-### openSUSE Leap 16.0
-```bash
-sudo zypper ar https://download.opensuse.org/repositories/home:/totoshko88:/rustconn/16.0/ rustconn
-sudo zypper ref
-sudo zypper in rustconn
-```
-
-### Fedora 42+
-```bash
-# Replace 42 with your Fedora version (42, 43, etc.)
-sudo dnf config-manager --add-repo \
-  https://download.opensuse.org/repositories/home:/totoshko88:/rustconn/Fedora_42/home:totoshko88:rustconn.repo
-sudo dnf install rustconn
-```
-
-### Ubuntu 24.04
-```bash
-echo "deb https://download.opensuse.org/repositories/home:/totoshko88:/rustconn/xUbuntu_24.04/ /" \
-  | sudo tee /etc/apt/sources.list.d/rustconn.list
-curl -fsSL https://download.opensuse.org/repositories/home:/totoshko88:/rustconn/xUbuntu_24.04/Release.key \
-  | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/rustconn.gpg
-sudo apt update
-sudo apt install rustconn
-```
-
-## Корисні команди
+### Useful Commands
 
 ```bash
-# Перегляд статусу збірки
+# Build status for all repos
 osc results home:totoshko88:rustconn rustconn
 
-# Перегляд логів
-osc buildlog openSUSE_Tumbleweed x86_64
+# Build log for a specific repo
+osc buildlog home:totoshko88:rustconn rustconn Fedora_43 x86_64
 
-# Локальна тестова збірка
+# Local test build
 osc build openSUSE_Tumbleweed x86_64
 
-# Перезапуск збірки
+# Trigger rebuild (all repos)
 osc rebuild home:totoshko88:rustconn rustconn
+
+# Trigger rebuild (single repo)
+osc rebuild home:totoshko88:rustconn rustconn Fedora_43 x86_64
 ```
+
+## Installation
+
+See [docs/INSTALL.md](../../docs/INSTALL.md) for per-distro installation commands.
+
+All packages: https://build.opensuse.org/package/show/home:totoshko88:rustconn/rustconn
 
 ## Troubleshooting
 
 ### Rust version too old
-Для дистрибутивів зі старою версією Rust, spec автоматично встановлює rustup.
-Переконайтесь, що `curl` доступний як BuildRequires.
+
+Fedora and Debian/Ubuntu builds use a bundled Rust toolchain (`rust-toolchain.tar.zst`)
+unpacked during `%prep`. If the toolchain archive is missing or corrupt, the build fails
+with "rustc: command not found". Re-upload the archive to OBS.
 
 ### ALSA not found
-Додайте `alsa-devel` (openSUSE) або `alsa-lib-devel` (Fedora) до BuildRequires.
+
+Add `alsa-devel` (openSUSE) or `alsa-lib-devel` (Fedora) to BuildRequires.
 
 ### GTK4 version mismatch
-Потрібен GTK4 >= 4.14. Доступний в:
-- openSUSE Tumbleweed
-- Fedora 40+
+
+Requires GTK4 ≥ 4.14. Available in:
+- openSUSE Tumbleweed / Slowroll / Leap 16.0
+- Fedora 42+
 - Ubuntu 24.04+
 - Debian 13+
 
+### VTE package name differs
+
+- openSUSE: `vte` (provides `pkgconfig(vte-2.91-gtk4)`)
+- Fedora: `vte291-gtk4` / `vte291-gtk4-devel`
+- Debian/Ubuntu: `libvte-2.91-gtk4-0` / `libvte-2.91-gtk4-dev`
