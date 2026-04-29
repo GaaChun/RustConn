@@ -85,7 +85,7 @@ flatpak install flathub org.gnome.Platform//50
 #### Install
 
 ```bash
-flatpak install --user RustConn-0.12.3.flatpak
+flatpak install --user RustConn-0.12.4.flatpak
 ```
 
 Confirm runtime dependency installation if prompted.
@@ -214,6 +214,10 @@ sudo apt-get install -f  # Install dependencies if needed
 # Fedora 44
 sudo dnf config-manager addrepo --from-repofile=https://download.opensuse.org/repositories/home:/totoshko88:/rustconn/Fedora_44/home:totoshko88:rustconn.repo
 sudo dnf install rustconn
+
+# Fedora 43
+sudo dnf config-manager addrepo --from-repofile=https://download.opensuse.org/repositories/home:/totoshko88:/rustconn/Fedora_43/home:totoshko88:rustconn.repo
+sudo dnf install rustconn
 ```
 
 ## openSUSE (OBS)
@@ -236,7 +240,7 @@ sudo zypper in rustconn
 ```
 
 OBS packages use tiered feature flags based on the distro's libadwaita version:
-`adw-1-8` for Tumbleweed/Slowroll/Ubuntu 26.04, `adw-1-7` for Leap 16.0/Fedora 44/Debian 13,
+`adw-1-8` for Tumbleweed/Slowroll/Fedora 43+/Ubuntu 26.04, `adw-1-7` for Leap 16.0/Debian 13,
 baseline for Ubuntu 24.04 LTS.
 
 All OBS packages: https://build.opensuse.org/package/show/home:totoshko88:rustconn/rustconn
