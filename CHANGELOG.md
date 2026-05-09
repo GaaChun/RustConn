@@ -5,6 +5,11 @@ All notable changes to RustConn will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.10] - 2026-05-09
+
+### Fixed
+- **SSH: ControlMaster sockets now actually closed on application exit** — the shutdown handler scanned `active_sessions()` to find SSH connections needing socket cleanup, but by the time GTK's `connect_shutdown` fires, all sessions are already in `Terminated` state (GTK destroys widgets first), so the list was always empty and no sockets were ever closed; replaced with a filesystem scan of the runtime directory for `rc-*` socket files, which works regardless of session state; stale sockets that don't respond to `ssh -O exit` are force-removed ([#125](https://github.com/totoshko88/RustConn/issues/125))
+
 ## [0.13.9] - 2026-05-09
 
 ### Fixed

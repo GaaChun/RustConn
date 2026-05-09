@@ -1,3 +1,13 @@
+rustconn (0.13.10-1) unstable; urgency=medium
+
+  * [Fixed] SSH: ControlMaster sockets now actually closed on application
+    exit — shutdown handler scanned active_sessions() but all sessions were
+    already Terminated by the time GTK fires connect_shutdown; replaced with
+    filesystem scan of runtime directory for rc-* socket files; stale sockets
+    that don't respond to ssh -O exit are force-removed (#125)
+
+ -- Anton Isaiev <totoshko88@gmail.com>  Sat, 09 May 2026 14:00:00 +0200
+
 rustconn (0.13.9-1) unstable; urgency=medium
 
   * [Fixed] Flatpak: Zero Trust Generic commands now execute on host —
