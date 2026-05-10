@@ -106,6 +106,7 @@ impl SelectionState {
 
 /// Configuration for virtual scrolling behavior
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct VirtualScrollConfig {
     /// Minimum number of items before enabling virtual scrolling
     pub threshold: usize,
@@ -125,6 +126,7 @@ impl Default for VirtualScrollConfig {
     }
 }
 
+#[allow(dead_code)]
 impl VirtualScrollConfig {
     /// Creates a new configuration with custom threshold
     #[must_use]
