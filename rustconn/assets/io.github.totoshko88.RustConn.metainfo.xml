@@ -136,11 +136,13 @@
   <releases>
     <release version="0.13.12" date="2026-05-11">
       <description>
-        <p>Version 0.13.12 — Code quality improvements and ExpectEngine integration:</p>
+        <p>Version 0.13.12 — Auto-reconnect, batch import, SSH fix:</p>
         <ul>
-          <li>AutomationSession now uses ExpectEngine from core — priority-sorted matching, duplicate ID detection, pattern validation, and timeout handling</li>
-          <li>SplitView legacy UUID layer partially removed — external consumers use get_pane_session() instead of panes_ref_clone(); TerminalPane reduced to pub(crate) visibility</li>
-          <li>ExpectEngine: new methods for GUI integration — match_line(), remove_by_id(), remove_expired(), remove_expired_individual()</li>
+          <li>Per-connection auto-reconnect with configurable exponential backoff</li>
+          <li>Multi-file batch import for CSV, RDP, VV, RCN, JSON, RTSZ, MobaXterm, XML, YAML</li>
+          <li>Fixed SSH identity key -i flag duplicated in command</li>
+          <li>Fixed embedded VNC/RDP/SPICE hanging when remote port unreachable through tunnel</li>
+          <li>Fixed per-connection terminal white color displayed as grey</li>
         </ul>
       </description>
     </release>

@@ -3009,11 +3009,14 @@ impl MainWindow {
                 // by the global theme application above (fixes #99)
                 {
                     let state_ref = state.borrow();
-                    notebook.reapply_theme_overrides(|connection_id| {
-                        state_ref
-                            .get_connection(connection_id)
-                            .and_then(|c| c.theme_override.clone())
-                    });
+                    notebook.reapply_theme_overrides(
+                        &settings.terminal.color_theme,
+                        |connection_id| {
+                            state_ref
+                                .get_connection(connection_id)
+                                .and_then(|c| c.theme_override.clone())
+                        },
+                    );
                 }
 
                 // Apply protocol tab coloring setting
