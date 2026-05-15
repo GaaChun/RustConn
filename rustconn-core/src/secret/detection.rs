@@ -720,6 +720,19 @@ fn parse_flatpak_version(output: &str) -> Option<String> {
     None
 }
 
+/// Returns the platform-specific command to open a URL or file.
+/// On macOS this is `open`, on Linux/other — `xdg-open`.
+fn url_open_command() -> &'static str {
+    #[cfg(target_os = "macos")]
+    {
+        "open"
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        "xdg-open"
+    }
+}
+
 /// Returns the command to open the password manager application
 ///
 /// # Arguments
@@ -815,7 +828,7 @@ pub fn get_password_manager_launch_command(
         crate::config::SecretBackendType::Bitwarden => {
             // Open Bitwarden web vault in default browser
             Some((
-                "xdg-open".to_string(),
+                url_open_command().to_string(),
                 vec!["https://vault.bitwarden.com".to_string()],
             ))
         }
@@ -843,7 +856,7 @@ pub fn get_password_manager_launch_command(
             }
             // Fallback to web vault
             Some((
-                "xdg-open".to_string(),
+                url_open_command().to_string(),
                 vec!["https://my.1password.com".to_string()],
             ))
         }
@@ -852,7 +865,7 @@ pub fn get_password_manager_launch_command(
             let url = passbolt_server_url
                 .filter(|u| !u.is_empty())
                 .unwrap_or("https://passbolt.local");
-            Some(("xdg-open".to_string(), vec![url.to_string()]))
+            Some((url_open_command().to_string(), vec![url.to_string()]))
         }
         crate::config::SecretBackendType::Pass => {
             // Try qtpass first (popular GUI for pass)
@@ -870,7 +883,7 @@ pub fn get_password_manager_launch_command(
                 .unwrap_or_default();
             let store_dir = std::env::var("PASSWORD_STORE_DIR")
                 .unwrap_or_else(|_| format!("{home}/.password-store"));
-            Some(("xdg-open".to_string(), vec![store_dir]))
+            Some((url_open_command().to_string(), vec![store_dir]))
         }
     }
 }

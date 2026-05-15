@@ -141,7 +141,6 @@ impl KeePassStatus {
             "/var/lib/flatpak/exports/bin/org.keepassxc.KeePassXC.cli",
             // macOS: Homebrew (Apple Silicon and Intel)
             "/opt/homebrew/bin/keepassxc-cli",
-            "/usr/local/Cellar/keepassxc/keepassxc-cli",
             // macOS: KeePassXC.app bundle
             "/Applications/KeePassXC.app/Contents/MacOS/keepassxc-cli",
         ];

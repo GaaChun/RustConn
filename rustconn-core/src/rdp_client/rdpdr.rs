@@ -897,12 +897,12 @@ fn get_disk_stats(path: &str) -> (i64, i64) {
 
     match nix::sys::statvfs::statvfs(path) {
         Ok(stat) => {
-            #[allow(clippy::useless_conversion)]
+            #[cfg_attr(not(target_os = "macos"), allow(clippy::useless_conversion))]
             let frag_size = u64::from(stat.fragment_size());
             // Convert from filesystem blocks to 4096-byte allocation units
-            #[allow(clippy::useless_conversion)]
+            #[cfg_attr(not(target_os = "macos"), allow(clippy::useless_conversion))]
             let total_bytes = u64::from(stat.blocks()).saturating_mul(frag_size);
-            #[allow(clippy::useless_conversion)]
+            #[cfg_attr(not(target_os = "macos"), allow(clippy::useless_conversion))]
             let avail_bytes = u64::from(stat.blocks_available()).saturating_mul(frag_size);
 
             let total = i64::try_from(total_bytes / ALLOC_UNIT_BYTES).unwrap_or(1_000_000);

@@ -6,6 +6,7 @@
 //! `nix::pty::openpty()` and manually spawning the child process with
 //! the slave fd as stdin/stdout/stderr, then handing the master fd to VTE.
 
+use std::os::unix::process::CommandExt;
 use std::process::{Command, Stdio};
 
 use gtk4::gio;
@@ -72,12 +73,13 @@ pub fn spawn_native_pty(
     cmd.stdout(Stdio::from(stdout_fd));
     cmd.stderr(Stdio::from(stderr_fd));
 
-    // 4. Spawn the child process
-    // Note: Without pre_exec(setsid + TIOCSCTTY), the child does not become
-    // a session leader. This means fzf-completion and job control (Ctrl-Z)
-    // won't work, but basic shell operation and tab completion are functional.
-    // Full PTY session setup requires unsafe pre_exec which is forbidden.
-    let child = cmd.spawn().map_err(|e| format!("spawn failed: {e}"))?;
+    // 4. Spawn the child process as a new process group leader.
+    // `process_group(0)` calls setpgid(0,0) which creates a new process group,
+    // enabling basic job control (Ctrl-C sends SIGINT to the group).
+    let child = cmd
+        .process_group(0)
+        .spawn()
+        .map_err(|e| format!("spawn failed: {e}"))?;
     let child_pid = child.id();
 
     tracing::info!(

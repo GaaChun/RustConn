@@ -9,6 +9,7 @@ BUILD_TYPE="${1:---release}"
 APP_NAME="RustConn"
 APP_DIR="$PROJECT_DIR/dist/${APP_NAME}.app"
 DMG_DIR="$PROJECT_DIR/dist"
+VERSION=$(grep '^version' "$PROJECT_DIR/Cargo.toml" | head -1 | sed 's/.*"\(.*\)"/\1/')
 
 echo "=== Building RustConn for macOS ==="
 
@@ -107,9 +108,9 @@ cat > "$APP_DIR/Contents/Info.plist" << EOF
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleVersion</key>
-    <string>0.13.14</string>
+    <string>\${VERSION}</string>
     <key>CFBundleShortVersionString</key>
-    <string>0.13.14</string>
+    <string>\${VERSION}</string>
     <key>NSHighResolutionCapable</key>
     <true/>
 </dict>
@@ -119,7 +120,7 @@ EOF
 # 10. Create DMG
 echo "Creating DMG..."
 mkdir -p "$DMG_DIR"
-DMG_PATH="$DMG_DIR/RustConn-0.13.14-macOS-arm64.dmg"
+DMG_PATH="$DMG_DIR/RustConn-${VERSION}-macOS-arm64.dmg"
 rm -f "$DMG_PATH"
 hdiutil create -volname "RustConn" -srcfolder "$APP_DIR" \
     -ov -format UDZO "$DMG_PATH"

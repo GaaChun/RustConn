@@ -448,23 +448,24 @@ pub fn get_extended_path() -> String {
     let cli_dirs = get_cli_path_dirs();
     let current_path = std::env::var("PATH").unwrap_or_default();
 
-    let extra_paths: Vec<&str> = Vec::new();
-
     // On macOS, GUI apps have minimal PATH. Add Homebrew and common tool dirs.
     #[cfg(target_os = "macos")]
-    {
+    let extra_paths: Vec<&str> = {
         let macos_dirs: &[&str] = &[
             "/opt/homebrew/bin",
             "/opt/homebrew/sbin",
             "/usr/local/bin",
             "/Applications/KeePassXC.app/Contents/MacOS",
         ];
-        for dir in macos_dirs {
-            if std::path::Path::new(dir).exists() && !current_path.contains(dir) {
-                extra_paths.push(dir);
-            }
-        }
-    }
+        macos_dirs
+            .iter()
+            .filter(|dir| std::path::Path::new(*dir).exists() && !current_path.contains(*dir))
+            .copied()
+            .collect()
+    };
+
+    #[cfg(not(target_os = "macos"))]
+    let extra_paths: &[&str] = &[];
 
     let cli_path: String = cli_dirs
         .iter()
