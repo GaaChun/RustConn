@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Improved
 
-- **External window: migrated to libadwaita** — `external_window.rs` now uses `adw::ApplicationWindow` + `adw::ToolbarView` + `adw::HeaderBar` instead of plain `gtk4::ApplicationWindow` + `gtk4::HeaderBar`; consistent with the rest of the application, inherits Adwaita styling and color scheme support (UX-10)
+- **External window: migrated to libadwaita** — `external_window.rs` now uses `adw::ApplicationWindow` + `adw::ToolbarView` + `adw::HeaderBar` instead of plain `gtk4::ApplicationWindow` + `gtk4::HeaderBar`; consistent with the rest of the application, inherits Adwaita styling and color scheme support
 - **Settings: collapsible sections (GNOME HIG)** — wrapped secondary settings groups into `AdwExpanderRow` to reduce visual clutter on overloaded pages; collapsed by default, users expand only what they need:
   - Terminal tab: Logging section (7 controls) collapsed into a single "Session Logging" expander
   - Interface tab: System Tray (2 controls) and Session Restore (3 controls) collapsed into expanders
@@ -26,13 +26,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Edit Connection: collapsible sections (GNOME HIG)** — wrapped secondary settings groups in the connection dialog into `AdwExpanderRow` to reduce visual clutter:
   - Advanced tab: Terminal Theme, Activity Monitor, Automatic Reconnection, Highlight Rules, and Wake On LAN collapsed into expanders; Remote Monitoring, Session Recording, and Connection Behavior remain as single-toggle groups
   - Automation tab: Pattern Tester, Pre-Connect Task, and Post-Disconnect Task collapsed into expanders; Expect Rules list remains expanded as the primary function
-- **Settings: credential storage as a 3-state ComboRow** — replaced the per-backend pair of "Save password" + "Save to system keyring" CheckButtons (with hand-rolled mutual-exclusion logic) with a single `AdwComboRow` offering three canonical choices: "Don't save" / "Encrypted file (machine-specific)" / "System keyring (recommended)". Applies to all four secret backends: KeePassXC database password, Bitwarden master password, 1Password service-account token, and Passbolt GPG passphrase. Settings storage layout is unchanged — the previous `*_password_encrypted` and `*_save_to_keyring` fields are retained as the persistence sink, with a `CredentialStorage` enum and `*_storage()` / `set_*_storage()` helpers in `rustconn-core` providing the canonical API. Old configs round-trip through the new selector without a migration step (UX-7b)
-- **Settings UI: GNOME HIG compliance** — converted 25 toggle controls from `CheckButton`-in-`AdwActionRow` pattern to `AdwSwitchRow` across Interface, Terminal, Logging, and Monitoring pages; switches are the canonical libadwaita widget for boolean preferences and provide better touch targets, larger hit areas, and consistent rendering across themes; no behavioural changes (UX-7)
+- **Settings: credential storage as a 3-state ComboRow** — replaced the per-backend pair of "Save password" + "Save to system keyring" CheckButtons (with hand-rolled mutual-exclusion logic) with a single `AdwComboRow` offering three canonical choices: "Don't save" / "Encrypted file (machine-specific)" / "System keyring (recommended)". Applies to all four secret backends: KeePassXC database password, Bitwarden master password, 1Password service-account token, and Passbolt GPG passphrase. Settings storage layout is unchanged — the previous `*_password_encrypted` and `*_save_to_keyring` fields are retained as the persistence sink, with a `CredentialStorage` enum and `*_storage()` / `set_*_storage()` helpers in `rustconn-core` providing the canonical API. Old configs round-trip through the new selector without a migration step
+- **Settings UI: GNOME HIG compliance** — converted 25 toggle controls from `CheckButton`-in-`AdwActionRow` pattern to `AdwSwitchRow` across Interface, Terminal, Logging, and Monitoring pages; switches are the canonical libadwaita widget for boolean preferences and provide better touch targets, larger hit areas, and consistent rendering across themes; no behavioural changes 
   - Interface tab: 7 toggles (Color tabs by protocol, Show protocol filters, Remember size, Show tray icon, Minimize to tray, Session restore Enabled, Ask first)
   - Terminal tab: 8 toggles (Scroll on output / keystroke, Scrollbar, Hyperlinks, Hide pointer, Bell, SFTP via mc, Copy on select)
   - Logging tab: 4 toggles (Activity, User Input, Terminal Output, Timestamps)
   - Monitoring tab: 6 toggles (CPU / Memory / Disk / Network / Load / System info usage)
 - **Settings dialog field types unified** — internal `SettingsDialog` struct fields renamed/retyped from `gtk4::CheckButton` to `adw::SwitchRow` for the migrated controls
+
+### Dependencies
+- `pastey` 0.2.2 → 0.2.3
 
 ## [0.14.2] - 2026-05-19
 

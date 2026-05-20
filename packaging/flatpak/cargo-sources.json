@@ -5293,14 +5293,14 @@
     {
         "type": "archive",
         "archive-type": "tar-gzip",
-        "url": "https://static.crates.io/crates/pastey/pastey-0.2.2.crate",
-        "sha256": "c5a797f0e07bdf071d15742978fc3128ec6c22891c31a3a931513263904c982a",
-        "dest": "cargo/vendor/pastey-0.2.2"
+        "url": "https://static.crates.io/crates/pastey/pastey-0.2.3.crate",
+        "sha256": "2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4",
+        "dest": "cargo/vendor/pastey-0.2.3"
     },
     {
         "type": "inline",
-        "contents": "{\"package\": \"c5a797f0e07bdf071d15742978fc3128ec6c22891c31a3a931513263904c982a\", \"files\": {}}",
-        "dest": "cargo/vendor/pastey-0.2.2",
+        "contents": "{\"package\": \"2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4\", \"files\": {}}",
+        "dest": "cargo/vendor/pastey-0.2.3",
         "dest-filename": ".cargo-checksum.json"
     },
     {
