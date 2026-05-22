@@ -242,7 +242,12 @@ fn populate_snippets_manager_list(
         vbox.append(&name_label);
 
         let cmd_preview = if snippet.command.len() > 50 {
-            format!("{}...", &snippet.command[..50])
+            let end = snippet
+                .command
+                .char_indices()
+                .nth(50)
+                .map_or(snippet.command.len(), |(i, _)| i);
+            format!("{}…", &snippet.command[..end])
         } else {
             snippet.command.clone()
         };
@@ -428,7 +433,12 @@ pub fn populate_snippets_list(state: &SharedAppState, list: &gtk4::ListBox, quer
         vbox.append(&name_label);
 
         let cmd_preview = if snippet.command.len() > 50 {
-            format!("{}...", &snippet.command[..50])
+            let end = snippet
+                .command
+                .char_indices()
+                .nth(50)
+                .map_or(snippet.command.len(), |(i, _)| i);
+            format!("{}…", &snippet.command[..end])
         } else {
             snippet.command.clone()
         };

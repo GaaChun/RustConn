@@ -148,7 +148,7 @@ fn build_win_i() -> Vec<(u16, bool, bool)> {
 /// interprets the 30ms inter-key delay, but the Run dialog needs ~200ms
 /// to appear. The GUI layer should handle this by splitting the sequence
 /// or the command processor delay is sufficient for most servers.
-fn build_run_command(command: &str) -> Vec<(u16, bool, bool)> {
+pub fn build_run_command(command: &str) -> Vec<(u16, bool, bool)> {
     let mut keys = Vec::with_capacity(4 + command.len() * 2 + 2);
 
     // Win+R to open Run dialog
@@ -194,43 +194,46 @@ fn build_run_command(command: &str) -> Vec<(u16, bool, bool)> {
 
 /// Maps an ASCII character to its keyboard scancode and shift state.
 ///
-/// Returns `(scancode, needs_shift)`. Only covers characters needed for
-/// Windows admin commands (lowercase letters, digits, dot, backslash).
+/// Returns `(scancode, needs_shift)`. Covers characters needed for
+/// Windows admin commands and shell launcher commands (letters, digits,
+/// punctuation used in PowerShell commands).
 const fn char_to_scancode(ch: char) -> Option<(u16, bool)> {
-    // US keyboard layout scancodes for lowercase letters
+    // US keyboard layout scancodes
     match ch {
-        'a' => Some((0x1E, false)),
-        'b' => Some((0x30, false)),
-        'c' => Some((0x2E, false)),
-        'd' => Some((0x20, false)),
-        'e' => Some((0x12, false)),
-        'f' => Some((0x21, false)),
-        'g' => Some((0x22, false)),
-        'h' => Some((0x23, false)),
-        'i' => Some((0x17, false)),
-        'j' => Some((0x24, false)),
-        'k' => Some((0x25, false)),
-        'l' => Some((0x26, false)),
-        'm' => Some((0x32, false)),
-        'n' => Some((0x31, false)),
-        'o' => Some((0x18, false)),
-        'p' => Some((0x19, false)),
-        'q' => Some((0x10, false)),
-        'r' => Some((0x13, false)),
-        's' => Some((0x1F, false)),
-        't' => Some((0x14, false)),
-        'u' => Some((0x16, false)),
-        'v' => Some((0x2F, false)),
-        'w' => Some((0x11, false)),
-        'x' => Some((0x2D, false)),
-        'y' => Some((0x15, false)),
-        'z' => Some((0x2C, false)),
+        'a' | 'A' => Some((0x1E, ch.is_ascii_uppercase())),
+        'b' | 'B' => Some((0x30, ch.is_ascii_uppercase())),
+        'c' | 'C' => Some((0x2E, ch.is_ascii_uppercase())),
+        'd' | 'D' => Some((0x20, ch.is_ascii_uppercase())),
+        'e' | 'E' => Some((0x12, ch.is_ascii_uppercase())),
+        'f' | 'F' => Some((0x21, ch.is_ascii_uppercase())),
+        'g' | 'G' => Some((0x22, ch.is_ascii_uppercase())),
+        'h' | 'H' => Some((0x23, ch.is_ascii_uppercase())),
+        'i' | 'I' => Some((0x17, ch.is_ascii_uppercase())),
+        'j' | 'J' => Some((0x24, ch.is_ascii_uppercase())),
+        'k' | 'K' => Some((0x25, ch.is_ascii_uppercase())),
+        'l' | 'L' => Some((0x26, ch.is_ascii_uppercase())),
+        'm' | 'M' => Some((0x32, ch.is_ascii_uppercase())),
+        'n' | 'N' => Some((0x31, ch.is_ascii_uppercase())),
+        'o' | 'O' => Some((0x18, ch.is_ascii_uppercase())),
+        'p' | 'P' => Some((0x19, ch.is_ascii_uppercase())),
+        'q' | 'Q' => Some((0x10, ch.is_ascii_uppercase())),
+        'r' | 'R' => Some((0x13, ch.is_ascii_uppercase())),
+        's' | 'S' => Some((0x1F, ch.is_ascii_uppercase())),
+        't' | 'T' => Some((0x14, ch.is_ascii_uppercase())),
+        'u' | 'U' => Some((0x16, ch.is_ascii_uppercase())),
+        'v' | 'V' => Some((0x2F, ch.is_ascii_uppercase())),
+        'w' | 'W' => Some((0x11, ch.is_ascii_uppercase())),
+        'x' | 'X' => Some((0x2D, ch.is_ascii_uppercase())),
+        'y' | 'Y' => Some((0x15, ch.is_ascii_uppercase())),
+        'z' | 'Z' => Some((0x2C, ch.is_ascii_uppercase())),
         '.' => Some((0x34, false)),
         '\\' => Some((0x2B, false)),
         '/' => Some((0x35, false)),
         '-' => Some((0x0C, false)),
         '_' => Some((0x0C, true)), // Shift + -
         ' ' => Some((0x39, false)),
+        '"' => Some((0x28, true)), // Shift + ' (apostrophe key)
+        '\'' => Some((0x28, false)),
         '0' => Some((0x0B, false)),
         '1' => Some((0x02, false)),
         '2' => Some((0x03, false)),
@@ -243,91 +246,6 @@ const fn char_to_scancode(ch: char) -> Option<(u16, bool)> {
         '9' => Some((0x0A, false)),
         _ => None,
     }
-}
-
-/// Configuration for script execution delays in RDP sessions.
-///
-/// When executing a script via clipboard+paste, multiple steps require
-/// timing delays to allow the remote Windows OS to process each action.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ScriptExecutionConfig {
-    /// Delay after setting clipboard before sending keys (ms)
-    pub clipboard_settle_ms: u32,
-    /// Delay after launching PowerShell before paste (ms)
-    pub shell_startup_delay_ms: u32,
-}
-
-impl Default for ScriptExecutionConfig {
-    fn default() -> Self {
-        Self {
-            clipboard_settle_ms: 200,
-            shell_startup_delay_ms: 500,
-        }
-    }
-}
-
-/// A built-in Windows PowerShell snippet definition.
-///
-/// These are used to seed the snippet library with useful Windows admin scripts
-/// that can be executed via the RDP clipboard+paste mechanism.
-pub struct BuiltinWindowsSnippet {
-    /// Unique identifier
-    pub id: &'static str,
-    /// Display name (English, wrapped with i18n on GUI side)
-    pub label: &'static str,
-    /// Description of what the script does
-    pub description: &'static str,
-    /// PowerShell command to execute
-    pub command: &'static str,
-    /// Icon name (symbolic, GNOME icon theme)
-    pub icon: &'static str,
-}
-
-/// Built-in Windows PowerShell scripts for RDP sessions.
-///
-/// These scripts are executed via clipboard→paste into a PowerShell window.
-pub static BUILTIN_WINDOWS_SNIPPETS: &[BuiltinWindowsSnippet] = &[
-    BuiltinWindowsSnippet {
-        id: "clear-temp-files",
-        label: "Clear Temp Files",
-        description: "Remove temporary files from the current user's temp directory",
-        command: "Remove-Item -Path $env:TEMP\\* -Recurse -Force -ErrorAction SilentlyContinue; Write-Host 'Temp files cleared'",
-        icon: "edit-clear-all-symbolic",
-    },
-    BuiltinWindowsSnippet {
-        id: "iis-log-rotation",
-        label: "IIS Log Rotation",
-        description: "Remove IIS log files older than 30 days",
-        command: "Get-ChildItem C:\\inetpub\\logs -Recurse -Filter *.log | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-30)} | Remove-Item -Force; Write-Host 'Old IIS logs removed'",
-        icon: "document-open-recent-symbolic",
-    },
-    BuiltinWindowsSnippet {
-        id: "system-info",
-        label: "System Info",
-        description: "Display basic system information (hostname, OS, memory)",
-        command: "Get-ComputerInfo | Select-Object CsName, OsName, OsVersion, CsTotalPhysicalMemory | Format-List",
-        icon: "computer-symbolic",
-    },
-];
-
-/// Builds the key sequence to open PowerShell via Win+R.
-///
-/// This is used as the first step before pasting a script via Ctrl+V.
-/// The sequence is: Win+R → type "powershell" → Enter.
-#[must_use]
-pub fn build_open_powershell_sequence() -> Vec<(u16, bool, bool)> {
-    build_run_command("powershell")
-}
-
-/// Builds the Ctrl+V key sequence for pasting clipboard content.
-#[must_use]
-pub fn build_paste_sequence() -> Vec<(u16, bool, bool)> {
-    vec![
-        (scancodes::CTRL, true, false),  // Ctrl down
-        (0x2F, true, false),             // V down
-        (0x2F, false, false),            // V up
-        (scancodes::CTRL, false, false), // Ctrl up
-    ]
 }
 
 /// Builds the Enter key sequence for executing pasted content.
@@ -399,6 +317,24 @@ mod tests {
                 assert!(
                     char_to_scancode(ch).is_some(),
                     "Unmapped character '{}' in command '{}'",
+                    ch,
+                    cmd
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn char_to_scancode_covers_shell_launcher_commands() {
+        // Shell launcher commands use uppercase letters and quotes
+        for cmd in [
+            "powershell -Command \"Start-Process powershell -Verb RunAs\"",
+            "powershell -Command \"Start-Process cmd -Verb RunAs\"",
+        ] {
+            for ch in cmd.chars() {
+                assert!(
+                    char_to_scancode(ch).is_some(),
+                    "Unmapped character '{}' in shell launcher command '{}'",
                     ch,
                     cmd
                 );

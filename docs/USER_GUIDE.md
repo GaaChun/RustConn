@@ -671,29 +671,29 @@ The Quick Actions menu is accessible via the dropdown button (arrow icon) on the
 
 #### RDP Scripts
 
-The Scripts dropdown (terminal icon) lets you run PowerShell scripts on the remote Windows machine via a clipboard+paste workflow. RustConn ships with 3 built-in scripts and also shows user-defined snippets marked as "Windows" or "Any" target.
+The Scripts dropdown (terminal icon) in the RDP toolbar provides two sections:
 
-**Built-in Scripts:**
+**Shell Launchers:**
 
-| Script | Description |
-|--------|-------------|
-| Clear Temp Files | Removes temporary files from the user's temp directory |
-| IIS Log Rotation | Removes IIS log files older than 30 days |
-| System Info | Displays hostname, OS version, and memory info |
+Open a shell on the remote Windows machine via Win+R. The user sees when the shell is ready (prompt appears) before running scripts.
+
+| Launcher | Action |
+|----------|--------|
+| PowerShell | Win+R → `powershell` → Enter |
+| PowerShell (Admin) | Win+R → elevated PowerShell via UAC |
+| CMD | Win+R → `cmd` → Enter |
+| CMD (Admin) | Win+R → elevated CMD via UAC |
+
+**Scripts (User Snippets):**
+
+Snippets with target "Windows" or "Any" (configured in the Snippet dialog → Target field) appear in the Scripts section. When clicked, the snippet command is sent via autotype (Unicode keyboard events) into the already-open shell, followed by Enter.
 
 **How It Works:**
-1. The script text is sent to the remote clipboard via the CLIPRDR channel
-2. PowerShell is opened via Win+R → `powershell`
-3. After a startup delay, the script is pasted (Ctrl+V) and executed (Enter)
+1. Click a Shell Launcher to open a shell on the remote machine
+2. Wait for the shell prompt to appear (user controls timing)
+3. Click a script from the Scripts section — it types the command and presses Enter
 
-**User Snippets in RDP:**
-
-Snippets with target "Windows" or "Any" (configured in the Snippet dialog → Target field) automatically appear in the Scripts dropdown during RDP sessions. Terminal-only snippets are hidden.
-
-**Timing:**
-- Clipboard settle delay: 200ms (before opening PowerShell)
-- Shell startup delay: 500ms (before pasting)
-- These delays ensure reliability across different server response times
+This approach eliminates timing issues: no clipboard delays, no shell startup guessing.
 
 #### Snippet Target Platform
 

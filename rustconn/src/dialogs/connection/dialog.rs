@@ -1748,36 +1748,20 @@ impl ConnectionDialog {
         (dialog, header, save_btn, test_btn)
     }
 
-    /// Creates the view stack widget and adds it to the dialog with adaptive switcher.
-    ///
-    /// Uses an `adw::Breakpoint` to switch between a `ViewSwitcher` in the
-    /// header bar (wide screens) and a `ViewSwitcherBar` at the bottom
-    /// (narrow screens <500sp), following GNOME HIG adaptive patterns.
+    /// Creates the view stack widget and adds it to the dialog with a bottom
+    /// tab bar, following the GNOME HIG pattern for multi-page dialogs
+    /// (similar to GNOME Settings / Preferences).
     fn create_view_stack(dialog: &adw::Dialog, header: &adw::HeaderBar) -> adw::ViewStack {
         let view_stack = adw::ViewStack::new();
 
-        // ViewSwitcher in header bar for wide screens (GNOME HIG)
-        let view_switcher = adw::ViewSwitcher::builder()
-            .stack(&view_stack)
-            .policy(adw::ViewSwitcherPolicy::Wide)
-            .build();
-        header.set_title_widget(Some(&view_switcher));
-
-        // Bottom bar switcher for narrow screens (hidden by default on wide)
+        // Bottom tab bar — always visible (GNOME HIG for dialogs with many pages)
         let view_switcher_bar = adw::ViewSwitcherBar::builder()
             .stack(&view_stack)
-            .reveal(false)
+            .reveal(true)
             .build();
 
-        // Breakpoint: narrow (<500sp) → hide header switcher, show bottom bar
-        let breakpoint = adw::Breakpoint::new(adw::BreakpointCondition::new_length(
-            adw::BreakpointConditionLengthType::MaxWidth,
-            500.0,
-            adw::LengthUnit::Sp,
-        ));
-        breakpoint.add_setter(&view_switcher_bar, "reveal", Some(&true.to_value()));
-        breakpoint.add_setter(&view_switcher, "visible", Some(&false.to_value()));
-        dialog.add_breakpoint(breakpoint);
+        // Header bar shows the dialog title, no switcher
+        header.set_title_widget(None::<&gtk4::Widget>);
 
         // Each tab provides its own ScrolledWindow, so the ViewStack sits
         // directly in the layout — no outer ScrolledWindow that would steal

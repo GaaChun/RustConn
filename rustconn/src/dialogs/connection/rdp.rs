@@ -26,7 +26,7 @@ use crate::i18n::i18n;
 
 /// Creates the RDP options panel with all protocol-specific widgets.
 ///
-/// Returns a 30-element tuple matching the fields expected by `ConnectionDialog`.
+/// Returns a 28-element tuple matching the fields expected by `ConnectionDialog`.
 #[allow(clippy::similar_names, clippy::too_many_lines, clippy::type_complexity)]
 pub(super) fn create_rdp_options() -> (
     GtkBox,

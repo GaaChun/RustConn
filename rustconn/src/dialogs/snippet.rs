@@ -64,7 +64,7 @@ impl SnippetDialog {
         let dialog = adw::Dialog::builder()
             .title(i18n("New Snippet"))
             .content_width(600)
-            .content_height(730)
+            .content_height(780)
             .build();
 
         // Header bar with Create icon button (GNOME HIG)
@@ -558,6 +558,7 @@ impl SnippetDialog {
     /// Builds a Snippet from the provided field references
     ///
     /// Helper method to avoid code duplication between `run()` closure and `build_snippet()`.
+    #[allow(clippy::too_many_arguments)]
     fn build_snippet_from_fields(
         name_entry: &Entry,
         description_entry: &Entry,

@@ -822,7 +822,10 @@ impl Connection {
     /// the value is silently ignored at connect time.
     #[must_use]
     pub const fn supports_window_mode(&self) -> bool {
-        matches!(self.protocol, ProtocolType::Rdp | ProtocolType::Vnc)
+        matches!(
+            self.protocol,
+            ProtocolType::Rdp | ProtocolType::Vnc | ProtocolType::Spice
+        )
     }
 
     /// Sets whether to remember window position for external windows

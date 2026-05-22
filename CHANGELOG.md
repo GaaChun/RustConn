@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **RDP Scripts** — new "Scripts" dropdown in the RDP toolbar lets you run PowerShell scripts on remote Windows machines via clipboard-paste; ships with 3 built-in scripts (Clear Temp Files, IIS Log Rotation, System Info) and shows user-defined Windows-compatible snippets; uses timed delays between steps for reliability
+- **RDP Scripts v2: Shell Launchers + Autotype** — redesigned the "Scripts" dropdown in the RDP toolbar: now split into "Shell Launchers" (PowerShell, PowerShell Admin, CMD, CMD Admin — open shells via Win+R) and "Scripts" (user snippets sent via autotype into the already-open shell); removes timing hacks — the user controls when the shell is ready.
 - **Snippet target platform** — snippets can now be marked as "Terminal", "Windows", or "Any"; the terminal context menu hides Windows-only snippets, and RDP sessions show only Windows-compatible ones
 
 ### Improved
@@ -22,12 +22,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Color scheme selector modernized** — the Light/Dark/System toggle in Settings now uses the native libadwaita toggle group widget (or a combo row on older versions)
 - **Dialog sizes unified** — all dialogs now use consistent dimensions; fixed minimum-size warnings on some screens
 - **All dialogs migrated to modern adaptive style** — 25+ dialogs (Connection, Snippets, Templates, Clusters, Recordings, Import, Export, Statistics, Variables, Smart Folder, Password Generator, Sessions, Shortcuts, Terminal Search, Documents, Groups, SSH Agent passphrase) now support bottom-sheet on narrow screens, close on Escape, and drag-to-close
-- **`--window-mode` CLI flag scoped to RDP/VNC** — using `--window-mode` with protocols that don't support it (SSH, Telnet, etc.) now shows a warning instead of silently ignoring the value
+- **`--window-mode` CLI flag scoped to RDP/VNC/SPICE** — using `--window-mode` with protocols that don't support it (SSH, Telnet, etc.) now shows a warning instead of silently ignoring the value; SPICE added to supported protocols
 - **SSH Agent passphrase no longer written to disk** — the askpass helper now passes the passphrase via an environment variable instead of a temporary file; safe on copy-on-write filesystems (btrfs, APFS, ZFS)
+- **Bitwarden CLI resilience** — `--nointeraction` flag added to all `bw` commands to prevent hangs in sandboxed environments; 30-second timeout on all CLI calls; session key trusted without `bw status` verification (workaround for Bitwarden CLI v2026.4.x reporting "locked" despite valid session)
 
 ### Fixed
 
 - **Quick Connect: user's color theme not applied ([#156](https://github.com/totoshko88/RustConn/issues/156))** — new connections from Quick Connect now use the configured terminal theme instead of always defaulting to "Dark"
+- **Bitwarden: vault unlock not persisted across operations** — `mark_verified()` was missing after successful unlock via saved password or keyring, causing subsequent `retrieve`/`store` calls to re-check `bw status` (which incorrectly reported "locked" on Bitwarden CLI v2026.4.1); session key is now trusted immediately after unlock
+- **Bitwarden: "Open Settings" button in backend-missing dialog** — fixed `ActionGroupExt` trait error; now uses `WidgetExt::activate_action` with correct `win.settings` prefix
+
+### Dependencies
+
+- `js-sys` 0.3.98 → 0.3.99
+- `wasm-bindgen` 0.2.121 → 0.2.122
+- `wasm-bindgen-futures` 0.4.71 → 0.4.72
+- `wasm-bindgen-macro` 0.2.121 → 0.2.122
+- `web-sys` 0.3.98 → 0.3.99
 
 ## [0.14.4] - 2026-05-20
 

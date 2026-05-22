@@ -191,9 +191,8 @@ pub use rdp_client::keyboard_layout::{
     LAYOUT_US_ENGLISH, detect_keyboard_layout, xkb_name_to_klid,
 };
 pub use rdp_client::quick_actions::{
-    BUILTIN_WINDOWS_SNIPPETS, BuiltinWindowsSnippet, QUICK_ACTIONS, QuickAction,
-    ScriptExecutionConfig, build_enter_sequence, build_key_sequence as build_rdp_quick_action,
-    build_open_powershell_sequence, build_paste_sequence,
+    QUICK_ACTIONS, QuickAction, build_enter_sequence, build_key_sequence as build_rdp_quick_action,
+    build_run_command,
 };
 #[cfg(feature = "rdp-embedded")]
 pub use rdp_client::{AudioFormatInfo, RdpClient, RdpCommandSender, RdpEventReceiver};
