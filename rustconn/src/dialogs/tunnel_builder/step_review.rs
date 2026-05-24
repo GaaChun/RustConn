@@ -5,9 +5,9 @@
 //! a copy-to-clipboard button with Toast feedback, and a "Create"/"Save" button.
 
 use crate::i18n::i18n;
+use adw::prelude::*;
 use gtk4::prelude::*;
 use libadwaita as adw;
-use adw::prelude::*;
 use rustconn_core::models::PortForward;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -35,6 +35,7 @@ pub struct StepReviewPage {
     command_buffer: gtk4::TextBuffer,
     no_forwards_label: gtk4::Label,
     save_button: gtk4::Button,
+    #[allow(dead_code)] // Kept alive for GTK widget lifecycle (ToastOverlay must outlive Toasts)
     toast_overlay: adw::ToastOverlay,
     on_save: Rc<RefCell<Option<Box<dyn Fn()>>>>,
 }
@@ -134,9 +135,9 @@ impl StepReviewPage {
         copy_button.set_valign(gtk4::Align::Start);
         copy_button.set_margin_top(8);
         copy_button.set_tooltip_text(Some(&i18n("Copy SSH command to clipboard")));
-        copy_button.update_property(&[gtk4::accessible::Property::Label(
-            &i18n("Copy SSH command to clipboard"),
-        )]);
+        copy_button.update_property(&[gtk4::accessible::Property::Label(&i18n(
+            "Copy SSH command to clipboard",
+        ))]);
 
         // Command box: text_view + copy button
         let command_box = gtk4::Box::new(gtk4::Orientation::Horizontal, 6);
@@ -185,6 +186,7 @@ impl StepReviewPage {
 
         let save_button = gtk4::Button::with_label(&i18n("Create"));
         save_button.add_css_class("suggested-action");
+        save_button.set_receives_default(true);
         footer.append(&save_button);
 
         // Toast overlay wraps the scrolled content
@@ -302,5 +304,16 @@ impl StepReviewPage {
     #[must_use]
     pub fn diagram(&self) -> &TunnelPathDiagram {
         &self.diagram
+    }
+
+    /// Moves keyboard focus to the save/create button
+    pub fn grab_initial_focus(&self) {
+        self.save_button.grab_focus();
+    }
+}
+
+impl Default for StepReviewPage {
+    fn default() -> Self {
+        Self::new()
     }
 }

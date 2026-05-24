@@ -5,9 +5,9 @@
 //! an `adw::ExpanderRow` with dynamic title showing the current configuration.
 
 use crate::i18n::i18n;
+use adw::prelude::*;
 use gtk4::prelude::*;
 use libadwaita as adw;
-use adw::prelude::*;
 use rustconn_core::models::{PortForward, PortForwardDirection};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -31,7 +31,9 @@ struct ForwardRuleWidgets {
     local_port_spin: adw::SpinRow,
     remote_host_entry: adw::EntryRow,
     remote_port_spin: adw::SpinRow,
+    #[allow(dead_code)] // Kept alive for GTK widget lifecycle
     local_port_warning: gtk4::Label,
+    #[allow(dead_code)] // Kept alive for GTK widget lifecycle
     remote_host_error: gtk4::Label,
 }
 
@@ -102,6 +104,10 @@ pub struct StepForwardsPage {
     diagram: TunnelPathDiagram,
     rules: Rc<RefCell<Vec<ForwardRuleWidgets>>>,
     on_next: Rc<RefCell<Option<Box<dyn Fn()>>>>,
+    /// Bastion host label (set from step 1 wizard state)
+    bastion_host: Rc<RefCell<Option<String>>>,
+    /// Target host label (the SSH connection host, set from step 1)
+    target_host: Rc<RefCell<Option<String>>>,
 }
 
 impl StepForwardsPage {
@@ -110,6 +116,8 @@ impl StepForwardsPage {
     pub fn new() -> Self {
         let on_next: Rc<RefCell<Option<Box<dyn Fn()>>>> = Rc::new(RefCell::new(None));
         let rules: Rc<RefCell<Vec<ForwardRuleWidgets>>> = Rc::new(RefCell::new(Vec::new()));
+        let bastion_host: Rc<RefCell<Option<String>>> = Rc::new(RefCell::new(None));
+        let target_host: Rc<RefCell<Option<String>>> = Rc::new(RefCell::new(None));
 
         // Main content
         let content = gtk4::Box::new(gtk4::Orientation::Vertical, 12);
@@ -122,14 +130,17 @@ impl StepForwardsPage {
         let forwards_group = adw::PreferencesGroup::builder()
             .title(i18n("Port Forwards"))
             .build();
-        content.append(&forwards_group);
 
-        // "Add Forward" button
-        let add_button = gtk4::Button::builder()
-            .label(i18n("Add Forward"))
-            .css_classes(["flat"])
-            .build();
-        content.append(&add_button);
+        // "Add Forward" button as header suffix (GNOME HIG pattern)
+        let add_button = gtk4::Button::from_icon_name("list-add-symbolic");
+        add_button.add_css_class("flat");
+        add_button.set_valign(gtk4::Align::Center);
+        add_button.set_tooltip_text(Some(&i18n("Add port forwarding rule")));
+        add_button.update_property(&[gtk4::accessible::Property::Label(&i18n(
+            "Add port forwarding rule",
+        ))]);
+        forwards_group.set_header_suffix(Some(&add_button));
+        content.append(&forwards_group);
 
         // --- Options group ---
         let options_group = adw::PreferencesGroup::builder()
@@ -190,6 +201,7 @@ impl StepForwardsPage {
 
         let next_button = gtk4::Button::with_label(&i18n("Next"));
         next_button.add_css_class("suggested-action");
+        next_button.set_receives_default(true);
         footer.append(&next_button);
 
         // Assemble page
@@ -215,6 +227,9 @@ impl StepForwardsPage {
         let forwards_group_c = forwards_group.clone();
         let rules_c = rules.clone();
         let add_button_c = add_button.clone();
+        let diagram_c = diagram.clone();
+        let bastion_host_c = bastion_host.clone();
+        let target_host_c = target_host.clone();
         add_button.connect_clicked(move |_| {
             if rules_c.borrow().len() >= MAX_FORWARDS {
                 return;
@@ -224,6 +239,9 @@ impl StepForwardsPage {
                 &rules_c,
                 &add_button_c,
                 None,
+                &diagram_c,
+                &bastion_host_c,
+                &target_host_c,
             );
         });
 
@@ -236,6 +254,8 @@ impl StepForwardsPage {
             diagram,
             rules,
             on_next,
+            bastion_host,
+            target_host,
         }
     }
 
@@ -271,6 +291,9 @@ impl StepForwardsPage {
                 &self.rules,
                 &self.add_button,
                 Some(fwd),
+                &self.diagram,
+                &self.bastion_host,
+                &self.target_host,
             );
         }
 
@@ -315,25 +338,26 @@ impl StepForwardsPage {
     /// Updates the path diagram based on the first forward rule
     pub fn update_diagram(&self) {
         let rules = self.rules.borrow();
+        let bastion = self.bastion_host.borrow();
+        let bastion_str = bastion.as_deref();
+        let target = self.target_host.borrow();
+        let target_str = target.as_deref();
         if let Some(first) = rules.first() {
             let fwd = first.to_port_forward();
-            let (target_host, target_port, direction) = match fwd.direction {
-                PortForwardDirection::Dynamic => (None, None, Some(PortForwardDirection::Dynamic)),
-                _ => (
-                    Some(fwd.remote_host.clone()),
-                    Some(fwd.remote_port),
-                    Some(fwd.direction),
-                ),
+            let direction = match fwd.direction {
+                PortForwardDirection::Dynamic => Some(PortForwardDirection::Dynamic),
+                other => Some(other),
             };
             self.diagram.update(
                 Some(fwd.local_port),
-                None, // bastion is set externally
-                target_host.as_deref(),
-                target_port,
+                bastion_str,
+                target_str,
+                Some(fwd.remote_port),
                 direction,
             );
         } else {
-            self.diagram.update(None, None, None, None, None);
+            self.diagram
+                .update(None, bastion_str, target_str, None, None);
         }
     }
 
@@ -341,6 +365,23 @@ impl StepForwardsPage {
     #[must_use]
     pub fn diagram(&self) -> &TunnelPathDiagram {
         &self.diagram
+    }
+
+    /// Sets the bastion host label (called from step 1 when navigating to step 2)
+    pub fn set_bastion(&self, bastion: Option<&str>) {
+        *self.bastion_host.borrow_mut() = bastion.map(String::from);
+        self.update_diagram();
+    }
+
+    /// Sets the target host label (the SSH connection host from step 1)
+    pub fn set_target_host(&self, host: Option<&str>) {
+        *self.target_host.borrow_mut() = host.map(String::from);
+        self.update_diagram();
+    }
+
+    /// Moves keyboard focus to the first interactive element (Add Forward button)
+    pub fn grab_initial_focus(&self) {
+        self.add_button.grab_focus();
     }
 
     // -----------------------------------------------------------------------
@@ -353,6 +394,9 @@ impl StepForwardsPage {
         rules: &Rc<RefCell<Vec<ForwardRuleWidgets>>>,
         add_button: &gtk4::Button,
         existing: Option<&PortForward>,
+        diagram: &TunnelPathDiagram,
+        bastion_host: &Rc<RefCell<Option<String>>>,
+        target_host: &Rc<RefCell<Option<String>>>,
     ) {
         // Direction dropdown
         let direction_items = [
@@ -413,9 +457,7 @@ impl StepForwardsPage {
         expander.add_row(&local_port_warning);
 
         // Remote host
-        let remote_host_entry = adw::EntryRow::builder()
-            .title(i18n("Remote Host"))
-            .build();
+        let remote_host_entry = adw::EntryRow::builder().title(i18n("Remote Host")).build();
         remote_host_entry.set_text("localhost");
         expander.add_row(&remote_host_entry);
 
@@ -469,15 +511,19 @@ impl StepForwardsPage {
             });
         }
 
-        // --- Wire title update ---
+        // --- Wire title update + diagram refresh ---
         {
             let expander_c = expander.clone();
             let dir_c = direction_dropdown.clone();
             let lp_c = local_port_spin.clone();
             let rh_c = remote_host_entry.clone();
             let rp_c = remote_port_spin.clone();
+            let rules_d = rules.clone();
+            let diagram_d = diagram.clone();
+            let bastion_d = bastion_host.clone();
+            let target_d = target_host.clone();
 
-            let update_title = Rc::new(move || {
+            let update_title_and_diagram = Rc::new(move || {
                 let dir = match dir_c.selected() {
                     0 => "L",
                     1 => "R",
@@ -495,15 +541,38 @@ impl StepForwardsPage {
                     format!("{dir} {lp} → {rh}:{rp}")
                 };
                 expander_c.set_title(&title);
+
+                // Update diagram using target host from step 1
+                let rules_ref = rules_d.borrow();
+                let bastion_ref = bastion_d.borrow();
+                let bastion_str = bastion_ref.as_deref();
+                let target_ref = target_d.borrow();
+                let target_str = target_ref.as_deref();
+                if let Some(first) = rules_ref.first() {
+                    let fwd = first.to_port_forward();
+                    let direction = match fwd.direction {
+                        PortForwardDirection::Dynamic => Some(PortForwardDirection::Dynamic),
+                        other => Some(other),
+                    };
+                    diagram_d.update(
+                        Some(fwd.local_port),
+                        bastion_str,
+                        target_str,
+                        Some(fwd.remote_port),
+                        direction,
+                    );
+                } else {
+                    diagram_d.update(None, bastion_str, target_str, None, None);
+                }
             });
 
-            let u1 = update_title.clone();
+            let u1 = update_title_and_diagram.clone();
             direction_dropdown.connect_selected_notify(move |_| u1());
-            let u2 = update_title.clone();
+            let u2 = update_title_and_diagram.clone();
             local_port_spin.connect_changed(move |_| u2());
-            let u3 = update_title.clone();
+            let u3 = update_title_and_diagram.clone();
             remote_host_entry.connect_changed(move |_| u3());
-            let u4 = update_title;
+            let u4 = update_title_and_diagram;
             remote_port_spin.connect_changed(move |_| u4());
         }
 
@@ -542,20 +611,45 @@ impl StepForwardsPage {
             let expander_c = expander.clone();
             let rules_c = rules.clone();
             let add_btn_c = add_button.clone();
+            let diagram_del = diagram.clone();
+            let bastion_del = bastion_host.clone();
+            let target_del = target_host.clone();
             delete_btn.connect_clicked(move |_| {
                 group_c.remove(&expander_c);
-                rules_c
-                    .borrow_mut()
-                    .retain(|r| r.expander != expander_c);
+                rules_c.borrow_mut().retain(|r| r.expander != expander_c);
                 add_btn_c.set_visible(rules_c.borrow().len() < MAX_FORWARDS);
+
+                // Refresh diagram after deletion
+                let rules_ref = rules_c.borrow();
+                let bastion_ref = bastion_del.borrow();
+                let bastion_str = bastion_ref.as_deref();
+                let target_ref = target_del.borrow();
+                let target_str = target_ref.as_deref();
+                if let Some(first) = rules_ref.first() {
+                    let fwd = first.to_port_forward();
+                    let direction = match fwd.direction {
+                        PortForwardDirection::Dynamic => Some(PortForwardDirection::Dynamic),
+                        other => Some(other),
+                    };
+                    diagram_del.update(
+                        Some(fwd.local_port),
+                        bastion_str,
+                        target_str,
+                        Some(fwd.remote_port),
+                        direction,
+                    );
+                } else {
+                    diagram_del.update(None, bastion_str, target_str, None, None);
+                }
             });
         }
 
         // Check initial port warning
-        if let Some(fwd) = existing {
-            if fwd.local_port > 0 && fwd.local_port < 1024 {
-                local_port_warning.set_visible(true);
-            }
+        if let Some(fwd) = existing
+            && fwd.local_port > 0
+            && fwd.local_port < 1024
+        {
+            local_port_warning.set_visible(true);
         }
 
         group.add(&expander);
@@ -571,5 +665,11 @@ impl StepForwardsPage {
         });
 
         add_button.set_visible(rules.borrow().len() < MAX_FORWARDS);
+    }
+}
+
+impl Default for StepForwardsPage {
+    fn default() -> Self {
+        Self::new()
     }
 }

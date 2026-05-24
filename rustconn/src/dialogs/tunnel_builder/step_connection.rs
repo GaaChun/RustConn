@@ -35,7 +35,7 @@ pub struct StepConnectionPage {
     next_button: gtk4::Button,
     diagram: TunnelPathDiagram,
     // Empty state
-    empty_state_box: GtkBox,
+    empty_state: adw::StatusPage,
     content_box: GtkBox,
     // Data
     /// Filtered SSH connection IDs (matches current combo model order)
@@ -74,9 +74,7 @@ impl StepConnectionPage {
             .title(i18n("General"))
             .build();
 
-        let name_row = adw::EntryRow::builder()
-            .title(i18n("Tunnel Name"))
-            .build();
+        let name_row = adw::EntryRow::builder().title(i18n("Tunnel Name")).build();
         general_group.add(&name_row);
         content_box.append(&general_group);
 
@@ -85,9 +83,7 @@ impl StepConnectionPage {
             .title(i18n("SSH Connection"))
             .build();
 
-        let connection_row = adw::ComboRow::builder()
-            .title(i18n("Connection"))
-            .build();
+        let connection_row = adw::ComboRow::builder().title(i18n("Connection")).build();
         connection_group.add(&connection_row);
 
         let search_entry = gtk4::SearchEntry::builder()
@@ -136,42 +132,25 @@ impl StepConnectionPage {
         content_box.append(&diagram_box);
 
         // === Empty state (shown when no SSH connections exist) ===
-        let empty_state_box = GtkBox::new(Orientation::Vertical, 12);
-        empty_state_box.set_valign(gtk4::Align::Center);
-        empty_state_box.set_vexpand(true);
-        empty_state_box.set_visible(false);
-
-        let empty_icon = gtk4::Image::builder()
+        let empty_state = adw::StatusPage::builder()
             .icon_name("network-server-symbolic")
-            .pixel_size(64)
-            .css_classes(["dim-label"])
+            .title(i18n("No SSH connections available"))
+            .description(i18n("Create an SSH connection first to set up a tunnel"))
+            .vexpand(true)
+            .visible(false)
             .build();
-        empty_state_box.append(&empty_icon);
-
-        let empty_label = gtk4::Label::builder()
-            .label(i18n("No SSH connections available"))
-            .css_classes(["title-2"])
-            .build();
-        empty_state_box.append(&empty_label);
-
-        let empty_subtitle = gtk4::Label::builder()
-            .label(i18n("Create an SSH connection first to set up a tunnel"))
-            .css_classes(["dim-label"])
-            .wrap(true)
-            .build();
-        empty_state_box.append(&empty_subtitle);
 
         let empty_btn = gtk4::Button::builder()
             .label(i18n("New SSH Connection"))
             .css_classes(["suggested-action", "pill"])
             .halign(gtk4::Align::Center)
             .build();
-        empty_state_box.append(&empty_btn);
+        empty_state.set_child(Some(&empty_btn));
 
         // === Layout assembly ===
         let outer_box = GtkBox::new(Orientation::Vertical, 0);
         outer_box.append(&content_box);
-        outer_box.append(&empty_state_box);
+        outer_box.append(&empty_state);
 
         let clamp = adw::Clamp::builder()
             .maximum_size(600)
@@ -198,6 +177,7 @@ impl StepConnectionPage {
 
         let next_button = gtk4::Button::with_label(&i18n("Next"));
         next_button.add_css_class("suggested-action");
+        next_button.set_receives_default(true);
         next_button.set_sensitive(false);
         footer.append(&next_button);
 
@@ -247,7 +227,7 @@ impl StepConnectionPage {
             new_connection_btn,
             next_button,
             diagram,
-            empty_state_box,
+            empty_state,
             content_box,
             filtered_connection_ids,
             all_ssh_connections,
@@ -271,15 +251,50 @@ impl StepConnectionPage {
             next_btn_v.set_sensitive(name_valid && conn_valid);
         });
 
-        // Wire validation on connection selection change
+        // Wire validation + diagram update on connection selection change
         let next_btn_c = page_obj.next_button.clone();
         let conn_ids_c = page_obj.filtered_connection_ids.clone();
         let name_row_c = page_obj.name_row.clone();
+        let diagram_c = page_obj.diagram.clone();
+        let state_c = page_obj.state.clone();
+        let jump_host_ids_c = page_obj.jump_host_ids.clone();
+        let jump_host_row_c = page_obj.jump_host_row.clone();
         page_obj.connection_row.connect_selected_notify(move |row| {
             let name_valid = Self::validate_name(&name_row_c);
             let conn_valid = Self::validate_connection(row, &conn_ids_c);
             next_btn_c.set_sensitive(name_valid && conn_valid);
+
+            // Update diagram with new connection
+            let bastion = Self::resolve_bastion_from_widgets(
+                &state_c,
+                &jump_host_row_c,
+                &jump_host_ids_c,
+                row,
+                &conn_ids_c,
+            );
+            let target = Self::resolve_target_from_widgets(&state_c, row, &conn_ids_c);
+            diagram_c.update(None, bastion.as_deref(), target.as_deref(), None, None);
         });
+
+        // Wire diagram update on jump host selection change
+        let diagram_j = page_obj.diagram.clone();
+        let state_j = page_obj.state.clone();
+        let jump_host_ids_j = page_obj.jump_host_ids.clone();
+        let conn_row_j = page_obj.connection_row.clone();
+        let conn_ids_j = page_obj.filtered_connection_ids.clone();
+        page_obj
+            .jump_host_row
+            .connect_selected_notify(move |jh_row| {
+                let bastion = Self::resolve_bastion_from_widgets(
+                    &state_j,
+                    jh_row,
+                    &jump_host_ids_j,
+                    &conn_row_j,
+                    &conn_ids_j,
+                );
+                let target = Self::resolve_target_from_widgets(&state_j, &conn_row_j, &conn_ids_j);
+                diagram_j.update(None, bastion.as_deref(), target.as_deref(), None, None);
+            });
 
         // Wire search filter with 150ms debounce
         let conn_row_s = page_obj.connection_row.clone();
@@ -299,13 +314,11 @@ impl StepConnectionPage {
 
             // Debounce 150ms
             let timeout_id_inner = timeout_id_s.clone();
-            let source_id = glib::timeout_add_local_once(
-                std::time::Duration::from_millis(150),
-                move || {
+            let source_id =
+                glib::timeout_add_local_once(std::time::Duration::from_millis(150), move || {
                     Self::apply_filter(&query, &all_conns_inner, &conn_ids_inner, &conn_row_inner);
                     *timeout_id_inner.borrow_mut() = None;
-                },
-            );
+                });
             *timeout_id_s.borrow_mut() = Some(source_id);
         });
 
@@ -369,12 +382,11 @@ impl StepConnectionPage {
         // Then check selected connection's jump_host_id
         if let Some(conn_id) = self.selected_connection_id() {
             let state_ref = self.state.borrow();
-            if let Some(conn) = state_ref.get_connection(conn_id) {
-                if let ProtocolConfig::Ssh(ref ssh_cfg) = conn.protocol_config {
-                    if let Some(jh_id) = ssh_cfg.jump_host_id {
-                        return state_ref.get_connection(jh_id).cloned();
-                    }
-                }
+            if let Some(conn) = state_ref.get_connection(conn_id)
+                && let ProtocolConfig::Ssh(ref ssh_cfg) = conn.protocol_config
+                && let Some(jh_id) = ssh_cfg.jump_host_id
+            {
+                return state_ref.get_connection(jh_id).cloned();
             }
         }
 
@@ -399,7 +411,7 @@ impl StepConnectionPage {
         *self.all_ssh_connections.borrow_mut() = ssh_connections;
 
         // Show/hide empty state
-        self.empty_state_box.set_visible(is_empty);
+        self.empty_state.set_visible(is_empty);
         self.content_box.set_visible(!is_empty);
 
         // Apply current filter (or show all)
@@ -510,11 +522,11 @@ impl StepConnectionPage {
         let target_label = self.resolve_target_label();
 
         self.diagram.update(
-            None,                              // local_port not known at step 1
+            None, // local_port not known at step 1
             bastion_label.as_deref(),
             target_label.as_deref(),
-            None,                              // target_port not known at step 1
-            None,                              // direction not known at step 1
+            None, // target_port not known at step 1
+            None, // direction not known at step 1
         );
     }
 
@@ -533,18 +545,18 @@ impl StepConnectionPage {
         // Then check selected connection's jump_host_id or proxy_jump
         if let Some(conn_id) = self.selected_connection_id() {
             let state_ref = self.state.borrow();
-            if let Some(conn) = state_ref.get_connection(conn_id) {
-                if let ProtocolConfig::Ssh(ref ssh_cfg) = conn.protocol_config {
-                    // Check jump_host_id first
-                    if let Some(jh_id) = ssh_cfg.jump_host_id {
-                        if let Some(jh_conn) = state_ref.get_connection(jh_id) {
-                            return Some(format!("{} ({})", jh_conn.name, jh_conn.host));
-                        }
-                    }
-                    // Fall back to proxy_jump string
-                    if let Some(ref pj) = ssh_cfg.proxy_jump {
-                        return Some(pj.clone());
-                    }
+            if let Some(conn) = state_ref.get_connection(conn_id)
+                && let ProtocolConfig::Ssh(ref ssh_cfg) = conn.protocol_config
+            {
+                // Check jump_host_id first
+                if let Some(jh_id) = ssh_cfg.jump_host_id
+                    && let Some(jh_conn) = state_ref.get_connection(jh_id)
+                {
+                    return Some(format!("{} ({})", jh_conn.name, jh_conn.host));
+                }
+                // Fall back to proxy_jump string
+                if let Some(ref pj) = ssh_cfg.proxy_jump {
+                    return Some(pj.clone());
                 }
             }
         }
@@ -573,5 +585,62 @@ impl StepConnectionPage {
         } else {
             self.jump_host_row.set_selected(0);
         }
+    }
+
+    /// Resolves bastion label from widget state (static version for signal closures)
+    fn resolve_bastion_from_widgets(
+        state: &SharedAppState,
+        jump_host_row: &adw::ComboRow,
+        jump_host_ids: &Rc<RefCell<Vec<Option<Uuid>>>>,
+        conn_row: &adw::ComboRow,
+        conn_ids: &Rc<RefCell<Vec<Uuid>>>,
+    ) -> Option<String> {
+        // First check manual jump host override
+        let jump_idx = jump_host_row.selected() as usize;
+        let jh_ids = jump_host_ids.borrow();
+        if let Some(Some(bastion_id)) = jh_ids.get(jump_idx) {
+            let state_ref = state.borrow();
+            if let Some(bastion_conn) = state_ref.get_connection(*bastion_id) {
+                return Some(bastion_conn.host.clone());
+            }
+        }
+
+        // Then check selected connection's jump_host_id or proxy_jump
+        let idx = conn_row.selected() as usize;
+        let ids = conn_ids.borrow();
+        if let Some(conn_id) = ids.get(idx) {
+            let state_ref = state.borrow();
+            if let Some(conn) = state_ref.get_connection(*conn_id)
+                && let ProtocolConfig::Ssh(ref ssh_cfg) = conn.protocol_config
+            {
+                if let Some(jh_id) = ssh_cfg.jump_host_id
+                    && let Some(jh_conn) = state_ref.get_connection(jh_id)
+                {
+                    return Some(jh_conn.host.clone());
+                }
+                if let Some(ref pj) = ssh_cfg.proxy_jump {
+                    return Some(pj.clone());
+                }
+            }
+        }
+
+        None
+    }
+
+    /// Resolves target host label from widget state (static version for signal closures)
+    fn resolve_target_from_widgets(
+        state: &SharedAppState,
+        conn_row: &adw::ComboRow,
+        conn_ids: &Rc<RefCell<Vec<Uuid>>>,
+    ) -> Option<String> {
+        let idx = conn_row.selected() as usize;
+        let ids = conn_ids.borrow();
+        if let Some(conn_id) = ids.get(idx) {
+            let state_ref = state.borrow();
+            if let Some(conn) = state_ref.get_connection(*conn_id) {
+                return Some(conn.host.clone());
+            }
+        }
+        None
     }
 }

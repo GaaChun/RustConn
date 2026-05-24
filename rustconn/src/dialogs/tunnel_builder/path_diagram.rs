@@ -132,18 +132,9 @@ impl TunnelPathDiagram {
             .build();
 
         // Create three nodes: localhost, bastion, target
-        let localhost_node = DiagramNode::new(
-            "computer-symbolic",
-            &i18n("Localhost"),
-        );
-        let bastion_node = DiagramNode::new(
-            "channel-secure-symbolic",
-            &i18n("Bastion"),
-        );
-        let target_node = DiagramNode::new(
-            "network-server-symbolic",
-            &i18n("Target"),
-        );
+        let localhost_node = DiagramNode::new("computer-symbolic", &i18n("Localhost"));
+        let bastion_node = DiagramNode::new("channel-secure-symbolic", &i18n("Bastion"));
+        let target_node = DiagramNode::new("network-server-symbolic", &i18n("Target"));
 
         // Bastion is hidden by default (shown only when configured)
         bastion_node.set_visible(false);
@@ -170,10 +161,11 @@ impl TunnelPathDiagram {
         container.append(&arrow2);
         container.append(&target_node.frame);
 
-        // Set accessible role for the container
-        container.update_property(&[gtk4::accessible::Property::Label(
-            &i18n("Tunnel path diagram"),
-        )]);
+        // Set accessible role for the container (image-like diagram)
+        container.set_accessible_role(gtk4::AccessibleRole::Img);
+        container.update_property(&[gtk4::accessible::Property::Label(&i18n(
+            "Tunnel path diagram",
+        ))]);
 
         let nodes = vec![localhost_node, bastion_node, target_node];
         let arrows = vec![arrow1, arrow2];
@@ -221,17 +213,14 @@ impl TunnelPathDiagram {
         }
 
         // Update target node based on direction
-        match direction {
-            Some(PortForwardDirection::Dynamic) => {
-                self.nodes[2].set_host(&i18n("SOCKS proxy"));
-                self.nodes[2].set_port(None);
-            }
-            _ => {
-                let target_fallback = i18n("Target");
-                let host = target_host.unwrap_or(&target_fallback);
-                self.nodes[2].set_host(host);
-                self.nodes[2].set_port(target_port);
-            }
+        if direction == Some(PortForwardDirection::Dynamic) {
+            self.nodes[2].set_host(&i18n("SOCKS proxy"));
+            self.nodes[2].set_port(None);
+        } else {
+            let target_fallback = i18n("Target");
+            let host = target_host.unwrap_or(&target_fallback);
+            self.nodes[2].set_host(host);
+            self.nodes[2].set_port(target_port);
         }
 
         // Update accessible description
@@ -284,9 +273,10 @@ impl TunnelPathDiagram {
                     node.status_dot.remove_css_class("warning");
                     node.status_dot.add_css_class("error");
                 }
-                // Set tooltip with error message (truncated to 200 chars)
-                let truncated = if msg.len() > 200 {
-                    format!("{}…", &msg[..200])
+                // Set tooltip with error message (truncated to 200 chars, UTF-8 safe)
+                let truncated = if msg.chars().count() > 200 {
+                    let s: String = msg.chars().take(200).collect();
+                    format!("{s}…")
                 } else {
                     msg.clone()
                 };
@@ -309,15 +299,17 @@ impl TunnelPathDiagram {
             }
         }
 
-        // Announce status change for assistive technologies
+        // Announce status change for assistive technologies (combine path + status)
+        let path_desc = self.accessible_description();
         let status_text = match status {
             TunnelStatus::Running => i18n("Status: Running"),
             TunnelStatus::Starting => i18n("Status: Starting"),
             TunnelStatus::Failed(_) => i18n("Status: Failed"),
             TunnelStatus::Stopped => i18n("Status: Stopped"),
         };
+        let combined = format!("{path_desc}. {status_text}");
         self.container
-            .update_property(&[gtk4::accessible::Property::Label(&status_text)]);
+            .update_property(&[gtk4::accessible::Property::Label(&combined)]);
     }
 
     /// Hides all status indicators (used in create mode)
@@ -363,5 +355,11 @@ impl TunnelPathDiagram {
         }
 
         i18n("Tunnel") + ": " + &parts.join(" → ")
+    }
+}
+
+impl Default for TunnelPathDiagram {
+    fn default() -> Self {
+        Self::new()
     }
 }

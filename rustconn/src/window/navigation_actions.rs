@@ -122,6 +122,7 @@ impl MainWindow {
         let window_weak = window.downgrade();
         let state_clone = state.clone();
         let toast_overlay_clone = self.toast_overlay.clone();
+        let passthrough_indicator_clone = self.passthrough_indicator.clone();
         toggle_passthrough_action.connect_activate(move |action, _| {
             if let Some(win) = window_weak.upgrade() {
                 let is_passthrough = action
@@ -134,6 +135,9 @@ impl MainWindow {
                 if let Some(app) = win.application().and_downcast::<adw::Application>() {
                     crate::app::set_passthrough(&app, &state_clone, new_state);
                 }
+
+                // Toggle passthrough indicator visibility in header bar
+                passthrough_indicator_clone.set_visible(new_state);
 
                 // Show toast notification about the mode change
                 let message = if new_state {

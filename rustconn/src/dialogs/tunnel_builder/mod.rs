@@ -14,14 +14,14 @@ pub use step_forwards::StepForwardsPage;
 pub use step_review::StepReviewPage;
 
 use crate::i18n::{i18n, i18n_f};
-use crate::state::{with_state, with_state_mut, SharedAppState};
+use crate::state::{SharedAppState, with_state, with_state_mut};
 use crate::window::SharedTunnelManager;
 use adw::prelude::*;
 use gtk4::glib;
 use gtk4::prelude::*;
 use libadwaita as adw;
 use rustconn_core::models::{Connection, PortForward, ProtocolConfig, StandaloneTunnel};
-use rustconn_core::tunnel_preview::{build_tunnel_preview_command, TunnelPreviewParams};
+use rustconn_core::tunnel_preview::{TunnelPreviewParams, build_tunnel_preview_command};
 use std::cell::RefCell;
 use std::rc::Rc;
 use uuid::Uuid;
@@ -44,6 +44,7 @@ pub struct TunnelBuilderContext {
 // ---------------------------------------------------------------------------
 
 /// Intermediate state held during wizard navigation
+#[derive(Default)]
 struct WizardState {
     /// Tunnel being edited (None = creating new)
     editing_id: Option<Uuid>,
@@ -58,20 +59,6 @@ struct WizardState {
     /// Options
     auto_start: bool,
     auto_reconnect: bool,
-}
-
-impl Default for WizardState {
-    fn default() -> Self {
-        Self {
-            editing_id: None,
-            selected_connection: None,
-            bastion_connection: None,
-            forwards: Vec::new(),
-            name: String::new(),
-            auto_start: false,
-            auto_reconnect: false,
-        }
-    }
 }
 
 // ---------------------------------------------------------------------------
@@ -217,9 +204,8 @@ impl TunnelBuilderDialog {
             let conn_id = b.step1.selected_connection_id();
             let bastion = b.step1.bastion_connection();
 
-            let connection = conn_id.and_then(|id| {
-                with_state(&b.state, |s| s.get_connection(id).cloned())
-            });
+            let connection =
+                conn_id.and_then(|id| with_state(&b.state, |s| s.get_connection(id).cloned()));
 
             // Update wizard state
             {
@@ -229,8 +215,29 @@ impl TunnelBuilderDialog {
                 ws.bastion_connection = bastion;
             }
 
+            // Update step 2 diagram with bastion info from step 1
+            let bastion_host = b
+                .wizard_state
+                .borrow()
+                .bastion_connection
+                .as_ref()
+                .map(|c| c.host.clone());
+            b.step2.set_bastion(bastion_host.as_deref());
+
+            // Update step 2 diagram with target host from step 1
+            let conn_host = b
+                .wizard_state
+                .borrow()
+                .selected_connection
+                .as_ref()
+                .map(|c| c.host.clone());
+            b.step2.set_target_host(conn_host.as_deref());
+
             // Push step 2
             b.nav_view.push(&b.step2.page);
+
+            // Move focus to the first interactive element on step 2
+            b.step2.grab_initial_focus();
         });
     }
 
@@ -238,6 +245,11 @@ impl TunnelBuilderDialog {
     fn wire_step2_next(builder: &Rc<Self>) {
         let b = builder.clone();
         builder.step2.connect_next(move || {
+            // Validate forwards before proceeding
+            if !b.step2.is_valid() {
+                return;
+            }
+
             // Collect data from step 2
             let forwards = b.step2.forwards();
             let auto_start = b.step2.auto_start();
@@ -256,6 +268,9 @@ impl TunnelBuilderDialog {
 
             // Push step 3
             b.nav_view.push(&b.step3.page);
+
+            // Move focus to the save button on step 3
+            b.step3.grab_initial_focus();
         });
     }
 
@@ -301,7 +316,36 @@ impl TunnelBuilderDialog {
         let editing_id = ws.editing_id;
         drop(ws);
 
-        with_state_mut(&self.state, |s| {
+        Self::save_tunnel_to_state(
+            &self.state,
+            editing_id,
+            &name,
+            connection_id,
+            &forwards,
+            auto_start,
+            auto_reconnect,
+        );
+
+        // Call on_save callback
+        if let Some(ref cb) = *self.on_save.borrow() {
+            cb();
+        }
+
+        // Close dialog
+        self.dialog.close();
+    }
+
+    /// Writes tunnel data to state (shared between normal save and running-tunnel save)
+    fn save_tunnel_to_state(
+        state: &SharedAppState,
+        editing_id: Option<Uuid>,
+        name: &str,
+        connection_id: Uuid,
+        forwards: &[PortForward],
+        auto_start: bool,
+        auto_reconnect: bool,
+    ) {
+        with_state_mut(state, |s| {
             if let Some(id) = editing_id {
                 // Update existing tunnel (preserve UUID)
                 if let Some(tunnel) = s
@@ -310,16 +354,16 @@ impl TunnelBuilderDialog {
                     .iter_mut()
                     .find(|t| t.id == id)
                 {
-                    tunnel.name.clone_from(&name);
+                    tunnel.name = name.to_string();
                     tunnel.connection_id = connection_id;
-                    tunnel.forwards.clone_from(&forwards);
+                    tunnel.forwards = forwards.to_vec();
                     tunnel.auto_start = auto_start;
                     tunnel.auto_reconnect = auto_reconnect;
                 }
             } else {
                 // Create new tunnel
-                let mut tunnel = StandaloneTunnel::new(name.clone(), connection_id);
-                tunnel.forwards.clone_from(&forwards);
+                let mut tunnel = StandaloneTunnel::new(name.to_string(), connection_id);
+                tunnel.forwards = forwards.to_vec();
                 tunnel.auto_start = auto_start;
                 tunnel.auto_reconnect = auto_reconnect;
                 s.settings_mut().standalone_tunnels.push(tunnel);
@@ -329,14 +373,6 @@ impl TunnelBuilderDialog {
                 tracing::error!(%e, "Failed to save settings after tunnel save");
             }
         });
-
-        // Call on_save callback
-        if let Some(ref cb) = *self.on_save.borrow() {
-            cb();
-        }
-
-        // Close dialog
-        self.dialog.close();
     }
 
     // -----------------------------------------------------------------------
@@ -358,9 +394,10 @@ impl TunnelBuilderDialog {
             .unwrap_or_else(|| i18n("None"));
 
         // Bastion label
-        let bastion_label = ws.bastion_connection.as_ref().map(|c| {
-            format!("{} ({})", c.name, c.host)
-        });
+        let bastion_label = ws
+            .bastion_connection
+            .as_ref()
+            .map(|c| format!("{} ({})", c.name, c.host));
 
         // Update summary
         self.step3.update_summary(
@@ -417,14 +454,18 @@ impl TunnelBuilderDialog {
     }
 
     /// Resolves the proxy jump string for SSH command preview
-    fn resolve_proxy_jump(&self, conn: &Connection, bastion: Option<&Connection>) -> Option<String> {
+    fn resolve_proxy_jump(
+        &self,
+        conn: &Connection,
+        bastion: Option<&Connection>,
+    ) -> Option<String> {
         // If there's an explicit bastion connection, use it
         if let Some(b) = bastion {
             let user = b.username.as_deref().unwrap_or("root");
-            return if b.port != 22 {
-                Some(format!("{user}@{}:{}", b.host, b.port))
-            } else {
+            return if b.port == 22 {
                 Some(format!("{user}@{}", b.host))
+            } else {
+                Some(format!("{user}@{}:{}", b.host, b.port))
             };
         }
 
@@ -498,7 +539,7 @@ impl TunnelBuilderDialog {
                 return;
             }
 
-            // Perform save
+            // Perform save using shared helper
             let ws = wizard_state.borrow();
             let Some(ref conn) = ws.selected_connection else {
                 return;
@@ -512,26 +553,15 @@ impl TunnelBuilderDialog {
             let editing_id = ws.editing_id;
             drop(ws);
 
-            with_state_mut(&state, |s| {
-                if let Some(id) = editing_id {
-                    if let Some(tunnel) = s
-                        .settings_mut()
-                        .standalone_tunnels
-                        .iter_mut()
-                        .find(|t| t.id == id)
-                    {
-                        tunnel.name.clone_from(&name);
-                        tunnel.connection_id = connection_id;
-                        tunnel.forwards.clone_from(&forwards);
-                        tunnel.auto_start = auto_start;
-                        tunnel.auto_reconnect = auto_reconnect;
-                    }
-                }
-
-                if let Err(e) = s.save_settings() {
-                    tracing::error!(%e, "Failed to save settings after tunnel save");
-                }
-            });
+            Self::save_tunnel_to_state(
+                &state,
+                editing_id,
+                &name,
+                connection_id,
+                &forwards,
+                auto_start,
+                auto_reconnect,
+            );
 
             if let Some(ref cb) = *on_save.borrow() {
                 cb();

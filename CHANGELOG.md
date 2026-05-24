@@ -14,6 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Improved
 
+- **Visual Tunnel Builder: live diagram on Step 1** — the path diagram now updates in real time when changing the SSH connection or jump host selection, providing immediate visual feedback of the tunnel chain
+- **Visual Tunnel Builder: live diagram on Step 2** — the path diagram now updates automatically when adding, editing, or deleting port forwarding rules, reflecting the first rule's direction and target
+- **Visual Tunnel Builder: validation before Review** — Step 2 now validates all port forwarding rules (remote host required for Local/Remote) before allowing navigation to Step 3
+- **Visual Tunnel Builder: "Add Forward" button placement** — moved to `PreferencesGroup` header suffix (GNOME HIG pattern) for better discoverability
+- **Visual Tunnel Builder: accessibility** — status changes now announce both the tunnel path and status to screen readers (e.g., "Tunnel: localhost:8080 → bastion → target:80. Status: Running"); diagram container uses `Role::Img` for correct AT semantics
+- **Visual Tunnel Builder: empty state** — replaced manual icon+label layout with `adw::StatusPage` for consistent GNOME HIG empty state presentation
+- **Visual Tunnel Builder: UTF-8 safe error truncation** — error messages in tooltip are now truncated by character count instead of byte offset, preventing potential panics on multi-byte text
+- **Keyboard passthrough: persistent header bar indicator** — a warning-styled "Passthrough" button now appears in the header bar while passthrough mode is active, providing persistent visual feedback and one-click disable; complements the existing toast notification
 - **VNC client: connection timeout** — embedded VNC client now respects the configured `timeout_secs` (default 30s) instead of relying on OS-level TCP timeout which could hang for 2+ minutes on unreachable hosts
 - **Document encryption: key zeroization** — derived encryption keys are now wrapped in `Zeroizing<[u8; 32]>` ensuring automatic memory clearing on drop (defense-in-depth hardening)
 - **Welcome screen: streamlined shortcuts** — combined "Split vertical" and "Split horizontal" into a single entry; added keyboard passthrough shortcut for discoverability
