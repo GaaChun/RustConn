@@ -1848,7 +1848,10 @@ fn remote_app_freerdp_args_full() {
     let args = config.remote_app_freerdp_args();
     // FreeRDP 3.x: single /app: argument with comma-separated key:value pairs
     assert_eq!(args.len(), 1);
-    assert_eq!(args[0], "/app:program:||notepad,cmd:/p test.txt,name:Notepad");
+    assert_eq!(
+        args[0],
+        "/app:program:||notepad,cmd:/p test.txt,name:Notepad"
+    );
 }
 
 /// `remote_app_freerdp_args()` skips empty args and name.
