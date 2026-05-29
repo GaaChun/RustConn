@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rustconn 0.12.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-28 10:19+0300\n"
+"POT-Creation-Date: 2026-05-29 11:31+0300\n"
 "PO-Revision-Date: 2026-04-25 10:46+0000\n"
 "Last-Translator: RustConn Team\n"
 "Language-Team: Dutch\n"
@@ -190,7 +190,7 @@ msgstr "Voer clusternaam in"
 msgid "Please select at least one connection"
 msgstr "Selecteer ten minste één verbinding"
 
-#: rustconn/src/dialogs/cluster.rs:189 rustconn/src/dialogs/shortcuts.rs:570
+#: rustconn/src/dialogs/cluster.rs:189 rustconn/src/dialogs/shortcuts.rs:606
 msgid "Connections"
 msgstr "Verbindingen"
 
@@ -518,7 +518,7 @@ msgid "Add Rule"
 msgstr "Regel toevoegen"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:505
-#: rustconn/src/dialogs/shortcuts.rs:617 rustconn/src/dialogs/wol.rs:35
+#: rustconn/src/dialogs/shortcuts.rs:656 rustconn/src/dialogs/wol.rs:35
 #: rustconn/src/sidebar_ui.rs:176 rustconn/src/smart_folder_ui.rs:544
 msgid "Wake On LAN"
 msgstr "Wake On LAN"
@@ -4989,7 +4989,7 @@ msgid "Keybindings"
 msgstr "Sneltoetsen"
 
 #: rustconn/src/dialogs/settings/keybindings_tab.rs:43
-#: rustconn/src/dialogs/shortcuts.rs:378 rustconn/src/split_view/bridge.rs:1693
+#: rustconn/src/dialogs/shortcuts.rs:414 rustconn/src/split_view/bridge.rs:1693
 msgid "Keyboard Shortcuts"
 msgstr "Sneltoetsen"
 
@@ -5893,7 +5893,7 @@ msgid "Remove key from SSH agent"
 msgstr "Sleutel uit SSH-agent verwijderen"
 
 #: rustconn/src/dialogs/settings/terminal_tab.rs:40
-#: rustconn/src/dialogs/shortcuts.rs:571
+#: rustconn/src/dialogs/shortcuts.rs:607
 msgid "Terminal"
 msgstr "Terminal"
 
@@ -6319,185 +6319,205 @@ msgstr "Max. leeftijd"
 msgid "Hours before sessions expire"
 msgstr "Uren voordat sessies verlopen"
 
-#: rustconn/src/dialogs/shortcuts.rs:404
+#: rustconn/src/dialogs/shortcuts.rs:440
 msgid "Search shortcuts..."
 msgstr "Sneltoetsen zoeken..."
 
-#: rustconn/src/dialogs/shortcuts.rs:572
+#: rustconn/src/dialogs/shortcuts.rs:608
 msgid "Split View"
 msgstr "Gesplitste weergave"
 
-#: rustconn/src/dialogs/shortcuts.rs:573
+#: rustconn/src/dialogs/shortcuts.rs:609
 msgid "Navigation"
 msgstr "Navigatie"
 
-#: rustconn/src/dialogs/shortcuts.rs:574
+#: rustconn/src/dialogs/shortcuts.rs:610
 msgid "Application"
 msgstr "Applicatie"
 
-#: rustconn/src/dialogs/shortcuts.rs:576 rustconn/src/split_view/bridge.rs:1697
+#: rustconn/src/dialogs/shortcuts.rs:612 rustconn/src/split_view/bridge.rs:1697
 msgid "New connection"
 msgstr "Nieuwe verbinding"
 
-#: rustconn/src/dialogs/shortcuts.rs:577
+#: rustconn/src/dialogs/shortcuts.rs:613
 msgid "New connection (advanced)"
 msgstr "Nieuwe verbinding (geavanceerd)"
 
-#: rustconn/src/dialogs/shortcuts.rs:578
+#: rustconn/src/dialogs/shortcuts.rs:614
 msgid "New group"
 msgstr "Nieuwe groep"
 
-#: rustconn/src/dialogs/shortcuts.rs:579 rustconn/src/split_view/bridge.rs:1698
+#: rustconn/src/dialogs/shortcuts.rs:615 rustconn/src/split_view/bridge.rs:1698
 msgid "Quick connect"
 msgstr "Snelverbinding"
 
-#: rustconn/src/dialogs/shortcuts.rs:580 rustconn/src/split_view/bridge.rs:1704
+#: rustconn/src/dialogs/shortcuts.rs:616 rustconn/src/split_view/bridge.rs:1704
 msgid "Import connections"
 msgstr "Verbindingen importeren"
 
-#: rustconn/src/dialogs/shortcuts.rs:581
+#: rustconn/src/dialogs/shortcuts.rs:617
 msgid "Export connections"
 msgstr "Verbindingen exporteren"
 
-#: rustconn/src/dialogs/shortcuts.rs:582
+#: rustconn/src/dialogs/shortcuts.rs:618
 msgid "Edit selected connection (sidebar)"
 msgstr "Geselecteerde verbinding bewerken (zijbalk)"
 
-#: rustconn/src/dialogs/shortcuts.rs:583
+#: rustconn/src/dialogs/shortcuts.rs:619
 msgid "Delete selected connection/group (sidebar)"
 msgstr "Geselecteerde verbinding/groep verwijderen (zijbalk)"
 
-#: rustconn/src/dialogs/shortcuts.rs:584
+#: rustconn/src/dialogs/shortcuts.rs:620
 msgid "Rename selected item"
 msgstr "Geselecteerd item hernoemen"
 
-#: rustconn/src/dialogs/shortcuts.rs:585
+#: rustconn/src/dialogs/shortcuts.rs:621
 msgid "Duplicate connection (sidebar)"
 msgstr "Verbinding dupliceren (zijbalk)"
 
-#: rustconn/src/dialogs/shortcuts.rs:586
+#: rustconn/src/dialogs/shortcuts.rs:622
 msgid "Copy connection"
 msgstr "Verbinding kopiëren"
 
-#: rustconn/src/dialogs/shortcuts.rs:587
+#: rustconn/src/dialogs/shortcuts.rs:623
 msgid "Paste connection"
 msgstr "Verbinding plakken"
 
-#: rustconn/src/dialogs/shortcuts.rs:588
+#: rustconn/src/dialogs/shortcuts.rs:624
 msgid "Move to group (sidebar)"
 msgstr "Naar groep verplaatsen (zijbalk)"
 
-#: rustconn/src/dialogs/shortcuts.rs:589
+#: rustconn/src/dialogs/shortcuts.rs:625
 msgid "Connect to selected"
 msgstr "Verbinden met selectie"
 
-#: rustconn/src/dialogs/shortcuts.rs:590
+#: rustconn/src/dialogs/shortcuts.rs:626
 msgid "Copy from terminal"
 msgstr "Kopiëren uit terminal"
 
-#: rustconn/src/dialogs/shortcuts.rs:591
+#: rustconn/src/dialogs/shortcuts.rs:627
 msgid "Paste to terminal"
 msgstr "Plakken in terminal"
 
-#: rustconn/src/dialogs/shortcuts.rs:592
+#: rustconn/src/dialogs/shortcuts.rs:628
 msgid "Search in terminal"
 msgstr "Zoeken in terminal"
 
-#: rustconn/src/dialogs/shortcuts.rs:593
+#: rustconn/src/dialogs/shortcuts.rs:629
 msgid "Close current tab"
 msgstr "Huidig tabblad sluiten"
 
-#: rustconn/src/dialogs/shortcuts.rs:594
+#: rustconn/src/dialogs/shortcuts.rs:630
 msgid "Next tab"
 msgstr "Volgend tabblad"
 
-#: rustconn/src/dialogs/shortcuts.rs:595
+#: rustconn/src/dialogs/shortcuts.rs:631
 msgid "Previous tab"
 msgstr "Vorig tabblad"
 
-#: rustconn/src/dialogs/shortcuts.rs:596
+#: rustconn/src/dialogs/shortcuts.rs:632
 msgid "Tab overview"
 msgstr "Tabbladoverzicht"
 
-#: rustconn/src/dialogs/shortcuts.rs:597
+#: rustconn/src/dialogs/shortcuts.rs:633
 msgid "Switch to open tab"
 msgstr "Naar geopend tabblad schakelen"
 
-#: rustconn/src/dialogs/shortcuts.rs:598
+#: rustconn/src/dialogs/shortcuts.rs:634
 msgid "Open local shell"
 msgstr "Lokale shell openen"
 
-#: rustconn/src/dialogs/shortcuts.rs:599
+#: rustconn/src/dialogs/shortcuts.rs:635
+msgid "Zoom in (font size)"
+msgstr "Inzoomen (lettergrootte)"
+
+#: rustconn/src/dialogs/shortcuts.rs:636
+msgid "Zoom out (font size)"
+msgstr "Uitzoomen (lettergrootte)"
+
+#: rustconn/src/dialogs/shortcuts.rs:637
+msgid "Reset zoom"
+msgstr "Zoom herstellen"
+
+#: rustconn/src/dialogs/shortcuts.rs:638
 msgid "Split horizontal"
 msgstr "Horizontaal splitsen"
 
-#: rustconn/src/dialogs/shortcuts.rs:600
+#: rustconn/src/dialogs/shortcuts.rs:639
 msgid "Split vertical"
 msgstr "Verticaal splitsen"
 
-#: rustconn/src/dialogs/shortcuts.rs:601
+#: rustconn/src/dialogs/shortcuts.rs:640
 msgid "Close pane"
 msgstr "Paneel sluiten"
 
-#: rustconn/src/dialogs/shortcuts.rs:602
+#: rustconn/src/dialogs/shortcuts.rs:641
 msgid "Focus next pane"
 msgstr "Volgend paneel"
 
-#: rustconn/src/dialogs/shortcuts.rs:603 rustconn/src/split_view/bridge.rs:1701
+#: rustconn/src/dialogs/shortcuts.rs:642 rustconn/src/split_view/bridge.rs:1701
 msgid "Search"
 msgstr "Zoeken"
 
-#: rustconn/src/dialogs/shortcuts.rs:604
+#: rustconn/src/dialogs/shortcuts.rs:643
 msgid "Focus sidebar"
 msgstr "Zijbalk focussen"
 
-#: rustconn/src/dialogs/shortcuts.rs:605
+#: rustconn/src/dialogs/shortcuts.rs:644
 msgid "Focus terminal"
 msgstr "Terminal focussen"
 
-#: rustconn/src/dialogs/shortcuts.rs:606 rustconn/src/split_view/bridge.rs:1699
+#: rustconn/src/dialogs/shortcuts.rs:645 rustconn/src/split_view/bridge.rs:1699
 msgid "Command palette"
 msgstr "Opdrachtenpalet"
 
-#: rustconn/src/dialogs/shortcuts.rs:607
+#: rustconn/src/dialogs/shortcuts.rs:646
 msgid "Command palette (commands)"
 msgstr "Opdrachtenpalet (opdrachten)"
 
-#: rustconn/src/dialogs/shortcuts.rs:608
+#: rustconn/src/dialogs/shortcuts.rs:647
 msgid "Open settings"
 msgstr "Instellingen openen"
 
-#: rustconn/src/dialogs/shortcuts.rs:609
+#: rustconn/src/dialogs/shortcuts.rs:648
 msgid "Quit application"
 msgstr "Applicatie afsluiten"
 
-#: rustconn/src/dialogs/shortcuts.rs:610
+#: rustconn/src/dialogs/shortcuts.rs:649
 msgid "Keyboard shortcuts"
 msgstr "Sneltoetsen"
 
-#: rustconn/src/dialogs/shortcuts.rs:611 rustconn/src/embedded.rs:193
+#: rustconn/src/dialogs/shortcuts.rs:650 rustconn/src/embedded.rs:193
 msgid "Toggle fullscreen"
 msgstr "Volledig scherm in-/uitschakelen"
 
-#: rustconn/src/dialogs/shortcuts.rs:612
+#: rustconn/src/dialogs/shortcuts.rs:651
 msgid "Toggle sidebar"
 msgstr "Zijbalk in-/uitschakelen"
 
-#: rustconn/src/dialogs/shortcuts.rs:613
+#: rustconn/src/dialogs/shortcuts.rs:652
 msgid "Toggle keyboard passthrough"
 msgstr "Toetsenbord-passthrough omschakelen"
 
-#: rustconn/src/dialogs/shortcuts.rs:614
+#: rustconn/src/dialogs/shortcuts.rs:653
 msgid "Connection history"
 msgstr "Verbindingsgeschiedenis"
 
-#: rustconn/src/dialogs/shortcuts.rs:615
+#: rustconn/src/dialogs/shortcuts.rs:654
 msgid "Statistics"
 msgstr "Statistieken"
 
-#: rustconn/src/dialogs/shortcuts.rs:616
+#: rustconn/src/dialogs/shortcuts.rs:655
 msgid "Password generator"
 msgstr "Wachtwoordgenerator"
+
+#: rustconn/src/dialogs/shortcuts.rs:657
+msgid "SSH tunnel manager"
+msgstr "SSH-tunnelbeheer"
+
+#: rustconn/src/dialogs/shortcuts.rs:658
+msgid "Open primary menu"
+msgstr "Hoofdmenu openen"
 
 #: rustconn/src/dialogs/smart_folder.rs:63
 msgid "Edit Smart Folder"

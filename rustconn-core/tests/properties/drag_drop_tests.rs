@@ -127,7 +127,7 @@ proptest! {
         let row_index = calculate_row_index(y, &config);
 
         // The row index should be the floor of y / row_height
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss, reason = "kept alive for GTK widget lifecycle / future API exposure")]
+        #[expect(clippy::cast_possible_truncation, clippy::cast_sign_loss, reason = "y is non-negative and bounded; truncation to u32 mirrors the floor semantics under test")]
         let expected_index = (y / config.row_height) as u32;
 
         prop_assert_eq!(

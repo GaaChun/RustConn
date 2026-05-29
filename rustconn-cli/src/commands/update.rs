@@ -140,7 +140,11 @@ pub fn cmd_update(config_path: Option<&Path>, params: UpdateParams<'_>) -> Resul
 
     let index = {
         let conn = find_connection(&connections, params.name)?;
-        connections.iter().position(|c| c.id == conn.id).unwrap()
+        let conn_id = conn.id;
+        connections
+            .iter()
+            .position(|c| c.id == conn_id)
+            .ok_or_else(|| CliError::Config("Connection disappeared during lookup".to_string()))?
     };
 
     // Resolve --jump-host early (before mutable borrow of connection)

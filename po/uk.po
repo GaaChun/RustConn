@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rustconn 0.12.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-28 10:19+0300\n"
+"POT-Creation-Date: 2026-05-29 11:31+0300\n"
 "PO-Revision-Date: 2026-04-25 10:46+0000\n"
 "Last-Translator: Mykola Zubkov <zubkov139@ukr.net>\n"
 "Language-Team: Ukrainian\n"
@@ -91,7 +91,7 @@ msgid ""
 "Manage SSH, RDP, VNC, SPICE, Telnet, Serial, Kubernetes, and Zero Trust "
 "connections from a single application."
 msgstr ""
-"Сучасний менеджер з'єднків для Linux з інтерфейсом GTK4/Wayland. Керуйте "
+"Сучасний менеджер з'єднків для Linux з інтерфейсом GTK4/Wayland. Керуй "
 "з'єднками SSH, RDP, VNC, SPICE, Telnet, Serial, Kubernetes та Zero Trust з "
 "однієї програми."
 
@@ -194,7 +194,7 @@ msgstr "Уведи назву кластера"
 msgid "Please select at least one connection"
 msgstr "Обери принаймні один з'єднок"
 
-#: rustconn/src/dialogs/cluster.rs:189 rustconn/src/dialogs/shortcuts.rs:570
+#: rustconn/src/dialogs/cluster.rs:189 rustconn/src/dialogs/shortcuts.rs:606
 msgid "Connections"
 msgstr "З'єднки"
 
@@ -390,7 +390,7 @@ msgstr "Збережи вивід терміналу у файл"
 #: rustconn/src/dialogs/connection/advanced_tab.rs:316
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:146
 msgid "Activity Monitor"
-msgstr "Монітор активності"
+msgstr "Монітор активности"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:317
 msgid "Detect terminal output activity or silence"
@@ -452,7 +452,7 @@ msgstr "Повторне підключення з експоненційною 
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:385
 msgid "Enable auto-reconnect"
-msgstr "Увімкнути автоперепідключення"
+msgstr "Увімкни автоперепідключення"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:386
 msgid "Automatically retry when connection drops"
@@ -495,7 +495,7 @@ msgid ""
 "Bypass TCP probe of the host. Useful for low-bandwidth links or hosts only "
 "reachable via a gateway."
 msgstr ""
-"Пропускати TCP-перевірку хосту. Корисно для повільних каналів або хостів, "
+"Пропускати TCP-перевірку госту. Корисно для повільних каналів або гостів, "
 "доступних лише через шлюз."
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:463
@@ -520,7 +520,7 @@ msgid "Add Rule"
 msgstr "Додай правило"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:505
-#: rustconn/src/dialogs/shortcuts.rs:617 rustconn/src/dialogs/wol.rs:35
+#: rustconn/src/dialogs/shortcuts.rs:656 rustconn/src/dialogs/wol.rs:35
 #: rustconn/src/sidebar_ui.rs:176 rustconn/src/smart_folder_ui.rs:544
 msgid "Wake On LAN"
 msgstr "Wake On LAN"
@@ -1460,7 +1460,7 @@ msgstr "Емоджі або назва піктограми"
 #: rustconn/src/window/edit_group.rs:134
 msgid "Enter an emoji (e.g. 🇺🇦) or GTK icon name (e.g. starred-symbolic)"
 msgstr ""
-"Введіть емодзі (напр. 🇺🇦) або назву GTK-іконки (напр. starred-symbolic)"
+"Уведи емодзі (напр. 🇺🇦) або назву GTK-іконки (напр. starred-symbolic)"
 
 #: rustconn/src/dialogs/connection/general_tab.rs:96
 #: rustconn/src/dialogs/connection_wizard/auth_page.rs:158
@@ -1868,7 +1868,7 @@ msgstr "Що включати у файли журналу"
 
 #: rustconn/src/dialogs/connection/logging_tab.rs:152
 msgid "Log Activity"
-msgstr "Журнал активності"
+msgstr "Журнал активности"
 
 #: rustconn/src/dialogs/connection/logging_tab.rs:153
 msgid "Record connection and disconnection events"
@@ -1919,7 +1919,7 @@ msgstr "Вбудований відображає у вкладинці, зов�
 #: rustconn/src/dialogs/connection/rdp.rs:126
 #: rustconn/src/dialogs/connection/vnc.rs:97
 msgid "Performance Mode"
-msgstr "Режим продуктивності"
+msgstr "Режим продуктивности"
 
 #: rustconn/src/dialogs/connection/rdp.rs:127
 #: rustconn/src/dialogs/connection/vnc.rs:98
@@ -2074,7 +2074,7 @@ msgid ""
 "resolution)"
 msgstr ""
 "Повне перепідключення замість динамічної зміни розміру (для старих серверів "
-"або фіксованої роздільної здатності)"
+"або фіксованої роздільної здатности)"
 
 #: rustconn/src/dialogs/connection/rdp.rs:328
 msgid "Disable NLA"
@@ -2978,7 +2978,7 @@ msgstr "Кодування"
 
 #: rustconn/src/dialogs/connection/vnc.rs:122
 msgid "Preferred encoding method (overrides Performance Mode)"
-msgstr "Бажаний метод кодування (перевизначає режим продуктивності)"
+msgstr "Бажаний метод кодування (перевизначає режим продуктивности)"
 
 #: rustconn/src/dialogs/connection/vnc.rs:158
 #: rustconn/src/dialogs/connection/vnc.rs:187
@@ -3087,7 +3087,7 @@ msgstr "Файл не обрано"
 #: rustconn/src/dialogs/connection_wizard/auth_page.rs:127
 #: rustconn/src/dialogs/connection_wizard/auth_page.rs:129
 msgid "Choose key file"
-msgstr "Обрати файл ключа"
+msgstr "Обери файл ключа"
 
 #: rustconn/src/dialogs/connection_wizard/auth_page.rs:142
 #: rustconn/src/dialogs/settings/ui_tab.rs:40
@@ -4974,7 +4974,7 @@ msgid "Keybindings"
 msgstr "Скорочення клавіятури"
 
 #: rustconn/src/dialogs/settings/keybindings_tab.rs:43
-#: rustconn/src/dialogs/shortcuts.rs:378 rustconn/src/split_view/bridge.rs:1693
+#: rustconn/src/dialogs/shortcuts.rs:414 rustconn/src/split_view/bridge.rs:1693
 msgid "Keyboard Shortcuts"
 msgstr "Клавіятурні скоротини"
 
@@ -5125,7 +5125,7 @@ msgstr "Віднови"
 #: rustconn/src/dialogs/settings/mod.rs:519
 msgid "Restored files but failed to reload settings. Please restart."
 msgstr ""
-"Файли відновлено, але не вдалося перезавантажити налаштування. Перезапустіть "
+"Файли відновлено, але не вдалося перезавантажити устави. Перезапусти "
 "програму."
 
 #: rustconn/src/dialogs/settings/mod.rs:531
@@ -5163,7 +5163,7 @@ msgid ""
 "connection settings)"
 msgstr ""
 "Глобальний перемикач для всіх з'єднань (окремо для кожного: вкладка "
-"Додатково в налаштуваннях з'єднання)"
+"Додатково в уставах з'єднанка)"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:65
 msgid "Polling interval"
@@ -5211,7 +5211,7 @@ msgstr "Дистрибутив, версія ядра, час роботи"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:148
 msgid "Default settings for terminal activity and silence detection"
-msgstr "Типові устави виявлення активності та тиші термінала"
+msgstr "Типові устави виявлення активности та тиші термінала"
 
 #: rustconn/src/dialogs/settings/monitoring_tab.rs:154
 msgid "Default Mode"
@@ -5379,7 +5379,7 @@ msgstr "Треба для розблокування сховища"
 
 #: rustconn/src/dialogs/settings/secrets_tab/mod.rs:308
 msgid "Save master password"
-msgstr "Зберегти основний пароль"
+msgstr "Збережи основний пароль"
 
 #: rustconn/src/dialogs/settings/secrets_tab/mod.rs:317
 msgid "Use API key authentication"
@@ -5862,7 +5862,7 @@ msgid "Remove key from SSH agent"
 msgstr "Вилучи ключ з SSH-агента"
 
 #: rustconn/src/dialogs/settings/terminal_tab.rs:40
-#: rustconn/src/dialogs/shortcuts.rs:571
+#: rustconn/src/dialogs/shortcuts.rs:607
 msgid "Terminal"
 msgstr "Термінал"
 
@@ -6289,189 +6289,209 @@ msgstr "Макс. вік"
 msgid "Hours before sessions expire"
 msgstr "Годин до закінчення реченця сеансів"
 
-#: rustconn/src/dialogs/shortcuts.rs:404
+#: rustconn/src/dialogs/shortcuts.rs:440
 msgid "Search shortcuts..."
 msgstr "Пошук скоротин..."
 
 # Shortcut categories
-#: rustconn/src/dialogs/shortcuts.rs:572
+#: rustconn/src/dialogs/shortcuts.rs:608
 msgid "Split View"
 msgstr "Розділений вигляд"
 
-#: rustconn/src/dialogs/shortcuts.rs:573
+#: rustconn/src/dialogs/shortcuts.rs:609
 msgid "Navigation"
 msgstr "Навігація"
 
-#: rustconn/src/dialogs/shortcuts.rs:574
+#: rustconn/src/dialogs/shortcuts.rs:610
 msgid "Application"
 msgstr "Програма"
 
-#: rustconn/src/dialogs/shortcuts.rs:576 rustconn/src/split_view/bridge.rs:1697
+#: rustconn/src/dialogs/shortcuts.rs:612 rustconn/src/split_view/bridge.rs:1697
 msgid "New connection"
 msgstr "Нове з'єднування"
 
-#: rustconn/src/dialogs/shortcuts.rs:577
+#: rustconn/src/dialogs/shortcuts.rs:613
 msgid "New connection (advanced)"
 msgstr "Нове з'єднування (додатково)"
 
 # Keyboard shortcuts dialog (rustconn/src/dialogs/shortcuts.rs)
 # These strings are used via i18n() at runtime but xgettext cannot extract
 # them from const arrays.
-#: rustconn/src/dialogs/shortcuts.rs:578
+#: rustconn/src/dialogs/shortcuts.rs:614
 msgid "New group"
 msgstr "Нова група"
 
-#: rustconn/src/dialogs/shortcuts.rs:579 rustconn/src/split_view/bridge.rs:1698
+#: rustconn/src/dialogs/shortcuts.rs:615 rustconn/src/split_view/bridge.rs:1698
 msgid "Quick connect"
 msgstr "Швидке з'єднування"
 
-#: rustconn/src/dialogs/shortcuts.rs:580 rustconn/src/split_view/bridge.rs:1704
+#: rustconn/src/dialogs/shortcuts.rs:616 rustconn/src/split_view/bridge.rs:1704
 msgid "Import connections"
 msgstr "Імпорт з'єднань"
 
-#: rustconn/src/dialogs/shortcuts.rs:581
+#: rustconn/src/dialogs/shortcuts.rs:617
 msgid "Export connections"
 msgstr "Експорт з'єднань"
 
-#: rustconn/src/dialogs/shortcuts.rs:582
+#: rustconn/src/dialogs/shortcuts.rs:618
 msgid "Edit selected connection (sidebar)"
 msgstr "Редагуй вибраний з'єднок (бічна панель)"
 
-#: rustconn/src/dialogs/shortcuts.rs:583
+#: rustconn/src/dialogs/shortcuts.rs:619
 msgid "Delete selected connection/group (sidebar)"
 msgstr "Вилучи вибраний з'єднок/групу (бічна панель)"
 
-#: rustconn/src/dialogs/shortcuts.rs:584
+#: rustconn/src/dialogs/shortcuts.rs:620
 msgid "Rename selected item"
 msgstr "Перейменувати вибраний елемент"
 
-#: rustconn/src/dialogs/shortcuts.rs:585
+#: rustconn/src/dialogs/shortcuts.rs:621
 msgid "Duplicate connection (sidebar)"
 msgstr "Дублювати з'єднок (бічна панель)"
 
-#: rustconn/src/dialogs/shortcuts.rs:586
+#: rustconn/src/dialogs/shortcuts.rs:622
 msgid "Copy connection"
 msgstr "Копіювати з'єднок"
 
-#: rustconn/src/dialogs/shortcuts.rs:587
+#: rustconn/src/dialogs/shortcuts.rs:623
 msgid "Paste connection"
 msgstr "Встав з'єднок"
 
-#: rustconn/src/dialogs/shortcuts.rs:588
+#: rustconn/src/dialogs/shortcuts.rs:624
 msgid "Move to group (sidebar)"
 msgstr "Перемісти до групи (бічна панель)"
 
-#: rustconn/src/dialogs/shortcuts.rs:589
+#: rustconn/src/dialogs/shortcuts.rs:625
 msgid "Connect to selected"
 msgstr "З'єднатися з вибраним"
 
-#: rustconn/src/dialogs/shortcuts.rs:590
+#: rustconn/src/dialogs/shortcuts.rs:626
 msgid "Copy from terminal"
 msgstr "Копіювати з терміналу"
 
-#: rustconn/src/dialogs/shortcuts.rs:591
+#: rustconn/src/dialogs/shortcuts.rs:627
 msgid "Paste to terminal"
 msgstr "Встав в термінал"
 
-#: rustconn/src/dialogs/shortcuts.rs:592
+#: rustconn/src/dialogs/shortcuts.rs:628
 msgid "Search in terminal"
 msgstr "Пошук у терміналі"
 
-#: rustconn/src/dialogs/shortcuts.rs:593
+#: rustconn/src/dialogs/shortcuts.rs:629
 msgid "Close current tab"
 msgstr "Закрий поточну вкладку"
 
-#: rustconn/src/dialogs/shortcuts.rs:594
+#: rustconn/src/dialogs/shortcuts.rs:630
 msgid "Next tab"
 msgstr "Наступна вкладка"
 
-#: rustconn/src/dialogs/shortcuts.rs:595
+#: rustconn/src/dialogs/shortcuts.rs:631
 msgid "Previous tab"
 msgstr "Попередня вкладка"
 
-#: rustconn/src/dialogs/shortcuts.rs:596
+#: rustconn/src/dialogs/shortcuts.rs:632
 msgid "Tab overview"
 msgstr "Огляд вкладок"
 
-#: rustconn/src/dialogs/shortcuts.rs:597
+#: rustconn/src/dialogs/shortcuts.rs:633
 msgid "Switch to open tab"
 msgstr "Перемкни на відкриту вкладку"
 
-#: rustconn/src/dialogs/shortcuts.rs:598
+#: rustconn/src/dialogs/shortcuts.rs:634
 msgid "Open local shell"
 msgstr "Відкрий локальну оболонку"
 
-#: rustconn/src/dialogs/shortcuts.rs:599
+#: rustconn/src/dialogs/shortcuts.rs:635
+msgid "Zoom in (font size)"
+msgstr "Збільш (розмір шрифту)"
+
+#: rustconn/src/dialogs/shortcuts.rs:636
+msgid "Zoom out (font size)"
+msgstr "Зменш (розмір шрифту)"
+
+#: rustconn/src/dialogs/shortcuts.rs:637
+msgid "Reset zoom"
+msgstr "Скинь масштаб"
+
+#: rustconn/src/dialogs/shortcuts.rs:638
 msgid "Split horizontal"
 msgstr "Розділи поземно"
 
-#: rustconn/src/dialogs/shortcuts.rs:600
+#: rustconn/src/dialogs/shortcuts.rs:639
 msgid "Split vertical"
 msgstr "Розділи доземно"
 
-#: rustconn/src/dialogs/shortcuts.rs:601
+#: rustconn/src/dialogs/shortcuts.rs:640
 msgid "Close pane"
 msgstr "Закрий панель"
 
-#: rustconn/src/dialogs/shortcuts.rs:602
+#: rustconn/src/dialogs/shortcuts.rs:641
 msgid "Focus next pane"
 msgstr "Фокус на наступну панель"
 
-#: rustconn/src/dialogs/shortcuts.rs:603 rustconn/src/split_view/bridge.rs:1701
+#: rustconn/src/dialogs/shortcuts.rs:642 rustconn/src/split_view/bridge.rs:1701
 msgid "Search"
 msgstr "Пошук"
 
-#: rustconn/src/dialogs/shortcuts.rs:604
+#: rustconn/src/dialogs/shortcuts.rs:643
 msgid "Focus sidebar"
 msgstr "Фокус на бічну панель"
 
-#: rustconn/src/dialogs/shortcuts.rs:605
+#: rustconn/src/dialogs/shortcuts.rs:644
 msgid "Focus terminal"
 msgstr "Фокус на термінал"
 
-#: rustconn/src/dialogs/shortcuts.rs:606 rustconn/src/split_view/bridge.rs:1699
+#: rustconn/src/dialogs/shortcuts.rs:645 rustconn/src/split_view/bridge.rs:1699
 msgid "Command palette"
 msgstr "Палітра команд"
 
-#: rustconn/src/dialogs/shortcuts.rs:607
+#: rustconn/src/dialogs/shortcuts.rs:646
 msgid "Command palette (commands)"
 msgstr "Палітра команд (команди)"
 
-#: rustconn/src/dialogs/shortcuts.rs:608
+#: rustconn/src/dialogs/shortcuts.rs:647
 msgid "Open settings"
 msgstr "Відкрий устави"
 
-#: rustconn/src/dialogs/shortcuts.rs:609
+#: rustconn/src/dialogs/shortcuts.rs:648
 msgid "Quit application"
 msgstr "Вийти з програми"
 
-#: rustconn/src/dialogs/shortcuts.rs:610
+#: rustconn/src/dialogs/shortcuts.rs:649
 msgid "Keyboard shortcuts"
 msgstr "Скорочення клавіятури"
 
-#: rustconn/src/dialogs/shortcuts.rs:611 rustconn/src/embedded.rs:193
+#: rustconn/src/dialogs/shortcuts.rs:650 rustconn/src/embedded.rs:193
 msgid "Toggle fullscreen"
 msgstr "Перемкни повноекранний режим"
 
-#: rustconn/src/dialogs/shortcuts.rs:612
+#: rustconn/src/dialogs/shortcuts.rs:651
 msgid "Toggle sidebar"
 msgstr "Перемкни бічну панель"
 
-#: rustconn/src/dialogs/shortcuts.rs:613
+#: rustconn/src/dialogs/shortcuts.rs:652
 msgid "Toggle keyboard passthrough"
 msgstr "Перемкни передачу клавіятури"
 
-#: rustconn/src/dialogs/shortcuts.rs:614
+#: rustconn/src/dialogs/shortcuts.rs:653
 msgid "Connection history"
 msgstr "Історія з'єднань"
 
-#: rustconn/src/dialogs/shortcuts.rs:615
+#: rustconn/src/dialogs/shortcuts.rs:654
 msgid "Statistics"
 msgstr "Статистика"
 
-#: rustconn/src/dialogs/shortcuts.rs:616
+#: rustconn/src/dialogs/shortcuts.rs:655
 msgid "Password generator"
 msgstr "Генератор паролів"
+
+#: rustconn/src/dialogs/shortcuts.rs:657
+msgid "SSH tunnel manager"
+msgstr "Диспетчер SSH-тунелів"
+
+#: rustconn/src/dialogs/shortcuts.rs:658
+msgid "Open primary menu"
+msgstr "Відкрий головне меню"
 
 #: rustconn/src/dialogs/smart_folder.rs:63
 msgid "Edit Smart Folder"
@@ -7110,7 +7130,7 @@ msgid ""
 msgstr ""
 "Цей тунель зараз працює. Збереження змін не перезапустить його автоматично. "
 "Можливо, потрібно зупинити та перезапустити тунель, щоб зміни набули "
-"чинності."
+"чинности."
 
 #: rustconn/src/dialogs/tunnel_builder/mod.rs:527
 msgid "Save Anyway"
@@ -7180,7 +7200,7 @@ msgstr "Фільтр з'єднків…"
 
 #: rustconn/src/dialogs/tunnel_builder/step_connection.rs:98
 msgid "Override bastion/proxy host"
-msgstr "Перевизначити bastion/proxy хост"
+msgstr "Перевизначити bastion/proxy гост"
 
 #: rustconn/src/dialogs/tunnel_builder/step_connection.rs:103
 msgid "Connect via intermediate server"
@@ -7212,7 +7232,7 @@ msgstr "Перенаправлення портів"
 #: rustconn/src/dialogs/tunnel_builder/step_forwards.rs:154
 #: rustconn/src/dialogs/tunnel_builder/step_forwards.rs:156
 msgid "Add port forwarding rule"
-msgstr "Додати правило перенаправлення порту"
+msgstr "Додай правило перенаправлення порту"
 
 #: rustconn/src/dialogs/tunnel_builder/step_forwards.rs:167
 msgid "Auto-start on launch"
@@ -8414,7 +8434,7 @@ msgstr "Розділення вертикально / горизонтально
 
 #: rustconn/src/split_view/bridge.rs:1703
 msgid "Disable shortcuts"
-msgstr "Вимкнути скорочення"
+msgstr "Вимкни скорочення"
 
 #: rustconn/src/split_view/bridge.rs:1728
 msgid "Quick Access"
@@ -9233,7 +9253,7 @@ msgid ""
 "Choose a directory synced with your cloud service (Google Drive, Nextcloud, "
 "Syncthing, etc.)"
 msgstr ""
-"Виберіть теку, синхронізовану з вашим хмарним сервісом (Google Drive, "
+"Обери теку, синхронізовану з твоїм хмарним сервісом (Google Drive, "
 "Nextcloud, Syncthing тощо)"
 
 #: rustconn/src/window/edit_group.rs:2291

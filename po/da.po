@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rustconn 0.12.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-28 10:19+0300\n"
+"POT-Creation-Date: 2026-05-29 11:31+0300\n"
 "PO-Revision-Date: 2026-04-25 10:46+0000\n"
 "Last-Translator: RustConn Team\n"
 "Language-Team: Danish\n"
@@ -190,7 +190,7 @@ msgstr "Indtast klyngenavn"
 msgid "Please select at least one connection"
 msgstr "Vælg venligst mindst én forbindelse"
 
-#: rustconn/src/dialogs/cluster.rs:189 rustconn/src/dialogs/shortcuts.rs:570
+#: rustconn/src/dialogs/cluster.rs:189 rustconn/src/dialogs/shortcuts.rs:606
 msgid "Connections"
 msgstr "Forbindelser"
 
@@ -515,7 +515,7 @@ msgid "Add Rule"
 msgstr "Tilføj regel"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:505
-#: rustconn/src/dialogs/shortcuts.rs:617 rustconn/src/dialogs/wol.rs:35
+#: rustconn/src/dialogs/shortcuts.rs:656 rustconn/src/dialogs/wol.rs:35
 #: rustconn/src/sidebar_ui.rs:176 rustconn/src/smart_folder_ui.rs:544
 msgid "Wake On LAN"
 msgstr "Wake On LAN"
@@ -4978,7 +4978,7 @@ msgid "Keybindings"
 msgstr "Tastaturgenveje"
 
 #: rustconn/src/dialogs/settings/keybindings_tab.rs:43
-#: rustconn/src/dialogs/shortcuts.rs:378 rustconn/src/split_view/bridge.rs:1693
+#: rustconn/src/dialogs/shortcuts.rs:414 rustconn/src/split_view/bridge.rs:1693
 msgid "Keyboard Shortcuts"
 msgstr "Tastaturgenveje"
 
@@ -5869,7 +5869,7 @@ msgid "Remove key from SSH agent"
 msgstr "Fjern nøgle fra SSH-agent"
 
 #: rustconn/src/dialogs/settings/terminal_tab.rs:40
-#: rustconn/src/dialogs/shortcuts.rs:571
+#: rustconn/src/dialogs/shortcuts.rs:607
 msgid "Terminal"
 msgstr "Terminal"
 
@@ -6295,185 +6295,205 @@ msgstr "Maks. alder"
 msgid "Hours before sessions expire"
 msgstr "Timer før sessioner udløber"
 
-#: rustconn/src/dialogs/shortcuts.rs:404
+#: rustconn/src/dialogs/shortcuts.rs:440
 msgid "Search shortcuts..."
 msgstr "Søg genveje..."
 
-#: rustconn/src/dialogs/shortcuts.rs:572
+#: rustconn/src/dialogs/shortcuts.rs:608
 msgid "Split View"
 msgstr "Delt visning"
 
-#: rustconn/src/dialogs/shortcuts.rs:573
+#: rustconn/src/dialogs/shortcuts.rs:609
 msgid "Navigation"
 msgstr "Navigation"
 
-#: rustconn/src/dialogs/shortcuts.rs:574
+#: rustconn/src/dialogs/shortcuts.rs:610
 msgid "Application"
 msgstr "Program"
 
-#: rustconn/src/dialogs/shortcuts.rs:576 rustconn/src/split_view/bridge.rs:1697
+#: rustconn/src/dialogs/shortcuts.rs:612 rustconn/src/split_view/bridge.rs:1697
 msgid "New connection"
 msgstr "Ny forbindelse"
 
-#: rustconn/src/dialogs/shortcuts.rs:577
+#: rustconn/src/dialogs/shortcuts.rs:613
 msgid "New connection (advanced)"
 msgstr "Ny forbindelse (avanceret)"
 
-#: rustconn/src/dialogs/shortcuts.rs:578
+#: rustconn/src/dialogs/shortcuts.rs:614
 msgid "New group"
 msgstr "Ny gruppe"
 
-#: rustconn/src/dialogs/shortcuts.rs:579 rustconn/src/split_view/bridge.rs:1698
+#: rustconn/src/dialogs/shortcuts.rs:615 rustconn/src/split_view/bridge.rs:1698
 msgid "Quick connect"
 msgstr "Hurtig forbindelse"
 
-#: rustconn/src/dialogs/shortcuts.rs:580 rustconn/src/split_view/bridge.rs:1704
+#: rustconn/src/dialogs/shortcuts.rs:616 rustconn/src/split_view/bridge.rs:1704
 msgid "Import connections"
 msgstr "Importér forbindelser"
 
-#: rustconn/src/dialogs/shortcuts.rs:581
+#: rustconn/src/dialogs/shortcuts.rs:617
 msgid "Export connections"
 msgstr "Eksportér forbindelser"
 
-#: rustconn/src/dialogs/shortcuts.rs:582
+#: rustconn/src/dialogs/shortcuts.rs:618
 msgid "Edit selected connection (sidebar)"
 msgstr "Rediger valgt forbindelse (sidebjælke)"
 
-#: rustconn/src/dialogs/shortcuts.rs:583
+#: rustconn/src/dialogs/shortcuts.rs:619
 msgid "Delete selected connection/group (sidebar)"
 msgstr "Slet valgt forbindelse/gruppe (sidebjælke)"
 
-#: rustconn/src/dialogs/shortcuts.rs:584
+#: rustconn/src/dialogs/shortcuts.rs:620
 msgid "Rename selected item"
 msgstr "Omdøb valgt element"
 
-#: rustconn/src/dialogs/shortcuts.rs:585
+#: rustconn/src/dialogs/shortcuts.rs:621
 msgid "Duplicate connection (sidebar)"
 msgstr "Duplikér forbindelse (sidebjælke)"
 
-#: rustconn/src/dialogs/shortcuts.rs:586
+#: rustconn/src/dialogs/shortcuts.rs:622
 msgid "Copy connection"
 msgstr "Kopiér forbindelse"
 
-#: rustconn/src/dialogs/shortcuts.rs:587
+#: rustconn/src/dialogs/shortcuts.rs:623
 msgid "Paste connection"
 msgstr "Indsæt forbindelse"
 
-#: rustconn/src/dialogs/shortcuts.rs:588
+#: rustconn/src/dialogs/shortcuts.rs:624
 msgid "Move to group (sidebar)"
 msgstr "Flyt til gruppe (sidebjælke)"
 
-#: rustconn/src/dialogs/shortcuts.rs:589
+#: rustconn/src/dialogs/shortcuts.rs:625
 msgid "Connect to selected"
 msgstr "Opret forbindelse til valgt"
 
-#: rustconn/src/dialogs/shortcuts.rs:590
+#: rustconn/src/dialogs/shortcuts.rs:626
 msgid "Copy from terminal"
 msgstr "Kopiér fra terminal"
 
-#: rustconn/src/dialogs/shortcuts.rs:591
+#: rustconn/src/dialogs/shortcuts.rs:627
 msgid "Paste to terminal"
 msgstr "Indsæt i terminal"
 
-#: rustconn/src/dialogs/shortcuts.rs:592
+#: rustconn/src/dialogs/shortcuts.rs:628
 msgid "Search in terminal"
 msgstr "Søg i terminal"
 
-#: rustconn/src/dialogs/shortcuts.rs:593
+#: rustconn/src/dialogs/shortcuts.rs:629
 msgid "Close current tab"
 msgstr "Luk aktuel fane"
 
-#: rustconn/src/dialogs/shortcuts.rs:594
+#: rustconn/src/dialogs/shortcuts.rs:630
 msgid "Next tab"
 msgstr "Næste fane"
 
-#: rustconn/src/dialogs/shortcuts.rs:595
+#: rustconn/src/dialogs/shortcuts.rs:631
 msgid "Previous tab"
 msgstr "Forrige fane"
 
-#: rustconn/src/dialogs/shortcuts.rs:596
+#: rustconn/src/dialogs/shortcuts.rs:632
 msgid "Tab overview"
 msgstr "Faneoversigt"
 
-#: rustconn/src/dialogs/shortcuts.rs:597
+#: rustconn/src/dialogs/shortcuts.rs:633
 msgid "Switch to open tab"
 msgstr "Skift til åben fane"
 
-#: rustconn/src/dialogs/shortcuts.rs:598
+#: rustconn/src/dialogs/shortcuts.rs:634
 msgid "Open local shell"
 msgstr "Åbn lokal shell"
 
-#: rustconn/src/dialogs/shortcuts.rs:599
+#: rustconn/src/dialogs/shortcuts.rs:635
+msgid "Zoom in (font size)"
+msgstr "Zoom ind (skriftstørrelse)"
+
+#: rustconn/src/dialogs/shortcuts.rs:636
+msgid "Zoom out (font size)"
+msgstr "Zoom ud (skriftstørrelse)"
+
+#: rustconn/src/dialogs/shortcuts.rs:637
+msgid "Reset zoom"
+msgstr "Nulstil zoom"
+
+#: rustconn/src/dialogs/shortcuts.rs:638
 msgid "Split horizontal"
 msgstr "Del vandret"
 
-#: rustconn/src/dialogs/shortcuts.rs:600
+#: rustconn/src/dialogs/shortcuts.rs:639
 msgid "Split vertical"
 msgstr "Del lodret"
 
-#: rustconn/src/dialogs/shortcuts.rs:601
+#: rustconn/src/dialogs/shortcuts.rs:640
 msgid "Close pane"
 msgstr "Luk panel"
 
-#: rustconn/src/dialogs/shortcuts.rs:602
+#: rustconn/src/dialogs/shortcuts.rs:641
 msgid "Focus next pane"
 msgstr "Fokusér næste panel"
 
-#: rustconn/src/dialogs/shortcuts.rs:603 rustconn/src/split_view/bridge.rs:1701
+#: rustconn/src/dialogs/shortcuts.rs:642 rustconn/src/split_view/bridge.rs:1701
 msgid "Search"
 msgstr "Søg"
 
-#: rustconn/src/dialogs/shortcuts.rs:604
+#: rustconn/src/dialogs/shortcuts.rs:643
 msgid "Focus sidebar"
 msgstr "Fokusér sidebjælke"
 
-#: rustconn/src/dialogs/shortcuts.rs:605
+#: rustconn/src/dialogs/shortcuts.rs:644
 msgid "Focus terminal"
 msgstr "Fokusér terminal"
 
-#: rustconn/src/dialogs/shortcuts.rs:606 rustconn/src/split_view/bridge.rs:1699
+#: rustconn/src/dialogs/shortcuts.rs:645 rustconn/src/split_view/bridge.rs:1699
 msgid "Command palette"
 msgstr "Kommandopalette"
 
-#: rustconn/src/dialogs/shortcuts.rs:607
+#: rustconn/src/dialogs/shortcuts.rs:646
 msgid "Command palette (commands)"
 msgstr "Kommandopalette (kommandoer)"
 
-#: rustconn/src/dialogs/shortcuts.rs:608
+#: rustconn/src/dialogs/shortcuts.rs:647
 msgid "Open settings"
 msgstr "Åbn indstillinger"
 
-#: rustconn/src/dialogs/shortcuts.rs:609
+#: rustconn/src/dialogs/shortcuts.rs:648
 msgid "Quit application"
 msgstr "Afslut program"
 
-#: rustconn/src/dialogs/shortcuts.rs:610
+#: rustconn/src/dialogs/shortcuts.rs:649
 msgid "Keyboard shortcuts"
 msgstr "Tastaturgenveje"
 
-#: rustconn/src/dialogs/shortcuts.rs:611 rustconn/src/embedded.rs:193
+#: rustconn/src/dialogs/shortcuts.rs:650 rustconn/src/embedded.rs:193
 msgid "Toggle fullscreen"
 msgstr "Skift fuldskærm"
 
-#: rustconn/src/dialogs/shortcuts.rs:612
+#: rustconn/src/dialogs/shortcuts.rs:651
 msgid "Toggle sidebar"
 msgstr "Skift sidebjælke"
 
-#: rustconn/src/dialogs/shortcuts.rs:613
+#: rustconn/src/dialogs/shortcuts.rs:652
 msgid "Toggle keyboard passthrough"
 msgstr "Skift tastatur-passthrough"
 
-#: rustconn/src/dialogs/shortcuts.rs:614
+#: rustconn/src/dialogs/shortcuts.rs:653
 msgid "Connection history"
 msgstr "Forbindelseshistorik"
 
-#: rustconn/src/dialogs/shortcuts.rs:615
+#: rustconn/src/dialogs/shortcuts.rs:654
 msgid "Statistics"
 msgstr "Statistik"
 
-#: rustconn/src/dialogs/shortcuts.rs:616
+#: rustconn/src/dialogs/shortcuts.rs:655
 msgid "Password generator"
 msgstr "Adgangskodegenerator"
+
+#: rustconn/src/dialogs/shortcuts.rs:657
+msgid "SSH tunnel manager"
+msgstr "Håndtering af SSH-tunneler"
+
+#: rustconn/src/dialogs/shortcuts.rs:658
+msgid "Open primary menu"
+msgstr "Åbn hovedmenu"
 
 #: rustconn/src/dialogs/smart_folder.rs:63
 msgid "Edit Smart Folder"

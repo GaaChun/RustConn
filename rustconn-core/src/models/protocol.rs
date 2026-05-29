@@ -2548,8 +2548,10 @@ pub struct HoopDevConfig {
 /// Generic Zero Trust command configuration
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GenericZeroTrustConfig {
-    /// Full command template with placeholders
-    /// Supported placeholders: {host}, {user}, {port}
+    /// Full command template, executed verbatim through `sh -c`.
+    ///
+    /// Not processed for RustConn placeholders (`{host}`, `{user}`, `{port}`);
+    /// shell syntax (variables, pipes, quoting) applies as-is.
     pub command_template: String,
 }
 

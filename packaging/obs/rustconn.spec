@@ -6,7 +6,7 @@
 #
 
 Name:           rustconn
-Version:        0.15.1
+Version:        0.15.2
 Release:        0
 Summary:        Modern connection manager for Linux (SSH, RDP, VNC, SPICE, MOSH, Telnet, Serial, Kubernetes, Zero Trust)
 License:        GPL-3.0-or-later
@@ -238,6 +238,13 @@ done
 %{_datadir}/locale/*/LC_MESSAGES/rustconn.mo
 
 %changelog
+* Fri May 29 2026 Anton Isaiev <totoshko88@gmail.com> - 0.15.2-0
+- Corrected misleading copy-pasted #[allow]/#[expect] reasons in rustconn-core and property tests; lints that fire now use #[expect]
+- Removed dead notify_tx field and its #[allow(dead_code)] from DirectoryWatcher
+- rustconn-cli update: replaced .position(...).unwrap() with a CliError instead of panicking
+- Shortcuts help dialog now lists Ctrl+T, F10, Ctrl+W and font-zoom shortcuts; added a test guarding against keybinding-registry drift
+- Docs: fixed Create Group shortcut (Ctrl+Shift+G), removed non-existent Ctrl+K, added Ctrl+Shift+B
+
 * Fri May 29 2026 Anton Isaiev <totoshko88@gmail.com> - 0.15.1-0
 - Flatpak language switch fix: relocate translations to /app/share/rustconn/locale/ to bypass GNOME Locale extension subset split (#158)
 

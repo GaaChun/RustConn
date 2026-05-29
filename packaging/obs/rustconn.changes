@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri May 29 2026 Anton Isaiev <totoshko88@gmail.com> - 0.15.2
+
+- Corrected misleading copy-pasted #[allow]/#[expect] reasons that had spread into rustconn-core (a non-GTK crate) and property tests; each site now states its real reason and lints that fire use #[expect]
+- Removed the dead notify_tx field (storing a throwaway mpsc::channel().0) and its #[allow(dead_code)] from DirectoryWatcher
+- rustconn-cli update: replaced .position(...).unwrap() with a CliError::Config so the command never panics
+- Shortcuts help dialog (Ctrl+?) now lists SSH Tunnel Manager (Ctrl+T), Open Primary Menu (F10), the Ctrl+W close-tab alias and font-zoom shortcuts; a new test fails if a registry keybinding is left undocumented
+- Docs: corrected Create Group shortcut to Ctrl+Shift+G (was Ctrl+Shift+N), removed the non-existent Ctrl+K Search binding, added Ctrl+Shift+B (Toggle Split Broadcast)
+
+-------------------------------------------------------------------
 Fri May 29 2026 Anton Isaiev <totoshko88@gmail.com> - 0.15.1
 
 - Flatpak: language switch had no effect for any of the 16 translations because /app/share/locale/<lang>/ is split by flatpak-builder into per-language Locale extension subsets only pulled in for the user's system locale; relocated translations to /app/share/rustconn/locale/ and added --env=LOCALEDIR=/app/share/rustconn/locale to finish-args (#158)
