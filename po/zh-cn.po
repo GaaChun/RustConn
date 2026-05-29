@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rustconn 0.12.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-28 10:19+0300\n"
+"POT-Creation-Date: 2026-05-29 11:31+0300\n"
 "PO-Revision-Date: 2026-04-30 14:42+0800\n"
 "Last-Translator: GaaChun <zeonsinsang@163.com>\n"
 "Language-Team: Chinese(Simplified)\n"
@@ -186,7 +186,7 @@ msgstr "输入集群名称"
 msgid "Please select at least one connection"
 msgstr "请至少选择一个连接"
 
-#: rustconn/src/dialogs/cluster.rs:189 rustconn/src/dialogs/shortcuts.rs:570
+#: rustconn/src/dialogs/cluster.rs:189 rustconn/src/dialogs/shortcuts.rs:606
 msgid "Connections"
 msgstr "连接"
 
@@ -509,7 +509,7 @@ msgid "Add Rule"
 msgstr "添加规则"
 
 #: rustconn/src/dialogs/connection/advanced_tab.rs:505
-#: rustconn/src/dialogs/shortcuts.rs:617 rustconn/src/dialogs/wol.rs:35
+#: rustconn/src/dialogs/shortcuts.rs:656 rustconn/src/dialogs/wol.rs:35
 #: rustconn/src/sidebar_ui.rs:176 rustconn/src/smart_folder_ui.rs:544
 msgid "Wake On LAN"
 msgstr "局域网唤醒"
@@ -4935,7 +4935,7 @@ msgid "Keybindings"
 msgstr "快捷键"
 
 #: rustconn/src/dialogs/settings/keybindings_tab.rs:43
-#: rustconn/src/dialogs/shortcuts.rs:378 rustconn/src/split_view/bridge.rs:1693
+#: rustconn/src/dialogs/shortcuts.rs:414 rustconn/src/split_view/bridge.rs:1693
 msgid "Keyboard Shortcuts"
 msgstr "键盘快捷键"
 
@@ -5818,7 +5818,7 @@ msgid "Remove key from SSH agent"
 msgstr "从 SSH 代理中移除密钥"
 
 #: rustconn/src/dialogs/settings/terminal_tab.rs:40
-#: rustconn/src/dialogs/shortcuts.rs:571
+#: rustconn/src/dialogs/shortcuts.rs:607
 msgid "Terminal"
 msgstr "终端"
 
@@ -6241,185 +6241,205 @@ msgstr "最大期限"
 msgid "Hours before sessions expire"
 msgstr "会话过期前的小时数"
 
-#: rustconn/src/dialogs/shortcuts.rs:404
+#: rustconn/src/dialogs/shortcuts.rs:440
 msgid "Search shortcuts..."
 msgstr "搜索快捷键..."
 
-#: rustconn/src/dialogs/shortcuts.rs:572
+#: rustconn/src/dialogs/shortcuts.rs:608
 msgid "Split View"
 msgstr "拆分视图"
 
-#: rustconn/src/dialogs/shortcuts.rs:573
+#: rustconn/src/dialogs/shortcuts.rs:609
 msgid "Navigation"
 msgstr "导航"
 
-#: rustconn/src/dialogs/shortcuts.rs:574
+#: rustconn/src/dialogs/shortcuts.rs:610
 msgid "Application"
 msgstr "应用程序"
 
-#: rustconn/src/dialogs/shortcuts.rs:576 rustconn/src/split_view/bridge.rs:1697
+#: rustconn/src/dialogs/shortcuts.rs:612 rustconn/src/split_view/bridge.rs:1697
 msgid "New connection"
 msgstr "新建连接"
 
-#: rustconn/src/dialogs/shortcuts.rs:577
+#: rustconn/src/dialogs/shortcuts.rs:613
 msgid "New connection (advanced)"
 msgstr "新建连接（高级）"
 
-#: rustconn/src/dialogs/shortcuts.rs:578
+#: rustconn/src/dialogs/shortcuts.rs:614
 msgid "New group"
 msgstr "新建组"
 
-#: rustconn/src/dialogs/shortcuts.rs:579 rustconn/src/split_view/bridge.rs:1698
+#: rustconn/src/dialogs/shortcuts.rs:615 rustconn/src/split_view/bridge.rs:1698
 msgid "Quick connect"
 msgstr "快速连接"
 
-#: rustconn/src/dialogs/shortcuts.rs:580 rustconn/src/split_view/bridge.rs:1704
+#: rustconn/src/dialogs/shortcuts.rs:616 rustconn/src/split_view/bridge.rs:1704
 msgid "Import connections"
 msgstr "导入连接"
 
-#: rustconn/src/dialogs/shortcuts.rs:581
+#: rustconn/src/dialogs/shortcuts.rs:617
 msgid "Export connections"
 msgstr "导出连接"
 
-#: rustconn/src/dialogs/shortcuts.rs:582
+#: rustconn/src/dialogs/shortcuts.rs:618
 msgid "Edit selected connection (sidebar)"
 msgstr "编辑所选连接（侧边栏）"
 
-#: rustconn/src/dialogs/shortcuts.rs:583
+#: rustconn/src/dialogs/shortcuts.rs:619
 msgid "Delete selected connection/group (sidebar)"
 msgstr "删除所选连接/组（侧边栏）"
 
-#: rustconn/src/dialogs/shortcuts.rs:584
+#: rustconn/src/dialogs/shortcuts.rs:620
 msgid "Rename selected item"
 msgstr "重命名所选项目"
 
-#: rustconn/src/dialogs/shortcuts.rs:585
+#: rustconn/src/dialogs/shortcuts.rs:621
 msgid "Duplicate connection (sidebar)"
 msgstr "复制连接（侧边栏）"
 
-#: rustconn/src/dialogs/shortcuts.rs:586
+#: rustconn/src/dialogs/shortcuts.rs:622
 msgid "Copy connection"
 msgstr "复制连接"
 
-#: rustconn/src/dialogs/shortcuts.rs:587
+#: rustconn/src/dialogs/shortcuts.rs:623
 msgid "Paste connection"
 msgstr "粘贴连接"
 
-#: rustconn/src/dialogs/shortcuts.rs:588
+#: rustconn/src/dialogs/shortcuts.rs:624
 msgid "Move to group (sidebar)"
 msgstr "移动到组（侧边栏）"
 
-#: rustconn/src/dialogs/shortcuts.rs:589
+#: rustconn/src/dialogs/shortcuts.rs:625
 msgid "Connect to selected"
 msgstr "连接到所选项"
 
-#: rustconn/src/dialogs/shortcuts.rs:590
+#: rustconn/src/dialogs/shortcuts.rs:626
 msgid "Copy from terminal"
 msgstr "从终端复制"
 
-#: rustconn/src/dialogs/shortcuts.rs:591
+#: rustconn/src/dialogs/shortcuts.rs:627
 msgid "Paste to terminal"
 msgstr "粘贴到终端"
 
-#: rustconn/src/dialogs/shortcuts.rs:592
+#: rustconn/src/dialogs/shortcuts.rs:628
 msgid "Search in terminal"
 msgstr "在终端中搜索"
 
-#: rustconn/src/dialogs/shortcuts.rs:593
+#: rustconn/src/dialogs/shortcuts.rs:629
 msgid "Close current tab"
 msgstr "关闭当前标签页"
 
-#: rustconn/src/dialogs/shortcuts.rs:594
+#: rustconn/src/dialogs/shortcuts.rs:630
 msgid "Next tab"
 msgstr "下一个标签页"
 
-#: rustconn/src/dialogs/shortcuts.rs:595
+#: rustconn/src/dialogs/shortcuts.rs:631
 msgid "Previous tab"
 msgstr "上一个标签页"
 
-#: rustconn/src/dialogs/shortcuts.rs:596
+#: rustconn/src/dialogs/shortcuts.rs:632
 msgid "Tab overview"
 msgstr "标签页概览"
 
-#: rustconn/src/dialogs/shortcuts.rs:597
+#: rustconn/src/dialogs/shortcuts.rs:633
 msgid "Switch to open tab"
 msgstr "切换到打开的标签页"
 
-#: rustconn/src/dialogs/shortcuts.rs:598
+#: rustconn/src/dialogs/shortcuts.rs:634
 msgid "Open local shell"
 msgstr "打开本地 Shell"
 
-#: rustconn/src/dialogs/shortcuts.rs:599
+#: rustconn/src/dialogs/shortcuts.rs:635
+msgid "Zoom in (font size)"
+msgstr "放大（字体大小）"
+
+#: rustconn/src/dialogs/shortcuts.rs:636
+msgid "Zoom out (font size)"
+msgstr "缩小（字体大小）"
+
+#: rustconn/src/dialogs/shortcuts.rs:637
+msgid "Reset zoom"
+msgstr "重置缩放"
+
+#: rustconn/src/dialogs/shortcuts.rs:638
 msgid "Split horizontal"
 msgstr "水平分割"
 
-#: rustconn/src/dialogs/shortcuts.rs:600
+#: rustconn/src/dialogs/shortcuts.rs:639
 msgid "Split vertical"
 msgstr "垂直分割"
 
-#: rustconn/src/dialogs/shortcuts.rs:601
+#: rustconn/src/dialogs/shortcuts.rs:640
 msgid "Close pane"
 msgstr "关闭窗格"
 
-#: rustconn/src/dialogs/shortcuts.rs:602
+#: rustconn/src/dialogs/shortcuts.rs:641
 msgid "Focus next pane"
 msgstr "聚焦下一个窗格"
 
-#: rustconn/src/dialogs/shortcuts.rs:603 rustconn/src/split_view/bridge.rs:1701
+#: rustconn/src/dialogs/shortcuts.rs:642 rustconn/src/split_view/bridge.rs:1701
 msgid "Search"
 msgstr "搜索"
 
-#: rustconn/src/dialogs/shortcuts.rs:604
+#: rustconn/src/dialogs/shortcuts.rs:643
 msgid "Focus sidebar"
 msgstr "聚焦侧边栏"
 
-#: rustconn/src/dialogs/shortcuts.rs:605
+#: rustconn/src/dialogs/shortcuts.rs:644
 msgid "Focus terminal"
 msgstr "聚焦终端"
 
-#: rustconn/src/dialogs/shortcuts.rs:606 rustconn/src/split_view/bridge.rs:1699
+#: rustconn/src/dialogs/shortcuts.rs:645 rustconn/src/split_view/bridge.rs:1699
 msgid "Command palette"
 msgstr "命令面板"
 
-#: rustconn/src/dialogs/shortcuts.rs:607
+#: rustconn/src/dialogs/shortcuts.rs:646
 msgid "Command palette (commands)"
 msgstr "命令面板（命令）"
 
-#: rustconn/src/dialogs/shortcuts.rs:608
+#: rustconn/src/dialogs/shortcuts.rs:647
 msgid "Open settings"
 msgstr "打开设置"
 
-#: rustconn/src/dialogs/shortcuts.rs:609
+#: rustconn/src/dialogs/shortcuts.rs:648
 msgid "Quit application"
 msgstr "退出应用程序"
 
-#: rustconn/src/dialogs/shortcuts.rs:610
+#: rustconn/src/dialogs/shortcuts.rs:649
 msgid "Keyboard shortcuts"
 msgstr "键盘快捷键"
 
-#: rustconn/src/dialogs/shortcuts.rs:611 rustconn/src/embedded.rs:193
+#: rustconn/src/dialogs/shortcuts.rs:650 rustconn/src/embedded.rs:193
 msgid "Toggle fullscreen"
 msgstr "切换全屏"
 
-#: rustconn/src/dialogs/shortcuts.rs:612
+#: rustconn/src/dialogs/shortcuts.rs:651
 msgid "Toggle sidebar"
 msgstr "切换侧边栏"
 
-#: rustconn/src/dialogs/shortcuts.rs:613
+#: rustconn/src/dialogs/shortcuts.rs:652
 msgid "Toggle keyboard passthrough"
 msgstr "切换键盘穿透"
 
-#: rustconn/src/dialogs/shortcuts.rs:614
+#: rustconn/src/dialogs/shortcuts.rs:653
 msgid "Connection history"
 msgstr "连接历史"
 
-#: rustconn/src/dialogs/shortcuts.rs:615
+#: rustconn/src/dialogs/shortcuts.rs:654
 msgid "Statistics"
 msgstr "统计"
 
-#: rustconn/src/dialogs/shortcuts.rs:616
+#: rustconn/src/dialogs/shortcuts.rs:655
 msgid "Password generator"
 msgstr "密码生成器"
+
+#: rustconn/src/dialogs/shortcuts.rs:657
+msgid "SSH tunnel manager"
+msgstr "SSH 隧道管理器"
+
+#: rustconn/src/dialogs/shortcuts.rs:658
+msgid "Open primary menu"
+msgstr "打开主菜单"
 
 #: rustconn/src/dialogs/smart_folder.rs:63
 msgid "Edit Smart Folder"

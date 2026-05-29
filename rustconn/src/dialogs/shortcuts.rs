@@ -129,6 +129,12 @@ const SHORTCUTS: &[ShortcutEntry] = &[
         category: "Terminal",
     },
     ShortcutEntry {
+        accel: "<Control>w",
+        keys: "Ctrl+W",
+        description: "Close current tab",
+        category: "Terminal",
+    },
+    ShortcutEntry {
         accel: "<Control><Shift>w",
         keys: "Ctrl+Shift+W",
         description: "Close current tab",
@@ -162,6 +168,24 @@ const SHORTCUTS: &[ShortcutEntry] = &[
         accel: "<Control><Shift>t",
         keys: "Ctrl+Shift+T",
         description: "Open local shell",
+        category: "Terminal",
+    },
+    ShortcutEntry {
+        accel: "<Control>plus",
+        keys: "Ctrl+Plus",
+        description: "Zoom in (font size)",
+        category: "Terminal",
+    },
+    ShortcutEntry {
+        accel: "<Control>minus",
+        keys: "Ctrl+Minus",
+        description: "Zoom out (font size)",
+        category: "Terminal",
+    },
+    ShortcutEntry {
+        accel: "<Control>0",
+        keys: "Ctrl+0",
+        description: "Reset zoom",
         category: "Terminal",
     },
     // Split view shortcuts
@@ -291,6 +315,18 @@ const SHORTCUTS: &[ShortcutEntry] = &[
         accel: "<Control><Shift>l",
         keys: "Ctrl+Shift+L",
         description: "Wake On LAN",
+        category: "Application",
+    },
+    ShortcutEntry {
+        accel: "<Control>t",
+        keys: "Ctrl+T",
+        description: "SSH tunnel manager",
+        category: "Application",
+    },
+    ShortcutEntry {
+        accel: "F10",
+        keys: "F10",
+        description: "Open primary menu",
         category: "Application",
     },
 ];
@@ -562,7 +598,7 @@ pub use legacy::ShortcutsDialog;
 /// in `i18n()` when building the UI, but xgettext cannot trace this indirection.
 #[allow(
     dead_code,
-    reason = "kept alive for GTK widget lifecycle / future API exposure"
+    reason = "xgettext marker function; never called, only scanned for translatable string literals"
 )]
 fn _i18n_markers() {
     use crate::i18n::i18n;
@@ -596,6 +632,9 @@ fn _i18n_markers() {
     i18n("Tab overview");
     i18n("Switch to open tab");
     i18n("Open local shell");
+    i18n("Zoom in (font size)");
+    i18n("Zoom out (font size)");
+    i18n("Reset zoom");
     i18n("Split horizontal");
     i18n("Split vertical");
     i18n("Close pane");
@@ -615,4 +654,43 @@ fn _i18n_markers() {
     i18n("Statistics");
     i18n("Password generator");
     i18n("Wake On LAN");
+    i18n("SSH tunnel manager");
+    i18n("Open primary menu");
+}
+
+// ============================================================
+// Tests
+// ============================================================
+
+#[cfg(test)]
+mod tests {
+    use super::SHORTCUTS;
+    use rustconn_core::default_keybindings;
+
+    /// Every default (non-overridden) accelerator registered in the core
+    /// keybinding registry must be visible in the help dialog.
+    ///
+    /// This guards against the three shortcut sources drifting apart:
+    /// `default_keybindings()` (the source of truth for rebindable actions),
+    /// the `SHORTCUTS` array (this dialog), and the user-facing docs.
+    /// Pipe-separated alternatives (e.g. `<Control>w|<Control><Shift>w`) are
+    /// satisfied if at least one alternative is listed.
+    #[test]
+    fn registry_accelerators_are_documented_in_dialog() {
+        let listed: Vec<&str> = SHORTCUTS.iter().map(|s| s.accel).collect();
+
+        let mut missing = Vec::new();
+        for def in default_keybindings() {
+            let alternatives: Vec<&str> = def.default_accels.split('|').collect();
+            let covered = alternatives.iter().any(|alt| listed.contains(alt));
+            if !covered {
+                missing.push(format!("{} ({})", def.action, def.default_accels));
+            }
+        }
+
+        assert!(
+            missing.is_empty(),
+            "registry actions missing from the shortcuts dialog: {missing:?}"
+        );
+    }
 }

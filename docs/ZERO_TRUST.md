@@ -1,6 +1,6 @@
 # RustConn Zero Trust Providers
 
-**Version 0.11.7** | Identity-aware proxy integrations for RustConn
+**Version 0.15.2** | Identity-aware proxy integrations for RustConn
 
 RustConn supports connecting through identity-aware proxy services (Zero Trust). Instead of direct SSH/RDP to a host, the connection is tunneled through a provider's CLI tool that handles authentication and authorization.
 
@@ -199,7 +199,11 @@ rustconn-cli add --name "Staging DB" --host localhost --protocol zt \
   --hoop-grpc-url grpcs://hoop.internal.company.com:8443
 ```
 
-**Flatpak:** The host `~/.hoop/` directory is mounted as read-only to share authentication tokens and configuration. Install `hoop` via Flatpak Components if not available on the host.
+**Flatpak:** The host `~/.hoop/` directory is **not** mounted by default (the permission was rejected by Flathub lint). To share Hoop.dev authentication tokens and configuration with the sandbox, grant access manually after installation:
+```bash
+flatpak override --user --filesystem=home/.hoop:ro io.github.totoshko88.RustConn
+```
+Alternatively, authenticate from a RustConn Local Shell, or pass credentials via the `HOOP_*` environment variables described above. Install `hoop` via Flatpak Components if not available on the host.
 
 ### Generic Command
 
@@ -207,9 +211,11 @@ For providers not listed above. Enter a custom command template that RustConn wi
 
 | Field | Description | Example |
 |-------|-------------|---------|
-| Command Template | Full command to execute | `my-proxy connect ${host}` |
+| Command Template | Full command to execute | `my-proxy connect my-host` |
 
-The command template supports `${host}`, `${user}`, and `${port}` placeholder substitution. These are replaced with the connection's host, username, and port values at runtime.
+The command template is run through a shell (`sh -c`), so standard shell syntax works (pipes, environment variables, quoting). Any **Additional CLI arguments** from the Advanced section are appended to the template before execution.
+
+> **Note:** The command template is **not** processed for RustConn placeholders such as `${host}`, `${user}`, or `${port}` — it is passed to the shell verbatim. If you reference `${host}` it will expand as an empty shell variable, not the connection's host. Enter the literal host/user/port values directly in the command.
 
 #### Running Local Programs
 

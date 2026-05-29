@@ -105,12 +105,6 @@ pub struct DirectoryWatcher {
     watches: Arc<Mutex<HashMap<PathBuf, Vec<WatchRequest>>>>,
     /// Receiver for directory change events
     event_rx: Receiver<DirectoryChange>,
-    /// Sender for internal notify events
-    #[allow(
-        dead_code,
-        reason = "kept alive for GTK widget lifecycle / future API exposure"
-    )]
-    notify_tx: Sender<Result<Event, notify::Error>>,
 }
 
 impl std::fmt::Debug for DirectoryWatcher {
@@ -157,7 +151,6 @@ impl DirectoryWatcher {
             watcher: fs_watcher,
             watches,
             event_rx,
-            notify_tx: mpsc::channel().0, // Placeholder, actual sender is in closure
         })
     }
 

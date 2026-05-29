@@ -5,6 +5,30 @@ All notable changes to RustConn will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.2] - 2026-05-29
+
+A small code-hygiene and documentation release. No user-facing behaviour changes — the goal is to remove misleading lint reasons, drop a dead field, replace a `unwrap()` in the CLI with a proper error path, and bring the keyboard-shortcut documentation back in sync with the code.
+
+### Improved
+
+- **Corrected misleading `#[allow]`/`#[expect]` reasons.** A copy-pasted `reason = "kept alive for GTK widget lifecycle / future API exposure"` had spread into `rustconn-core` (a crate that never touches GTK) and into property tests, where it made no sense. Each site now carries an accurate reason: float comparisons against exactly-representable constants (`0.0`, `100.0`), bounded `f64`→`u32` truncation in drop-index tests, reserved test fixtures and proptest strategies, and the long sequential body of `start_collector`. Lints that fire are now `#[expect]`; genuinely-reserved test helpers stay `#[allow(dead_code)]` with honest reasons.
+- **Removed a dead field in `DirectoryWatcher`.** `notify_tx` stored a throwaway `mpsc::channel().0` (the real sender lives inside the watcher closure) and only existed behind an `#[allow(dead_code)]`. The field and its allow attribute are gone; behaviour is unchanged.
+- **Keyboard-shortcut help dialog now lists every action.** The in-app shortcuts dialog (Ctrl+?) was a hand-maintained list that had drifted from the keybinding registry: it was missing SSH Tunnel Manager (Ctrl+T), Open Primary Menu (F10), the Ctrl+W close-tab alias, and the font-zoom shortcuts (Ctrl+Plus / Ctrl+Minus / Ctrl+0). Those are now included, and a new unit test (`registry_accelerators_are_documented_in_dialog`) fails if a future registry entry is ever left undocumented.
+
+### Fixed
+
+- **`rustconn-cli update` no longer relies on `unwrap()`.** Locating the connection index after `find_connection` used `.position(...).unwrap()`; it now returns a `CliError::Config` instead of panicking in the (logically unreachable) case where the connection vanishes between lookups, satisfying the project's no-`unwrap` rule.
+
+### Documentation
+
+- **Corrected keyboard shortcuts in the User Guide.** "Create Group" was documented as Ctrl+Shift+N (which actually opens New Connection (Advanced)); the correct shortcut is **Ctrl+Shift+G**. Removed the non-existent **Ctrl+K** "Search" binding (only Ctrl+F is registered) and added the missing **Ctrl+Shift+B** (Toggle Split Broadcast) row.
+- **Zero Trust guide synced with the implementation.** Bumped the version header to 0.15.2; corrected the Generic Command section — the command template is run verbatim through `sh -c` and is **not** processed for `${host}`/`${user}`/`${port}` placeholders (the previous text wrongly promised substitution); and fixed the Hoop.dev Flatpak section — `~/.hoop/` is **not** mounted by default (the permission was rejected by Flathub lint), so access must be granted manually via `flatpak override` or supplied through the `HOOP_*` environment variables. The misleading placeholder comment on `GenericZeroTrustConfig` in `rustconn-core` was corrected to match.
+- **Bitwarden setup guide corrected.** Removed a duplicated paragraph in the install section; the "Architecture Notes" now describe the actual vault layout (item name `RustConn: rustconn/<connection-name>`, URI `rustconn://<lookup-key>`, notes holding only the connection's domain as a plain string — not JSON, and no key passphrase); and the troubleshooting command now uses the correct keyring attribute (`secret-tool search application rustconn`, not `service`).
+
+### Dependencies
+
+- **Updated**: cc 1.2.62→1.2.63, cfg-expr 0.20.7→0.20.8, shlex 1.3.0→2.0.1, target-lexicon 0.13.3→0.13.5 (transitive build dependencies; no API impact)
+
 ## [0.15.1] - 2026-05-29
 
 A focused fix for the Flatpak language-switch bug ([#158](https://github.com/totoshko88/RustConn/issues/158)).

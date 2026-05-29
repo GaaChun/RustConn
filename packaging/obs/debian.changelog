@@ -1,3 +1,13 @@
+rustconn (0.15.2-1) unstable; urgency=medium
+
+  * Corrected misleading copy-pasted #[allow]/#[expect] reasons across rustconn-core and property tests; lints that fire now use #[expect]
+  * Removed dead notify_tx field (and its #[allow(dead_code)]) from DirectoryWatcher
+  * rustconn-cli update: replaced .position(...).unwrap() with a proper CliError instead of panicking
+  * Shortcuts help dialog now lists SSH Tunnel Manager (Ctrl+T), Open Menu (F10), Ctrl+W and font-zoom shortcuts; added a test guarding against keybinding-registry drift
+  * Docs: fixed Create Group shortcut (Ctrl+Shift+G, not Ctrl+Shift+N), removed non-existent Ctrl+K, added Ctrl+Shift+B (Toggle Split Broadcast)
+
+ -- Anton Isaiev <totoshko88@gmail.com>  Fri, 29 May 2026 16:00:00 +0200
+
 rustconn (0.15.1-1) unstable; urgency=medium
 
   * Flatpak: language switch had no effect for any of the 16 translations because /app/share/locale/<lang>/ is split by flatpak-builder into per-language Locale extension subsets — fixed by relocating to /app/share/rustconn/locale/ and pointing LOCALEDIR there (#158)

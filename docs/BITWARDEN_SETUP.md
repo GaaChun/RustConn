@@ -206,7 +206,7 @@ bw login
 If auto-unlock from keyring fails on startup:
 
 1. Check that a Secret Service provider is running (GNOME Keyring, KDE Wallet)
-2. Verify `secret-tool` works: `secret-tool search service rustconn`
+2. Verify `secret-tool` works: `secret-tool search application rustconn`
 3. Re-save the master password: Settings → Secrets → toggle "Save to system keyring" off and on
 4. If using encrypted settings storage instead of keyring, the password is tied to the machine — it will not work after OS reinstall or major system changes
 
@@ -222,10 +222,13 @@ If auto-unlock from keyring fails on startup:
 RustConn stores connection passwords in Bitwarden as individual vault items:
 
 - **Folder:** `RustConn` (created automatically)
-- **Item name:** `RustConn: <connection-name>`
+- **Lookup key:** `rustconn/<connection-name>` (falls back to the host when the name is empty)
+- **Item name:** `RustConn: <lookup-key>` (e.g. `RustConn: rustconn/my-server`)
 - **Username:** connection username
 - **Password:** connection password
-- **URI:** `rustconn://connection/<connection-uuid>`
-- **Notes:** additional credential fields (domain, key passphrase) as JSON
+- **URI:** `rustconn://<lookup-key>` (used as a search marker, exact-match type)
+- **Notes:** the connection's domain field, stored as a plain string (empty when no domain is set)
+
+> **Note:** Only the domain is persisted in the notes field. The key passphrase is not stored in Bitwarden — it is handled separately by the SSH key workflow.
 
 The `SecretManager` tries backends in priority order. If Bitwarden is unavailable and fallback is enabled, libsecret (GNOME Keyring) is used as a fallback.

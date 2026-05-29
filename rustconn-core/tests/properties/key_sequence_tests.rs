@@ -80,7 +80,7 @@ fn arb_key_element() -> impl Strategy<Value = KeyElement> {
 /// Currently, tests use more targeted element-based strategies.
 #[allow(
     dead_code,
-    reason = "kept alive for GTK widget lifecycle / future API exposure"
+    reason = "reserved proptest strategy for full key-sequence generation; current tests use element-based strategies"
 )]
 fn arb_key_sequence() -> impl Strategy<Value = KeySequence> {
     prop::collection::vec(arb_key_element(), 0..10).prop_map(|elements| {

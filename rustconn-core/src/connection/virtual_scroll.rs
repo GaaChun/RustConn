@@ -108,7 +108,7 @@ impl SelectionState {
 #[derive(Debug, Clone)]
 #[allow(
     dead_code,
-    reason = "kept alive for GTK widget lifecycle / future API exposure"
+    reason = "reserved virtual-scroll tuning API; exercised by unit tests, not yet wired into the sidebar"
 )]
 pub struct VirtualScrollConfig {
     /// Minimum number of items before enabling virtual scrolling
@@ -131,7 +131,7 @@ impl Default for VirtualScrollConfig {
 
 #[allow(
     dead_code,
-    reason = "kept alive for GTK widget lifecycle / future API exposure"
+    reason = "reserved virtual-scroll tuning API; exercised by unit tests, not yet wired into the sidebar"
 )]
 impl VirtualScrollConfig {
     /// Creates a new configuration with custom threshold

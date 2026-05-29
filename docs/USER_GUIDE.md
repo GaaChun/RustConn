@@ -1,6 +1,6 @@
 # RustConn User Guide
 
-**Version 0.15.1** | GTK4/libadwaita Connection Manager for Linux
+**Version 0.15.2** | GTK4/libadwaita Connection Manager for Linux
 
 RustConn is a modern connection manager designed for Linux with Wayland-first approach. It supports SSH, RDP, VNC, SPICE, MOSH, SFTP, Telnet, Serial, Kubernetes, Web protocols and Zero Trust integrations through a native GTK4/libadwaita interface.
 
@@ -1227,7 +1227,7 @@ Override terminal colors (background, foreground, cursor) on a per-connection ba
 
 #### Create Group
 
-- **Ctrl+Shift+N** or click folder icon
+- **Ctrl+Shift+G** or click folder icon
 - Right-click in sidebar → **New Group**
 - Right-click on group → **New Subgroup**
 
@@ -2740,6 +2740,7 @@ Note: Sidebar-scoped shortcuts (F2, Delete, Ctrl+E, Ctrl+D, Ctrl+C, Ctrl+V, Ctrl
 |----------|--------|
 | Ctrl+N | New Connection (Wizard) |
 | Ctrl+Shift+N | New Connection (Advanced) |
+| Ctrl+Shift+G | New Group |
 | Ctrl+Shift+Q | Quick Connect |
 | Ctrl+I | Import |
 | Ctrl+Shift+E | Export |
@@ -2791,7 +2792,7 @@ RustConn uses VTE, which passes all keystrokes to the shell. Configure vim/emacs
 
 | Shortcut | Action |
 |----------|--------|
-| Ctrl+F / Ctrl+K | Search |
+| Ctrl+F | Search |
 | Ctrl+P | Command Palette (Connections) |
 | Ctrl+Shift+P | Command Palette (Commands) |
 | Ctrl+1 / Alt+1 | Focus Sidebar |
@@ -2807,6 +2808,7 @@ RustConn uses VTE, which passes all keystrokes to the shell. Configure vim/emacs
 | F10 | Open Menu |
 | Ctrl+? / F1 | Keyboard Shortcuts |
 | Ctrl+Shift+Backspace | Toggle Keyboard Passthrough |
+| Ctrl+Shift+B | Toggle Split Broadcast |
 | Ctrl+Q | Quit |
 
 ---

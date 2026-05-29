@@ -1,6 +1,6 @@
 # RustConn CLI Reference
 
-**Version 0.14.6** | Full command-line interface for RustConn connection management
+**Version 0.15.2** | Full command-line interface for RustConn connection management
 
 The `rustconn-cli` binary provides full connection management from the terminal. It shares the same configuration files as the GUI (`~/.config/rustconn/`), so changes made in either tool are immediately visible to the other.
 
@@ -27,9 +27,10 @@ The GUI binary (`rustconn`) accepts startup flags:
 rustconn --shell                        # Open local shell on startup
 rustconn --connect "My Server"          # Connect by name (case-insensitive)
 rustconn --connect 550e8400-...         # Connect by UUID
+rustconn file.rdp                       # Open and connect from an .rdp file
 rustconn file.vv                        # Open a virt-viewer .vv file
-rustconn --version                      # Print version
-rustconn --help                         # Print usage
+rustconn --version                      # Print version (also -V)
+rustconn --help                         # Print usage (also -h)
 ```
 
 These flags override the startup action configured in Settings.
@@ -88,7 +89,7 @@ Commands that list or display data support three output formats:
 
 When stdout is not a terminal (piped or redirected), the format automatically switches from `table` to `json` for scripting convenience. Long table output is paged through `less` when available.
 
-Commands supporting `--format`: `list`, `show`, `test`, `stats`, `group list`, `group show`, `snippet list`, `template list`, `cluster list`, `var list`, `smart-folder list`, `dynamic-folder list`, `recording list`, `sync list`.
+Commands supporting `--format`: `list`, `show`, `test`, `stats`, `group list`, `group show`, `snippet list`, `template list`, `cluster list`, `var list`, `smart-folder list`, `dynamic-folder list`, `recording list`, `sync list`, `history list`, `tag list`, `monitor metrics`.
 
 ---
 
@@ -262,6 +263,9 @@ rustconn-cli add -n "GCE" -H instance-1 -P zt --provider gcp_iap --gcp-zone us-c
 rustconn-cli add -n "AzVM" -H /subscriptions/.../vm -P zt \
     --provider azure_bastion --resource-group myRG --bastion-name myBastion
 
+# Cloudflare Access
+rustconn-cli add -n "CF" -H app.example.com -P zt --provider cloudflare_access -u admin
+
 # Teleport
 rustconn-cli add -n "Tele" -H node-1 -P zt --provider teleport
 
@@ -283,7 +287,7 @@ Zero Trust provider flags:
 
 | Flag | Providers | Description |
 |------|-----------|-------------|
-| `--provider` | all | Provider name (required for `-P zt`) |
+| `--provider` | all | Provider name (required for `-P zt`). One of: `aws_ssm`, `gcp_iap`, `azure_bastion`, `azure_ssh`, `oci_bastion`, `cloudflare_access`, `teleport`, `tailscale_ssh`, `boundary`, `hoop_dev`, `generic` |
 | `--aws-profile` | `aws_ssm` | AWS CLI profile |
 | `--aws-region` | `aws_ssm` | AWS region |
 | `--gcp-zone` | `gcp_iap` | GCP zone |
@@ -464,6 +468,7 @@ rustconn-cli export -f remmina -o ~/remmina-export/
 rustconn-cli export -f royal-ts -o connections.rtsz
 rustconn-cli export -f moba-xterm -o sessions.mxtsessions
 rustconn-cli export -f asbru -o asbru.yml
+rustconn-cli export -f secure-crt -o ~/securecrt-sessions/
 rustconn-cli export -f csv -o connections.csv
 rustconn-cli export -f csv -o connections.csv --csv-delimiter semicolon
 rustconn-cli export -f csv -o connections.csv --csv-fields "name,host,port,protocol"
@@ -478,6 +483,7 @@ rustconn-cli export -f csv -o connections.csv --csv-fields "name,host,port,proto
 | `asbru` | Asbru-CM YAML |
 | `royal-ts` | Royal TS JSON (`.rtsz`) |
 | `moba-xterm` | MobaXterm sessions (`.mxtsessions`) |
+| `secure-crt` | SecureCRT session format (`.ini` directory) |
 | `csv` | CSV format (`.csv`) |
 
 **CSV options** (only valid with `--format csv`):
@@ -503,6 +509,7 @@ rustconn-cli import -f moba-xterm sessions.mxtsessions
 rustconn-cli import -f rdp session.rdp
 rustconn-cli import -f virt-viewer vm.vv
 rustconn-cli import -f libvirt domain.xml
+rustconn-cli import -f secure-crt ~/securecrt-sessions/
 rustconn-cli import -f csv connections.csv
 rustconn-cli import -f ssh-config --auto             # Auto-detect sources
 rustconn-cli import -f ssh-config --dry-run file     # Preview without saving
@@ -515,7 +522,7 @@ rustconn-cli import -f ssh-config --dry-run file     # Preview without saving
 
 The `--auto` flag scans default locations (`~/.config/asbru-cm/`, `~/.local/share/remmina/`, `~/.ssh/config`) and imports from all detected sources. Duplicates (same name + host) are skipped.
 
-Additional import formats: `rdp` (Microsoft RDP files), `rdm` (Remote Desktop Manager), `virt-viewer` (`.vv` files), `libvirt` (GNOME Boxes / virsh XML). Passwords are never included in import/export files — re-enter them after importing.
+Additional import formats: `rdp` (Microsoft RDP files), `rdm` (Remote Desktop Manager), `virt-viewer` (`.vv` files), `libvirt` (GNOME Boxes / virsh XML), `secure-crt` (SecureCRT `.ini` session directory). Passwords are never included in import/export files — re-enter them after importing.
 
 ### wol — Wake-on-LAN
 
@@ -702,14 +709,15 @@ Manage credentials stored in secret backends (system keyring, KeePass, Bitwarden
 |------------|-------------|
 | `secret status` | Show available backends and their configuration status |
 | `secret get <connection>` | Retrieve credentials (`--backend`) |
-| `secret set <connection>` | Store credentials (`--user`, `--password`, `--backend`) |
+| `secret set <connection>` | Store credentials (`--user`, `--password`, `--password-stdin`, `--backend`) |
 | `secret delete <connection>` | Delete credentials (`--backend`) |
 | `secret verify-keepass` | Verify KeePass database (`--database`, `--key-file`) |
 
 ```bash
 rustconn-cli secret status
 rustconn-cli secret get "My Server" --backend keepass
-rustconn-cli secret set "My Server" --user admin --backend keyring
+rustconn-cli secret set "My Server" --user admin --backend keyring          # Interactive password prompt
+echo "s3cret" | rustconn-cli secret set "My Server" --user admin --password-stdin
 rustconn-cli secret delete "My Server"
 rustconn-cli secret verify-keepass --database ~/vault.kdbx
 ```
@@ -719,13 +727,13 @@ Backend aliases:
 | Backend | Aliases |
 |---------|---------|
 | System keyring (libsecret) | `keyring`, `libsecret` |
-| KeePass KDBX | `keepass`, `kdbx` |
+| KeePass KDBX | `keepass`, `kdbx`, `keepassxc` |
 | Bitwarden | `bitwarden`, `bw` |
-| 1Password | `1password`, `op` |
+| 1Password | `1password`, `onepassword`, `op` |
 | Passbolt | `passbolt` |
 | Pass (passwordstore.org) | `pass` |
 
-> **Security note:** Prefer the interactive password prompt (omit `--password`) over passing passwords on the command line, which may be visible in process listings.
+> **Security note:** Prefer `--password-stdin` (pipe the password via stdin) or the interactive password prompt (omit both flags) over `--password`, which is deprecated because the value is visible in process listings (`/proc/cmdline`).
 
 ### smart-folder — Manage smart folders
 
