@@ -131,16 +131,16 @@ ok "metainfo.xml release date matches: $META_DATE"
 # 5. Packaging files version sync
 # ──────────────────────────────────────────────────────────────────────────────
 declare -A PKG_PATTERNS=(
-    [debian/changelog]="^rustconn \\($VERSION-1\\)"
-    [packaging/obs/debian.changelog]="^rustconn \\($VERSION-1\\)"
-    [packaging/obs/rustconn.dsc]="^Version: $VERSION-1$"
-    [packaging/obs/debian.dsc]="^Version: $VERSION-1$"
-    [packaging/obs/rustconn.spec]="^Version:[[:space:]]+$VERSION$"
-    [packaging/obs/AppImageBuilder.yml]="^[[:space:]]+version: $VERSION$"
-    [packaging/flatpak/io.github.totoshko88.RustConn.yml]="tag: v$VERSION$"
-    [packaging/flathub/io.github.totoshko88.RustConn.yml]="tag: v$VERSION$"
-    [docs/USER_GUIDE.md]="\\*\\*Version $VERSION\\*\\*"
-    [docs/ARCHITECTURE.md]="\\*\\*Version $VERSION\\*\\*"
+    ["debian/changelog"]="^rustconn \\($VERSION-1\\)"
+    ["packaging/obs/debian.changelog"]="^rustconn \\($VERSION-1\\)"
+    ["packaging/obs/rustconn.dsc"]="^Version: $VERSION-1$"
+    ["packaging/obs/debian.dsc"]="^Version: $VERSION-1$"
+    ["packaging/obs/rustconn.spec"]="^Version:[[:space:]]+$VERSION$"
+    ["packaging/obs/AppImageBuilder.yml"]="^[[:space:]]+version: $VERSION$"
+    ["packaging/flatpak/io.github.totoshko88.RustConn.yml"]="tag: v$VERSION$"
+    ["packaging/flathub/io.github.totoshko88.RustConn.yml"]="tag: v$VERSION$"
+    ["docs/USER_GUIDE.md"]="\\*\\*Version $VERSION\\*\\*"
+    ["docs/ARCHITECTURE.md"]="\\*\\*Version $VERSION\\*\\*"
 )
 
 PKG_FAILED=0
