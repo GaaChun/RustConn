@@ -955,29 +955,23 @@ fn get_disk_stats(path: &str) -> (i64, i64) {
 
     match nix::sys::statvfs::statvfs(path) {
         Ok(stat) => {
-            #[cfg_attr(
-                target_os = "macos",
-                allow(
-                    clippy::useless_conversion,
-                    reason = "u64::from is needed on Linux where fragment_size() returns u32, identity on macOS"
-                )
+            // nix::sys::statvfs returns platform-dependent integer types:
+            // u64 on 64-bit (x86_64, aarch64), u32 on 32-bit targets.
+            // u64::from() is needed for 32-bit compatibility but is identity on 64-bit.
+            #[allow(
+                clippy::useless_conversion,
+                reason = "u64::from needed on 32-bit targets where statvfs fields are u32"
             )]
             let frag_size = u64::from(stat.fragment_size());
             // Convert from filesystem blocks to 4096-byte allocation units
-            #[cfg_attr(
-                target_os = "macos",
-                allow(
-                    clippy::useless_conversion,
-                    reason = "u64::from is needed on Linux where blocks() returns u32, identity on macOS"
-                )
+            #[allow(
+                clippy::useless_conversion,
+                reason = "u64::from needed on 32-bit targets where statvfs fields are u32"
             )]
             let total_bytes = u64::from(stat.blocks()).saturating_mul(frag_size);
-            #[cfg_attr(
-                target_os = "macos",
-                allow(
-                    clippy::useless_conversion,
-                    reason = "u64::from is needed on Linux where blocks_available() returns u32, identity on macOS"
-                )
+            #[allow(
+                clippy::useless_conversion,
+                reason = "u64::from needed on 32-bit targets where statvfs fields are u32"
             )]
             let avail_bytes = u64::from(stat.blocks_available()).saturating_mul(frag_size);
 
