@@ -104,8 +104,10 @@ plugs:
     interface: serial-port
   aws-credentials:
     interface: personal-files
-    write:
+    read:
       - $HOME/.aws
+    write:
+      - $HOME/.aws/sso/cache
   gcloud-credentials:
     interface: personal-files
     read:
