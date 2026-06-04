@@ -639,6 +639,9 @@ jobs:
 
       - name: Checkout OBS package
         run: |
+          # Delete potentially corrupted large file before checkout.
+          # This handles Content-Length mismatches from interrupted prior uploads.
+          osc api -X DELETE '/source/home:totoshko88:rustconn/rustconn/rust-toolchain.tar.zst' 2>/dev/null || true
           osc checkout home:totoshko88:rustconn/rustconn
           cd home:totoshko88:rustconn/rustconn
           osc up
