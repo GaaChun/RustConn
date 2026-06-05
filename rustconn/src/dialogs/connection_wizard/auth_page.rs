@@ -395,16 +395,15 @@ impl AuthPage {
     pub fn auth_method(&self) -> SshAuthMethod {
         let selected = self.method_row.selected() as usize;
         let methods = self.all_methods.borrow();
-        match methods.get(selected) {
-            Some(method) => method.clone(),
-            None => {
-                tracing::warn!(
-                    selected_index = selected,
-                    methods_count = methods.len(),
-                    "Auth method ComboRow selected index out of bounds, defaulting to Password"
-                );
-                SshAuthMethod::Password
-            }
+        if let Some(method) = methods.get(selected) {
+            method.clone()
+        } else {
+            tracing::warn!(
+                selected_index = selected,
+                methods_count = methods.len(),
+                "Auth method ComboRow selected index out of bounds, defaulting to Password"
+            );
+            SshAuthMethod::Password
         }
     }
 

@@ -1072,11 +1072,7 @@ pub fn create_secrets_page() -> SecretsPageWidgets {
                         use secrecy::ExposeSecret;
                         let bw_cmd = rustconn_core::secret::get_bw_cmd();
                         let password = get_bw_password_from_keyring();
-                        let password = if let Some(p) = password {
-                            p
-                        } else {
-                            return None;
-                        };
+                        let password = password?;
                         let bw_status = check_bitwarden_status_sync(&bw_cmd);
                         if bw_status.0 != "Locked" {
                             return Some((bw_status.0, bw_status.1, None));
@@ -1087,16 +1083,16 @@ pub fn create_secrets_page() -> SecretsPageWidgets {
                             .arg("BW_PASSWORD")
                             .env("BW_PASSWORD", password.expose_secret())
                             .output();
-                        if let Ok(output) = unlock_result {
-                            if output.status.success() {
-                                let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-                                if let Some(session_key) = extract_session_key(&stdout) {
-                                    return Some((
-                                        "Unlocked".to_string(),
-                                        "success",
-                                        Some(session_key),
-                                    ));
-                                }
+                        if let Ok(output) = unlock_result
+                            && output.status.success()
+                        {
+                            let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+                            if let Some(session_key) = extract_session_key(&stdout) {
+                                return Some((
+                                    "Unlocked".to_string(),
+                                    "success",
+                                    Some(session_key),
+                                ));
                             }
                         }
                         Some(("Locked".to_string(), "warning", None))
