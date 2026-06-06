@@ -9,7 +9,8 @@ use gtk4::prelude::*;
 use gtk4::{Button, EventControllerKey, Label, gio};
 use libadwaita as adw;
 use rustconn_core::config::keybindings::{
-    KeybindingCategory, KeybindingSettings, default_keybindings, is_valid_accelerator,
+    KeybindingCategory, KeybindingSettings, accelerators_equivalent, default_keybindings,
+    is_valid_accelerator,
 };
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -273,14 +274,20 @@ pub fn load_keybinding_settings(
 ) {
     *overrides_cell.borrow_mut() = settings.clone();
 
-    // Collect all ActionRow widgets recursively and update their labels
+    // Match each row to its definition by the action name stored in the row's
+    // subtitle, rather than by DOM position. This is robust to any divergence
+    // between the UI layout order and the `default_keybindings()` vector order.
     let defaults = default_keybindings();
     let mut action_rows: Vec<gtk4::Widget> = Vec::new();
     collect_action_rows(&page.clone().upcast::<gtk4::Widget>(), &mut action_rows);
 
-    for (row_widget, def) in action_rows.iter().zip(defaults.iter()) {
-        let accel = settings.get_accel(def);
-        update_row_accel_label(row_widget, accel);
+    for row_widget in &action_rows {
+        let Some(action) = action_row_action(row_widget) else {
+            continue;
+        };
+        if let Some(def) = defaults.iter().find(|d| d.action == action) {
+            update_row_accel_label(row_widget, settings.get_accel(def));
+        }
     }
 }
 
@@ -307,7 +314,7 @@ fn find_accel_conflict(
         let effective = overrides.get_accel(def);
         // Check each pipe-separated accelerator
         for existing in effective.split('|') {
-            if existing == accel {
+            if accelerators_equivalent(existing, accel) {
                 return Some(def.label.clone());
             }
         }
@@ -341,9 +348,25 @@ fn refresh_accel_labels(page: &adw::PreferencesPage) {
     let mut action_rows: Vec<gtk4::Widget> = Vec::new();
     collect_action_rows(&page.clone().upcast::<gtk4::Widget>(), &mut action_rows);
 
-    for (row_widget, def) in action_rows.iter().zip(defaults.iter()) {
-        update_row_accel_label(row_widget, &def.default_accels);
+    for row_widget in &action_rows {
+        let Some(action) = action_row_action(row_widget) else {
+            continue;
+        };
+        if let Some(def) = defaults.iter().find(|d| d.action == action) {
+            update_row_accel_label(row_widget, &def.default_accels);
+        }
     }
+}
+
+/// Returns the action name stored as the subtitle of a keybinding `ActionRow`.
+///
+/// `create_keybindings_page` sets each row's subtitle to its `def.action`,
+/// which we use as a stable identifier instead of relying on row position.
+fn action_row_action(row_widget: &gtk4::Widget) -> Option<String> {
+    row_widget
+        .downcast_ref::<adw::ActionRow>()
+        .and_then(|row| row.subtitle())
+        .map(|subtitle| subtitle.to_string())
 }
 
 /// Recursively collects all `ActionRow` widgets from a widget tree.
