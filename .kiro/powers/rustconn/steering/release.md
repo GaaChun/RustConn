@@ -48,7 +48,7 @@ Run the automated version checker:
 ./scripts/check-cli-versions.sh --json   # JSON for automation
 ```
 
-The script checks all 7 pinned CLI tools against upstream latest releases:
+The script checks the CLI tools against upstream latest releases:
 - kubectl (dl.k8s.io/release/stable.txt)
 - Tailscale (pkgs.tailscale.com/stable)
 - Teleport (GitHub API)
@@ -59,17 +59,24 @@ The script checks all 7 pinned CLI tools against upstream latest releases:
 
 Exit code 0 = all current, 1 = updates available.
 
-When the script reports updates, for each outdated component:
+**Only TigerVNC (`vncviewer`) is actually pinned** (`pinned_version` + `Static`
+checksum) and thus the only one that ever needs a manual version bump. The rest
+resolve "latest" at runtime (`pinned_version: None`, `SkipLatest`) and are shown
+as `(auto)` — no action required for them.
+
+When the script reports an update for a **pinned** component (i.e. TigerVNC):
 1. Update `pinned_version` in `DownloadableComponent`
 2. Update `download_url` and `aarch64_url` (version in URL)
-3. Update `checksum` if `ChecksumPolicy::Static` — download the `.sha256` file
+3. Update `checksum` (`ChecksumPolicy::Static`) — download the `.sha256` file
 4. Record in CHANGELOG.md (under `- Updated:` line or as a separate entry):
    ```
-   - **CLI downloads** — Tailscale 1.94.2→1.96.2, kubectl 1.35.3→1.35.4
+   - **CLI downloads** — TigerVNC 1.16.1→1.16.2
    ```
 5. `cargo build && cargo clippy --all-targets` — verify compilation
 
-Components with `SkipLatest` checksum and no `pinned_version` (AWS CLI, gcloud, cloudflared, etc.) — do not require URL updates.
+Auto-latest components (`SkipLatest`, no `pinned_version` — kubectl, Tailscale,
+Teleport, Boundary, Bitwarden, 1Password, AWS CLI, gcloud, cloudflared, etc.)
+never require URL or version updates.
 
 ## Stage 3: Finalizing the release
 
@@ -89,8 +96,21 @@ Components with `SkipLatest` checksum and no `pinned_version` (AWS CLI, gcloud, 
    cargo test --workspace        # ~120s
    cargo build --release         # Release build
    ```
-5. Merge into main
-6. `git tag -a vX.Y.Z -m "Release X.Y.Z" && git push origin main --tags`
+5. Run final checks:
+   ```bash
+   cargo fmt --check
+   cargo clippy --all-targets    # 0 warnings
+   cargo test --workspace        # ~120s
+   cargo build --release         # Release build
+   ```
+6. **Hand off to `scripts/release.sh`** — do NOT run `git merge`/`git tag`/`git push` by hand.
+   The script validates branch ↔ version ↔ changelog ↔ packaging consistency, then performs
+   `merge → tag → push` atomically:
+   ```bash
+   ./scripts/release.sh --dry-run   # validate first
+   ./scripts/release.sh             # merge main, tag vX.Y.Z, push (asks for confirmation)
+   ```
+   Pushing the `v*` tag is what triggers the GitHub release + OBS/Flathub/Homebrew workflows.
 
 ## Files to update
 
@@ -222,6 +242,11 @@ version: 'X.Y.Z'
 ```
 
 ## Version sync checklist
+
+> **Canonical list:** the authoritative set of packaging files + version patterns
+> lives in `PKG_FILES`/`PKG_PATS` in `scripts/release.sh` — that script is the gate
+> that blocks a release on drift. The table below mirrors it for preparation; if
+> they ever disagree, `release.sh` wins. Update the script first when files change.
 
 Before tagging the release, verify that version `X.Y.Z` is present in ALL files:
 

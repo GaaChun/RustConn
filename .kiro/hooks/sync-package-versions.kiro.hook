@@ -1,7 +1,7 @@
 {
-  "enabled": true,
+  "enabled": false,
   "name": "Sync Package Versions",
-  "description": "When Cargo.toml version changes, sync ONLY the version number to packaging files. Does NOT create changelog entries — those are handled by the agent following release.md steering.",
+  "description": "DISABLED — superseded by the manual `release-version` hook, which syncs all packaging version strings during finalize (run when testing is done). Previously triggered on every Cargo.toml save, which incurred an agent call on any dependency edit. Re-enable only if you want immediate version propagation at branch-start bump time.",
   "shortName": "sync-package-versions",
   "version": "2",
   "when": {

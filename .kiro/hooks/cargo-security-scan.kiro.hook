@@ -1,8 +1,8 @@
 {
   "enabled": true,
   "name": "Cargo Security Scan",
-  "description": "Автоматично перевіряє security advisories при зміні Cargo.lock. Використовує cargo-audit якщо встановлено, або cargo-deny.",
-  "version": "1",
+  "description": "Автоматично перевіряє security advisories при зміні Cargo.lock. Використовує cargo-deny (читає deny.toml — єдине джерело ignore-списку), з fallback на cargo-audit.",
+  "version": "2",
   "when": {
     "type": "fileEdited",
     "patterns": [
@@ -11,6 +11,6 @@
   },
   "then": {
     "type": "runCommand",
-    "command": "cargo audit 2>/dev/null || cargo deny check advisories 2>/dev/null || echo 'Neither cargo-audit nor cargo-deny installed. Run: cargo install cargo-audit'"
+    "command": "cargo deny check advisories 2>/dev/null || cargo audit 2>/dev/null || echo 'Neither cargo-deny nor cargo-audit installed. Run: cargo install cargo-deny'"
   }
 }

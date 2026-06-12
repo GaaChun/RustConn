@@ -70,9 +70,9 @@ Use GitHub MCP: create_issue
 
 1. Ensure all PRs are merged into main
 2. Complete the release checklist (see steering `release.md`)
-3. Create tag: `git tag -a vX.Y.Z -m "Release X.Y.Z"`
-4. Push: `git push origin main --tags`
-5. GitHub Actions will create the release automatically
+3. Run `./scripts/release.sh` — it validates branch/version/changelog/packaging, then
+   performs `merge → tag → push` atomically. Do NOT run `git tag`/`git push` manually.
+4. GitHub Actions creates the release automatically once the `v*` tag is pushed.
 
 ### Checking CI status
 
