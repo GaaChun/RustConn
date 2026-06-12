@@ -89,8 +89,21 @@ Components with `SkipLatest` checksum and no `pinned_version` (AWS CLI, gcloud, 
    cargo test --workspace        # ~120s
    cargo build --release         # Release build
    ```
-5. Merge into main
-6. `git tag -a vX.Y.Z -m "Release X.Y.Z" && git push origin main --tags`
+5. Run final checks:
+   ```bash
+   cargo fmt --check
+   cargo clippy --all-targets    # 0 warnings
+   cargo test --workspace        # ~120s
+   cargo build --release         # Release build
+   ```
+6. **Hand off to `scripts/release.sh`** — do NOT run `git merge`/`git tag`/`git push` by hand.
+   The script validates branch ↔ version ↔ changelog ↔ packaging consistency, then performs
+   `merge → tag → push` atomically:
+   ```bash
+   ./scripts/release.sh --dry-run   # validate first
+   ./scripts/release.sh             # merge main, tag vX.Y.Z, push (asks for confirmation)
+   ```
+   Pushing the `v*` tag is what triggers the GitHub release + OBS/Flathub/Homebrew workflows.
 
 ## Files to update
 
@@ -222,6 +235,11 @@ version: 'X.Y.Z'
 ```
 
 ## Version sync checklist
+
+> **Canonical list:** the authoritative set of packaging files + version patterns
+> lives in `PKG_FILES`/`PKG_PATS` in `scripts/release.sh` — that script is the gate
+> that blocks a release on drift. The table below mirrors it for preparation; if
+> they ever disagree, `release.sh` wins. Update the script first when files change.
 
 Before tagging the release, verify that version `X.Y.Z` is present in ALL files:
 

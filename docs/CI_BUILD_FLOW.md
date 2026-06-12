@@ -48,8 +48,7 @@ graph TD
 | Test Core | `cargo test -p rustconn-core --all-features` (no GUI deps) |
 | Property Tests | `cargo test -p rustconn-core --test property_tests` (10 min timeout) |
 | MSRV | `cargo check` with Rust 1.95 |
-| cargo-deny | License and advisory checks |
-| Security Audit | `cargo audit` with `audit.toml` ignore list |
+| cargo-deny | License + RustSec advisory checks (advisory ignore list in `deny.toml`) |
 
 ### Caching
 
@@ -70,25 +69,30 @@ graph TD
     Tag[git push tag v0.16.2] --> BuildDeb[Build .deb]
     Tag --> BuildRPM[Build .rpm]
     Tag --> BuildAppImage[Build AppImage]
-    Tag --> BuildSnap[Build .snap]
     Tag --> BuildFlatpak[Build .flatpak]
 
     BuildDeb --> |ubuntu-24.04| DebArtifact[rustconn_0.16.2_amd64.deb]
     BuildRPM --> |fedora:44 container| RPMArtifact[rustconn-0.16.2-1.fc44.x86_64.rpm]
     BuildAppImage --> |ubuntu-24.04| AppImageArtifact[RustConn-0.16.2-x86_64.AppImage]
-    BuildSnap --> |LXD + snapcraft| SnapArtifact[rustconn_0.16.2_amd64.snap]
     BuildFlatpak --> |GNOME 50 container| FlatpakArtifact[RustConn-0.16.2.flatpak]
-
-    BuildSnap --> |continue-on-error| SnapStore[Publish to Snap Store candidate]
 
     DebArtifact --> Release[Create GitHub Release]
     RPMArtifact --> Release
     AppImageArtifact --> Release
-    SnapArtifact --> Release
     FlatpakArtifact --> Release
 
     Release --> UpdateOBS[Update OBS Package]
+    Release --> Brew[Update Homebrew Tap]
+    Release --> BuildSnap[Build & Publish Snap]
+    BuildSnap --> |LXD + snapcraft| SnapStore[Snap Store candidate]
+    BuildSnap --> |best-effort attach| SnapAsset[.snap on GitHub Release]
 ```
+
+> **Snap runs *after* the release** (like `update-obs` / `update-homebrew`).
+> snapcraft + LXD are slow and occasionally flaky, so the GitHub Release must
+> not be gated on it. The release is created from `.deb`/`.rpm`/`.AppImage`/`.flatpak`
+> first; the `.snap` is then built, published to the store, and attached to the
+> existing release on a best-effort basis.
 
 ### Build Jobs
 
@@ -123,12 +127,17 @@ not affected.
 
 The CI publish step uses `continue-on-error: true` — if the upload fails
 (e.g., awaiting manual review/approval on Snap Store), the job still
-succeeds and the `.snap` artifact is included in the GitHub Release.
+succeeds. The `.snap` is then attached to the already-created GitHub Release
+on a best-effort basis (a failure there does not affect the store publish or
+the release itself).
 
 ### GitHub Release Artifacts
 
-The `release` job collects artifacts from all five build jobs and creates a GitHub
-Release with `.deb`, `.rpm`, `.AppImage`, `.snap`, and `.flatpak` files attached.
+The `release` job collects artifacts from the four blocking build jobs
+(`.deb`, `.rpm`, `.AppImage`, `.flatpak`) and creates the GitHub Release. The
+`.snap` is attached afterwards by the post-release `build-snap` job, so it may
+appear on the release a few minutes later (or be absent if snapcraft failed —
+without blocking the release).
 
 ### Homebrew Tap (macOS)
 

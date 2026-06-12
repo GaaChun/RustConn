@@ -11,6 +11,9 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+permissions:
+  contents: read
+
 jobs:
   update-obs:
     name: Update OBS Package
@@ -29,122 +32,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y zstd osc
 
-      - name: Generate vendor tarball
-        run: |
-          cargo vendor --versioned-dirs
-          tar --zstd -cf vendor.tar.zst vendor/
-          ls -lh vendor.tar.zst
-
-      - name: Create standalone Rust toolchain for OBS
-        run: |
-          SYSROOT=$(rustc --print sysroot)
-          RUST_VERSION=$(rustc --version | grep -oP '\d+\.\d+\.\d+')
-          echo "Bundling Rust toolchain $RUST_VERSION from $SYSROOT"
-          mkdir -p rust-toolchain
-          cp -r "$SYSROOT/bin" rust-toolchain/
-          cp -r "$SYSROOT/lib" rust-toolchain/
-          rust-toolchain/bin/rustc --version
-          rust-toolchain/bin/cargo --version
-          tar --zstd -cf rust-toolchain.tar.zst rust-toolchain/
-          ls -lh rust-toolchain.tar.zst
-
-      - name: Configure osc
-        run: |
-          mkdir -p ~/.config/osc
-          cat > ~/.config/osc/oscrc << EOF
-          [general]
-          apiurl = https://api.opensuse.org
-          
-          [https://api.opensuse.org]
-          user = ${{ secrets.OBS_USERNAME }}
-          pass = ${{ secrets.OBS_PASSWORD }}
-          EOF
-          chmod 600 ~/.config/osc/oscrc
-
-      - name: Checkout OBS package
-        run: |
-          # Delete potentially corrupted large file before checkout
-          osc api -X DELETE '/source/home:totoshko88:rustconn/rustconn/rust-toolchain.tar.zst' 2>/dev/null || true
-          osc api -X DELETE '/source/home:totoshko88:rustconn/rustconn/vendor.tar.zst' 2>/dev/null || true
-          osc checkout home:totoshko88:rustconn/rustconn
-          cd home:totoshko88:rustconn/rustconn
-          osc up
-
-      - name: Generate OBS changelog
-        run: |
-          VERSION=${{ inputs.version }}
-          DATE=$(date '+%a %b %d %Y')
-          OBS_DIR="home:totoshko88:rustconn/rustconn"
-          
-          awk -v ver="${VERSION}" '
-            /^## \[/ {
-              if (found) exit
-              if (index($0, "[" ver "]") > 0) found=1
-              next
-            }
-            found && /^### / { section=$0; next }
-            found && NF { print "  * " $0 }
-          ' CHANGELOG.md > version_changes.txt
-          
-          cat > new_entry.txt << EOF
-          -------------------------------------------------------------------
-          ${DATE} Anton Isaiev <totoshko88@gmail.com> - ${VERSION}
-
-          - Update to version ${VERSION}
-          EOF
-          cat version_changes.txt >> new_entry.txt
-          echo "" >> new_entry.txt
-          
-          if [ -f "$OBS_DIR/rustconn.changes" ]; then
-            cat new_entry.txt "$OBS_DIR/rustconn.changes" > temp_changes
-            mv temp_changes "$OBS_DIR/rustconn.changes"
-          else
-            mv new_entry.txt "$OBS_DIR/rustconn.changes"
-          fi
-
-      - name: Update OBS files
-        run: |
-          VERSION=${{ inputs.version }}
-          OBS_DIR="home:totoshko88:rustconn/rustconn"
-          
-          sed -i "s|<param name=\"revision\">v[^<]*</param>|<param name=\"revision\">v$VERSION</param>|" "$OBS_DIR/_service"
-          sed -i "s/^Version:.*$/Version:        $VERSION/" "$OBS_DIR/rustconn.spec"
-          sed -i "s/^Version:.*$/Version: $VERSION-1/" "$OBS_DIR/debian.dsc"
-          sed -i "s/^DEBTRANSFORM-TAR:.*$/DEBTRANSFORM-TAR: rustconn-$VERSION.tar.xz/" "$OBS_DIR/debian.dsc"
-          # AppImageBuilder.yml is the only packaging file not covered by
-          # the other seds — keep its version in sync too
-          if [ ! -f "$OBS_DIR/AppImageBuilder.yml" ]; then
-            cp packaging/obs/AppImageBuilder.yml "$OBS_DIR/AppImageBuilder.yml"
-          fi
-          sed -i "s/^    version: .*$/    version: $VERSION/" "$OBS_DIR/AppImageBuilder.yml"
-          
-          DATE_RFC2822=$(date -R)
-          NEW_ENTRY="rustconn ($VERSION-1) unstable; urgency=medium\n"
-          while IFS= read -r line; do
-            NEW_ENTRY="$NEW_ENTRY\n  $line"
-          done < version_changes.txt
-          NEW_ENTRY="$NEW_ENTRY\n\n -- Anton Isaiev <totoshko88@gmail.com>  $DATE_RFC2822\n"
-          
-          if [ -f "$OBS_DIR/debian.changelog" ]; then
-            printf "%b\n" "$NEW_ENTRY" | cat - "$OBS_DIR/debian.changelog" > temp_dch
-            mv temp_dch "$OBS_DIR/debian.changelog"
-          fi
-          
-          cp vendor.tar.zst "$OBS_DIR/vendor.tar.zst"
-          cp rust-toolchain.tar.zst "$OBS_DIR/rust-toolchain.tar.zst"
-          ls -lh "$OBS_DIR/vendor.tar.zst" "$OBS_DIR/rust-toolchain.tar.zst"
-
-      - name: Commit to OBS
-        run: |
-          VERSION=${{ inputs.version }}
-          cd home:totoshko88:rustconn/rustconn
-          osc status
-          osc addremove
-          osc commit -m "Update to version $VERSION
-
-          Manual OBS update from GitHub workflow
-          https://github.com/totoshko88/RustConn/releases/tag/v$VERSION"
-
-      - name: Trigger OBS rebuild
-        run: |
-          osc rebuild home:totoshko88:rustconn rustconn
+      # Shared with release.yml → update-obs. All vendor/toolchain/changelog/osc
+      # logic lives in scripts/obs-publish.sh (single source of truth).
+      - name: Publish to OBS
+        env:
+          OBS_USERNAME: ${{ secrets.OBS_USERNAME }}
+          OBS_PASSWORD: ${{ secrets.OBS_PASSWORD }}
+        run: ./scripts/obs-publish.sh "${{ inputs.version }}"

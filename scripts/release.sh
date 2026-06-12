@@ -205,6 +205,12 @@ ok "metainfo.xml release date matches: $META_DATE"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # 5. Packaging files version sync
+#
+# CANONICAL LIST: this PKG_FILES array is the single source of truth for which
+# packaging files must carry the release version. The release-version hook and
+# the `release.md` steering mirror this list for preparation, but THIS gate is
+# what actually blocks a release on drift. When adding/removing a packaging
+# file, update HERE first, then update the hook + steering to match.
 # ──────────────────────────────────────────────────────────────────────────────
 PKG_FILES=(
     "debian/changelog"
@@ -375,6 +381,45 @@ if [[ -n "$(git status --porcelain -- Cargo.lock)" ]]; then
     fail "Cargo.lock is out of sync with Cargo.toml — run 'cargo check' and commit"
 fi
 ok "Cargo.lock is up-to-date"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 11b. Flatpak cargo-sources.json matches Cargo.lock (read-only)
+#      Regenerates into a temp file and diffs against the committed sources.
+#      A stale cargo-sources.json otherwise ships silently in the Flatpak build.
+#      Generator/network failure → warn (don't block on flaky crates.io);
+#      a definitive content mismatch → fail.
+# ──────────────────────────────────────────────────────────────────────────────
+FCG="packaging/flatpak/flatpak-cargo-generator.py"
+SOURCES="packaging/flatpak/cargo-sources.json"
+if $SKIP_CHECKS; then
+    warn "Skipping cargo-sources.json check (--skip-checks)"
+elif [[ ! -f "$FCG" || ! -f "$SOURCES" ]]; then
+    warn "Flatpak generator or sources missing — skipping cargo-sources.json check"
+elif ! command -v python3 >/dev/null; then
+    warn "python3 not installed — skipping cargo-sources.json check"
+else
+    info "Verifying $SOURCES matches Cargo.lock..."
+    TMP_SOURCES="$(mktemp)"
+    if python3 "$FCG" Cargo.lock -o "$TMP_SOURCES" >/dev/null 2>&1; then
+        if diff -q "$TMP_SOURCES" "$SOURCES" >/dev/null 2>&1; then
+            ok "$SOURCES is in sync with Cargo.lock"
+            FLATHUB_SOURCES="packaging/flathub/cargo-sources.json"
+            if [[ -f "$FLATHUB_SOURCES" ]] && ! diff -q "$SOURCES" "$FLATHUB_SOURCES" >/dev/null 2>&1; then
+                rm -f "$TMP_SOURCES"
+                fail "$FLATHUB_SOURCES differs from $SOURCES — copy it and commit:
+    cp $SOURCES $FLATHUB_SOURCES"
+            fi
+        else
+            rm -f "$TMP_SOURCES"
+            fail "$SOURCES is stale — regenerate it, commit, and re-run:
+    python3 $FCG Cargo.lock -o $SOURCES
+    cp $SOURCES packaging/flathub/cargo-sources.json"
+        fi
+    else
+        warn "flatpak-cargo-generator failed (network?) — skipping sources check"
+    fi
+    rm -f "$TMP_SOURCES"
+fi
 
 # ──────────────────────────────────────────────────────────────────────────────
 # 12. Plan or execute release operations

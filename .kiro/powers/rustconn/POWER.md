@@ -28,8 +28,8 @@ GTK4/libadwaita GUI, Wayland-first. Rust 2024 edition, MSRV 1.95, three-crate Ca
 4. After each feature — automated checks via `rustconn-checks` hook (agentStop)
 5. Manual GUI testing
 6. Before merge — update dependencies and CLI versions (see steering `release.md`)
-7. Merge into main
-8. `git tag -a vX.Y.Z -m "Release X.Y.Z" && git push origin main --tags` — triggers CI
+7. Run `./scripts/release.sh` — it validates everything, then does `merge → tag → push`
+   atomically (pushing the `v*` tag triggers CI). Do NOT run `git tag`/`git push` by hand.
 
 ## Automated Checks
 

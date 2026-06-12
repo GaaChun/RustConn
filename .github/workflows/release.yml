@@ -10,6 +10,11 @@ env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+# Least privilege by default; jobs that need more (e.g. creating the GitHub
+# release) raise it explicitly at the job level.
+permissions:
+  contents: read
+
 jobs:
   build-deb:
     name: Build Debian Package
@@ -308,15 +313,24 @@ jobs:
           path: "*.AppImage"
 
   build-snap:
-    name: Build Snap Package
+    name: Build & Publish Snap Package
+    # Post-release job (like update-obs / update-homebrew): snapcraft + LXD are
+    # slow and occasionally flaky, so we must NOT gate the GitHub release on it.
+    # The release is created first; the snap is then built, published to the
+    # store, and attached to the existing release. A snap failure no longer
+    # blocks the release.
+    needs: [release]
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Setup LXD
-        uses: canonical/setup-lxd@main
+        uses: canonical/setup-lxd@8c6a87bfb56aa48f3fb9b830baa18562d8bfd4ee # v1
 
       - name: Install Snapcraft
         run: |
@@ -356,6 +370,17 @@ jobs:
         #               listing from that revision's snapcraft.yaml
         timeout-minutes: 10
         run: snapcraft upload ${{ steps.build.outputs.snap }} --release candidate
+
+      - name: Attach snap to the GitHub release
+        # Best-effort: the release already exists (this job needs it). A failure
+        # here does not affect the store publish above or the release itself.
+        if: startsWith(github.ref, 'refs/tags/')
+        continue-on-error: true
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.build.outputs.snap }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-flatpak:
     name: Build Flatpak
@@ -399,7 +424,7 @@ jobs:
 
   release:
     name: Create Release
-    needs: [build-deb, build-rpm, build-appimage, build-snap, build-flatpak]
+    needs: [build-deb, build-rpm, build-appimage, build-flatpak]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
@@ -424,12 +449,6 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: appimage
-          path: dist/
-
-      - name: Download Snap artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: snap-package
           path: dist/
 
       - name: Download Flatpak artifact
@@ -600,179 +619,20 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install dependencies for vendor generation
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y zstd
-
-      - name: Generate vendor tarball with all features
-        run: |
-          # Vendor all dependencies including optional ones
-          cargo vendor --versioned-dirs
-          # Create compressed tarball
-          tar --zstd -cf vendor.tar.zst vendor/
-          echo "=== Vendor tarball created ==="
-          ls -lh vendor.tar.zst
-
-      - name: Create standalone Rust toolchain for OBS Debian/Ubuntu/Fedora builds
-        run: |
-          # OBS VMs have no internet — bundle Rust toolchain as a tarball
-          # IMPORTANT: copy from sysroot, not from ~/.cargo/bin (those are rustup shims)
-          SYSROOT=$(rustc --print sysroot)
-          RUST_VERSION=$(rustc --version | grep -oP '\d+\.\d+\.\d+')
-          echo "Bundling Rust toolchain $RUST_VERSION from $SYSROOT"
-          mkdir -p rust-toolchain
-          cp -r "$SYSROOT/bin" rust-toolchain/
-          cp -r "$SYSROOT/lib" rust-toolchain/
-          # Verify these are real binaries, not rustup shims
-          file rust-toolchain/bin/rustc
-          rust-toolchain/bin/rustc --version
-          rust-toolchain/bin/cargo --version
-          tar --zstd -cf rust-toolchain.tar.zst rust-toolchain/
-          echo "=== Rust toolchain tarball created ==="
-          ls -lh rust-toolchain.tar.zst
+          sudo apt-get install -y zstd osc
 
       - name: Get version from tag
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-      - name: Validate OBS credentials
-        run: |
-          if [ -z "${{ secrets.OBS_USERNAME }}" ]; then
-            echo "::error::OBS_USERNAME secret is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.OBS_PASSWORD }}" ]; then
-            echo "::error::OBS_PASSWORD secret is not set"
-            exit 1
-          fi
-
-      - name: Install osc
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y osc
-
-      - name: Configure osc
-        run: |
-          mkdir -p ~/.config/osc
-          cat > ~/.config/osc/oscrc << EOF
-          [general]
-          apiurl = https://api.opensuse.org
-          
-          [https://api.opensuse.org]
-          user = ${{ secrets.OBS_USERNAME }}
-          pass = ${{ secrets.OBS_PASSWORD }}
-          EOF
-          chmod 600 ~/.config/osc/oscrc
-
-      - name: Checkout OBS package
-        run: |
-          # Delete potentially corrupted large file before checkout.
-          # This handles Content-Length mismatches from interrupted prior uploads.
-          osc api -X DELETE '/source/home:totoshko88:rustconn/rustconn/rust-toolchain.tar.zst' 2>/dev/null || true
-          osc checkout home:totoshko88:rustconn/rustconn
-          cd home:totoshko88:rustconn/rustconn
-          osc up
-
-      - name: Generate OBS changelog from CHANGELOG.md
-        run: |
-          VERSION=${{ steps.version.outputs.VERSION }}
-          DATE=$(date '+%a %b %d %Y')
-          OBS_DIR="home:totoshko88:rustconn/rustconn"
-          
-          # Extract changelog section for this version
-          awk -v ver="${VERSION}" '
-            /^## \[/ {
-              if (found) exit
-              if (index($0, "[" ver "]") > 0) found=1
-              next
-            }
-            found && /^### / { section=$0; next }
-            found && NF { print "  * " $0 }
-          ' CHANGELOG.md > version_changes.txt
-          
-          # Create new changelog entry
-          cat > new_entry.txt << EOF
-          -------------------------------------------------------------------
-          ${DATE} Anton Isaiev <totoshko88@gmail.com> - ${VERSION}
-
-          - Update to version ${VERSION}
-          EOF
-          
-          # Add extracted changes
-          cat version_changes.txt >> new_entry.txt
-          echo "" >> new_entry.txt
-          
-          # Prepend to existing changelog
-          if [ -f "$OBS_DIR/rustconn.changes" ]; then
-            cat new_entry.txt "$OBS_DIR/rustconn.changes" > temp_changes
-            mv temp_changes "$OBS_DIR/rustconn.changes"
-          else
-            mv new_entry.txt "$OBS_DIR/rustconn.changes"
-          fi
-          
-          echo "=== Generated OBS changelog entry ==="
-          head -30 "$OBS_DIR/rustconn.changes"
-
-      - name: Update OBS files
-        run: |
-          VERSION=${{ steps.version.outputs.VERSION }}
-          OBS_DIR="home:totoshko88:rustconn/rustconn"
-          
-          # Update _service revision
-          sed -i "s|<param name=\"revision\">v[^<]*</param>|<param name=\"revision\">v$VERSION</param>|" "$OBS_DIR/_service"
-          
-          # Update spec version
-          sed -i "s/^Version:.*$/Version:        $VERSION/" "$OBS_DIR/rustconn.spec"
-          
-          # Update debian.dsc version and tarball name
-          sed -i "s/^Version:.*$/Version: $VERSION-1/" "$OBS_DIR/debian.dsc"
-          sed -i "s/^DEBTRANSFORM-TAR:.*$/DEBTRANSFORM-TAR: rustconn-$VERSION.tar.xz/" "$OBS_DIR/debian.dsc"
-          # AppImageBuilder.yml is the only packaging file not covered by
-          # the other seds — keep its version in sync too
-          if [ ! -f "$OBS_DIR/AppImageBuilder.yml" ]; then
-            cp packaging/obs/AppImageBuilder.yml "$OBS_DIR/AppImageBuilder.yml"
-          fi
-          sed -i "s/^    version: .*$/    version: $VERSION/" "$OBS_DIR/AppImageBuilder.yml"
-          
-          # Update debian.changelog — prepend new entry
-          DATE_RFC2822=$(date -R)
-          NEW_ENTRY="rustconn ($VERSION-1) unstable; urgency=medium\n"
-          # Extract changes from CHANGELOG.md
-          while IFS= read -r line; do
-            NEW_ENTRY="$NEW_ENTRY\n  $line"
-          done < version_changes.txt
-          NEW_ENTRY="$NEW_ENTRY\n\n -- Anton Isaiev <totoshko88@gmail.com>  $DATE_RFC2822\n"
-          
-          if [ -f "$OBS_DIR/debian.changelog" ]; then
-            printf "%b\n" "$NEW_ENTRY" | cat - "$OBS_DIR/debian.changelog" > temp_dch
-            mv temp_dch "$OBS_DIR/debian.changelog"
-          fi
-          
-          # Copy vendor tarball (generated earlier in this job)
-          cp vendor.tar.zst "$OBS_DIR/vendor.tar.zst"
-          echo "=== Vendor tarball copied to OBS ==="
-          ls -lh "$OBS_DIR/vendor.tar.zst"
-          
-          # Copy Rust toolchain tarball for Debian/Ubuntu builds
-          cp rust-toolchain.tar.zst "$OBS_DIR/rust-toolchain.tar.zst"
-          echo "=== Rust toolchain tarball copied to OBS ==="
-          ls -lh "$OBS_DIR/rust-toolchain.tar.zst"
-
-      - name: Commit to OBS
-        run: |
-          VERSION=${{ steps.version.outputs.VERSION }}
-          cd home:totoshko88:rustconn/rustconn
-          osc status
-          osc addremove
-          osc commit -m "Update to version $VERSION
-
-          Automated update from GitHub release v$VERSION
-          https://github.com/totoshko88/RustConn/releases/tag/v$VERSION"
-
-      - name: Trigger OBS rebuild
-        run: |
-          osc rebuild home:totoshko88:rustconn rustconn
+      - name: Publish to OBS
+        env:
+          OBS_USERNAME: ${{ secrets.OBS_USERNAME }}
+          OBS_PASSWORD: ${{ secrets.OBS_PASSWORD }}
+        run: ./scripts/obs-publish.sh "${{ steps.version.outputs.VERSION }}"
 
   update-homebrew:
     name: Update Homebrew Tap
@@ -838,8 +698,15 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Formula/rustconn.rb
-          git commit -m "rustconn ${VERSION}
+          # Idempotent: a re-run for the same version produces identical content,
+          # so skip the commit/push when nothing changed (avoids a failed
+          # "nothing to commit" exit on retry).
+          if git diff --cached --quiet; then
+            echo "Formula already up to date for ${VERSION} — nothing to commit"
+          else
+            git commit -m "rustconn ${VERSION}
 
           Automated update from RustConn release v${VERSION}
           https://github.com/totoshko88/RustConn/releases/tag/v${VERSION}"
-          git push
+            git push
+          fi
